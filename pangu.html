@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://esm.sh">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>盘古之白 — 排版格式化</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --accent: #7c3aed;
+      --accent-faint: rgba(124, 58, 237, 0.12);
+      --accent-border: rgba(124, 58, 237, 0.5);
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.038;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    textarea, .diff-text {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    textarea {
+      resize: none;
+      outline: none;
+    }
+    .added-mark {
+      display: inline-block;
+      min-width: 5px;
+      background: var(--accent-faint);
+      border-bottom: 1.5px solid var(--accent-border);
+      border-radius: 1px;
+    }
+    .panel {
+      transition: box-shadow 150ms ease, border-color 150ms ease;
+    }
+    .panel:focus-within {
+      border-color: rgba(124, 58, 237, 0.3);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+    }
+    .tab-active {
+      background: #18181b;
+      color: #fff;
+    }
+    .tab-inactive {
+      color: #71717a;
+    }
+    .tab-inactive:hover {
+      color: #3f3f46;
+      background: #f4f4f5;
+    }
+    .icon-btn {
+      transition: color 150ms ease, background 150ms ease;
+    }
+    .copy-success {
+      color: #16a34a !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-zinc-900" style="background: linear-gradient(145deg, #f5f3ff 0%, #fdfcff 45%, #f0f4ff 100%)">
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="w-7 h-7 rounded flex items-center justify-center text-white text-xs font-bold" style="background: #7c3aed; letter-spacing: 0.1em">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h1 class="text-lg font-bold tracking-tight">盘古之白</h1>
+        <span class="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded font-medium">排版格式化</span>
+      </div>
+      <p class="text-sm text-zinc-500">自动在中文与英文、数字之间插入空格，提升文字排版的视觉体验。</p>
+    </header>
+
+    <!-- Mode tabs -->
+    <div class="flex items-center gap-1 mb-4">
+      <button id="tab-format" class="tab-active px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150">格式化</button>
+      <button id="tab-diff" class="tab-inactive px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150">差异对比</button>
+    </div>
+
+    <!-- Two-panel editor -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <!-- Input panel -->
+      <div class="panel bg-white/80 backdrop-blur-sm border border-zinc-200/80 rounded-md flex flex-col">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-100">
+          <span class="text-xs font-medium text-zinc-400 uppercase tracking-wider">输入</span>
+          <button id="btn-clear" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            清空
+          </button>
+        </div>
+        <textarea
+          id="input"
+          class="flex-1 w-full px-4 py-3 bg-transparent text-zinc-800 placeholder-zinc-300 min-h-52 sm:min-h-64"
+          placeholder="在此粘贴需要格式化的文字&#10;&#10;示例：我love你，共3条数据，使用Vue开发。"
+          spellcheck="false"
+        ></textarea>
+        <div class="flex items-center justify-between px-4 py-2 border-t border-zinc-100">
+          <span id="input-count" class="text-xs text-zinc-400">0 字符</span>
+          <button id="btn-paste" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            粘贴
+          </button>
+        </div>
+      </div>
+
+      <!-- Output panel -->
+      <div class="panel bg-white/80 backdrop-blur-sm border border-zinc-200/80 rounded-md flex flex-col">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-100">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs font-medium text-zinc-400 uppercase tracking-wider">输出</span>
+            <span id="badge-clean" class="hidden text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">规范 ✓</span>
+            <span id="badge-changes" class="hidden text-xs font-medium text-violet-600 bg-violet-50 border border-violet-200/60 px-1.5 py-0.5 rounded">0 处已修正</span>
+          </div>
+          <button id="btn-copy" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+            <svg id="copy-icon" width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span id="copy-label">复制</span>
+          </button>
+        </div>
+
+        <!-- Format view -->
+        <textarea
+          id="output"
+          class="flex-1 w-full px-4 py-3 bg-transparent text-zinc-800 placeholder-zinc-300 min-h-52 sm:min-h-64"
+          readonly
+          placeholder="格式化结果将在此显示…"
+          spellcheck="false"
+        ></textarea>
+
+        <!-- Diff view -->
+        <div id="diff-view" class="hidden flex-1 overflow-auto px-4 py-3 min-h-52 sm:min-h-64">
+          <div id="diff-content" class="diff-text text-zinc-300 whitespace-pre-wrap break-words">差异将在此显示…</div>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-2 border-t border-zinc-100">
+          <span id="output-count" class="text-xs text-zinc-400">0 字符</span>
+          <span id="diff-legend" class="hidden text-xs text-zinc-400">
+            <span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background: rgba(124,58,237,0.15); border-bottom: 1.5px solid rgba(124,58,237,0.5)"></span>
+            紫色底纹为新增空格
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rule reference -->
+    <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
+        <div class="text-xs font-semibold text-zinc-600 mb-2">中文 ↔ 英文</div>
+        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">我love你</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">我 love 你</code></div>
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">使用React构建</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">使用 React 构建</code></div>
+        </div>
+      </div>
+      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
+        <div class="text-xs font-semibold text-zinc-600 mb-2">中文 ↔ 数字</div>
+        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">共3条数据</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">共 3 条数据</code></div>
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">版本1.0发布</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">版本 1.0 发布</code></div>
+        </div>
+      </div>
+      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
+        <div class="text-xs font-semibold text-zinc-600 mb-2">全角标点边界</div>
+        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">「hello」world</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">「hello」 world</code></div>
+          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">（test）完成</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">（test）完成</code></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-10 pt-5 border-t border-zinc-200/50">
+      <p class="text-xs text-zinc-400 text-center">基于 <a href="https://github.com/vinta/pangu.js" target="_blank" rel="noopener" class="underline decoration-zinc-300 hover:text-zinc-600 hover:decoration-zinc-500 transition-colors duration-150">pangu.js</a> · 致敬盘古大神，字里行间，正一正间距。</p>
+    </footer>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "pangu": "https://esm.sh/pangu?bundle"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import pangu from 'pangu'
+
+    const inputEl = document.getElementById('input')
+    const outputEl = document.getElementById('output')
+    const diffView = document.getElementById('diff-view')
+    const diffContent = document.getElementById('diff-content')
+    const diffLegend = document.getElementById('diff-legend')
+    const inputCount = document.getElementById('input-count')
+    const outputCount = document.getElementById('output-count')
+    const badgeClean = document.getElementById('badge-clean')
+    const badgeChanges = document.getElementById('badge-changes')
+    const btnCopy = document.getElementById('btn-copy')
+    const copyLabel = document.getElementById('copy-label')
+    const copyIcon = document.getElementById('copy-icon')
+    const btnClear = document.getElementById('btn-clear')
+    const btnPaste = document.getElementById('btn-paste')
+    const tabFormat = document.getElementById('tab-format')
+    const tabDiff = document.getElementById('tab-diff')
+
+    let currentMode = 'format'
+    let processedText = ''
+
+    // Count added spaces by aligning original vs processed
+    // pangu only inserts spaces, never removes chars
+    function computeChanges(original, processed) {
+      let added = 0
+      let i = 0
+      for (let j = 0; j < processed.length; j++) {
+        if (i < original.length && original[i] === processed[j]) {
+          i++
+        } else if (processed[j] === ' ') {
+          added++
+        } else {
+          i++
+        }
+      }
+      return added
+    }
+
+    function buildDiffHTML(original, processed) {
+      const parts = []
+      let i = 0
+      for (let j = 0; j < processed.length; j++) {
+        if (i < original.length && original[i] === processed[j]) {
+          parts.push({ ch: processed[j], added: false })
+          i++
+        } else if (processed[j] === ' ') {
+          parts.push({ ch: ' ', added: true })
+        } else {
+          parts.push({ ch: processed[j], added: false })
+          i++
+        }
+      }
+
+      return parts.map(({ ch, added }) => {
+        const safe = ch
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+        return added
+          ? `<span class="added-mark">${safe}</span>`
+          : safe
+      }).join('')
+    }
+
+    function process() {
+      const input = inputEl.value
+      inputCount.textContent = `${input.length} 字符`
+
+      if (!input) {
+        processedText = ''
+        outputEl.value = ''
+        diffContent.innerHTML = '<span style="color:#d4d4d8">差异将在此显示…</span>'
+        outputCount.textContent = '0 字符'
+        badgeClean.classList.add('hidden')
+        badgeChanges.classList.add('hidden')
+        return
+      }
+
+      processedText = pangu.spacingText(input)
+      const changes = computeChanges(input, processedText)
+
+      outputEl.value = processedText
+      diffContent.innerHTML = buildDiffHTML(input, processedText)
+
+      outputCount.textContent = `${processedText.length} 字符`
+
+      if (changes === 0) {
+        badgeClean.classList.remove('hidden')
+        badgeChanges.classList.add('hidden')
+      } else {
+        badgeClean.classList.add('hidden')
+        badgeChanges.textContent = `${changes} 处已修正`
+        badgeChanges.classList.remove('hidden')
+      }
+    }
+
+    let debounce
+    inputEl.addEventListener('input', () => {
+      clearTimeout(debounce)
+      debounce = setTimeout(process, 120)
+    })
+
+    btnClear.addEventListener('click', () => {
+      inputEl.value = ''
+      process()
+      inputEl.focus()
+    })
+
+    btnPaste.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText()
+        inputEl.value = text
+        process()
+      } catch {
+        inputEl.focus()
+      }
+    })
+
+    btnCopy.addEventListener('click', async () => {
+      if (!processedText) return
+      try {
+        await navigator.clipboard.writeText(processedText)
+        copyLabel.textContent = '已复制'
+        copyIcon.innerHTML = '<path d="M2 6l3.5 3.5L10 3" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+        btnCopy.classList.add('copy-success')
+        setTimeout(() => {
+          copyLabel.textContent = '复制'
+          copyIcon.innerHTML = '<rect x="1" y="3" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
+          btnCopy.classList.remove('copy-success')
+        }, 1600)
+      } catch {}
+    })
+
+    function setMode(mode) {
+      currentMode = mode
+      const isFormat = mode === 'format'
+
+      outputEl.classList.toggle('hidden', !isFormat)
+      diffView.classList.toggle('hidden', isFormat)
+      diffLegend.classList.toggle('hidden', isFormat)
+
+      tabFormat.className = `${isFormat ? 'tab-active' : 'tab-inactive'} px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150`
+      tabDiff.className = `${!isFormat ? 'tab-active' : 'tab-inactive'} px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150`
+    }
+
+    tabFormat.addEventListener('click', () => setMode('format'))
+    tabDiff.addEventListener('click', () => setMode('diff'))
+  </script>
+</body>
+</html>
