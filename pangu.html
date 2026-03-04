@@ -9,16 +9,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --accent: #7c3aed;
-      --accent-faint: rgba(124, 58, 237, 0.12);
-      --accent-border: rgba(124, 58, 237, 0.5);
+      --bg: #0c0c0e;
+      --surface: #161618;
+      --surface-2: #1c1c1f;
+      --border: #27272a;
+      --border-subtle: #1f1f22;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --text-faint: #3f3f46;
+      --accent: #a78bfa;
+      --accent-faint: rgba(167, 139, 250, 0.14);
+      --accent-border: rgba(167, 139, 250, 0.55);
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
     }
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-      opacity: 0.038;
+      opacity: 0.055;
       pointer-events: none;
       z-index: 9999;
     }
@@ -26,11 +38,22 @@
       font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
       font-size: 13px;
       line-height: 1.8;
+      color: var(--text);
     }
     textarea {
       resize: none;
       outline: none;
+      background: transparent;
     }
+    textarea::placeholder {
+      color: var(--text-faint);
+    }
+    textarea::-webkit-scrollbar { width: 6px; }
+    textarea::-webkit-scrollbar-track { background: transparent; }
+    textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .diff-view::-webkit-scrollbar { width: 6px; }
+    .diff-view::-webkit-scrollbar-track { background: transparent; }
+    .diff-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     .added-mark {
       display: inline-block;
       min-width: 5px;
@@ -39,74 +62,154 @@
       border-radius: 1px;
     }
     .panel {
-      transition: box-shadow 150ms ease, border-color 150ms ease;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
     }
     .panel:focus-within {
-      border-color: rgba(124, 58, 237, 0.3);
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+      border-color: rgba(167, 139, 250, 0.35);
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.07);
     }
-    .tab-active {
-      background: #18181b;
-      color: #fff;
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
     }
-    .tab-inactive {
-      color: #71717a;
+    .panel-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 16px;
+      border-top: 1px solid var(--border-subtle);
     }
-    .tab-inactive:hover {
-      color: #3f3f46;
-      background: #f4f4f5;
+    .editor-body {
+      height: 300px;
+      overflow-y: auto;
+      padding: 12px 16px;
     }
     .icon-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 3px 6px;
+      border-radius: 4px;
       transition: color 150ms ease, background 150ms ease;
+      cursor: pointer;
+    }
+    .icon-btn:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+    .tab-base {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: background 150ms ease, color 150ms ease;
+      cursor: pointer;
+    }
+    .tab-active {
+      background: #fff;
+      color: #09090b;
+    }
+    .tab-inactive {
+      color: var(--text-muted);
+    }
+    .tab-inactive:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .badge-clean {
+      color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+    .badge-changes {
+      color: var(--accent);
+      background: var(--accent-faint);
+      border: 1px solid rgba(167, 139, 250, 0.25);
     }
     .copy-success {
-      color: #16a34a !important;
+      color: #4ade80 !important;
+    }
+    .rule-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+    }
+    code {
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 11px;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    code.before {
+      background: rgba(255,255,255,0.06);
+      color: #a1a1aa;
+    }
+    code.after {
+      background: var(--accent-faint);
+      color: var(--accent);
     }
   </style>
 </head>
-<body class="min-h-screen text-zinc-900" style="background: linear-gradient(145deg, #f5f3ff 0%, #fdfcff 45%, #f0f4ff 100%)">
+<body class="min-h-screen">
 
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
     <!-- Header -->
     <header class="mb-8">
       <div class="flex items-center gap-2.5 mb-2">
-        <div class="w-7 h-7 rounded flex items-center justify-center text-white text-xs font-bold" style="background: #7c3aed; letter-spacing: 0.1em">
+        <div class="w-7 h-7 rounded flex items-center justify-center" style="background: #7c3aed">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
         </div>
         <h1 class="text-lg font-bold tracking-tight">盘古之白</h1>
-        <span class="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded font-medium">排版格式化</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded" style="color: var(--text-muted); background: var(--surface-2)">排版格式化</span>
       </div>
-      <p class="text-sm text-zinc-500">自动在中文与英文、数字之间插入空格，提升文字排版的视觉体验。</p>
+      <p class="text-sm" style="color: var(--text-muted)">自动在中文与英文、数字之间插入空格，提升文字排版的视觉体验。</p>
     </header>
 
     <!-- Mode tabs -->
     <div class="flex items-center gap-1 mb-4">
-      <button id="tab-format" class="tab-active px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150">格式化</button>
-      <button id="tab-diff" class="tab-inactive px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150">差异对比</button>
+      <button id="tab-format" class="tab-base tab-active">格式化</button>
+      <button id="tab-diff" class="tab-base tab-inactive">差异对比</button>
     </div>
 
     <!-- Two-panel editor -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
       <!-- Input panel -->
-      <div class="panel bg-white/80 backdrop-blur-sm border border-zinc-200/80 rounded-md flex flex-col">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-100">
-          <span class="text-xs font-medium text-zinc-400 uppercase tracking-wider">输入</span>
-          <button id="btn-clear" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-faint)">输入</span>
+          <button id="btn-clear" class="icon-btn">
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             清空
           </button>
         </div>
         <textarea
           id="input"
-          class="flex-1 w-full px-4 py-3 bg-transparent text-zinc-800 placeholder-zinc-300 min-h-52 sm:min-h-64"
+          class="editor-body w-full"
           placeholder="在此粘贴需要格式化的文字&#10;&#10;示例：我love你，共3条数据，使用Vue开发。"
           spellcheck="false"
         ></textarea>
-        <div class="flex items-center justify-between px-4 py-2 border-t border-zinc-100">
-          <span id="input-count" class="text-xs text-zinc-400">0 字符</span>
-          <button id="btn-paste" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+        <div class="panel-footer">
+          <span id="input-count" class="text-xs" style="color: var(--text-faint)">0 字符</span>
+          <button id="btn-paste" class="icon-btn">
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             粘贴
           </button>
@@ -114,14 +217,14 @@
       </div>
 
       <!-- Output panel -->
-      <div class="panel bg-white/80 backdrop-blur-sm border border-zinc-200/80 rounded-md flex flex-col">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-100">
-          <div class="flex items-center gap-2.5">
-            <span class="text-xs font-medium text-zinc-400 uppercase tracking-wider">输出</span>
-            <span id="badge-clean" class="hidden text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">规范 ✓</span>
-            <span id="badge-changes" class="hidden text-xs font-medium text-violet-600 bg-violet-50 border border-violet-200/60 px-1.5 py-0.5 rounded">0 处已修正</span>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-faint)">输出</span>
+            <span id="badge-clean" class="badge badge-clean hidden">规范 ✓</span>
+            <span id="badge-changes" class="badge badge-changes hidden">0 处已修正</span>
           </div>
-          <button id="btn-copy" class="icon-btn flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 rounded px-1.5 py-0.5">
+          <button id="btn-copy" class="icon-btn">
             <svg id="copy-icon" width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             <span id="copy-label">复制</span>
           </button>
@@ -130,21 +233,21 @@
         <!-- Format view -->
         <textarea
           id="output"
-          class="flex-1 w-full px-4 py-3 bg-transparent text-zinc-800 placeholder-zinc-300 min-h-52 sm:min-h-64"
+          class="editor-body w-full"
           readonly
           placeholder="格式化结果将在此显示…"
           spellcheck="false"
         ></textarea>
 
         <!-- Diff view -->
-        <div id="diff-view" class="hidden flex-1 overflow-auto px-4 py-3 min-h-52 sm:min-h-64">
-          <div id="diff-content" class="diff-text text-zinc-300 whitespace-pre-wrap break-words">差异将在此显示…</div>
+        <div id="diff-view" class="editor-body diff-view hidden">
+          <div id="diff-content" class="diff-text whitespace-pre-wrap break-words" style="color: var(--text-faint)">差异将在此显示…</div>
         </div>
 
-        <div class="flex items-center justify-between px-4 py-2 border-t border-zinc-100">
-          <span id="output-count" class="text-xs text-zinc-400">0 字符</span>
-          <span id="diff-legend" class="hidden text-xs text-zinc-400">
-            <span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background: rgba(124,58,237,0.15); border-bottom: 1.5px solid rgba(124,58,237,0.5)"></span>
+        <div class="panel-footer">
+          <span id="output-count" class="text-xs" style="color: var(--text-faint)">0 字符</span>
+          <span id="diff-legend" class="hidden text-xs flex items-center gap-1.5" style="color: var(--text-faint)">
+            <span class="inline-block w-3 h-3 rounded-sm" style="background: var(--accent-faint); border-bottom: 1.5px solid var(--accent-border)"></span>
             紫色底纹为新增空格
           </span>
         </div>
@@ -153,31 +256,31 @@
 
     <!-- Rule reference -->
     <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
-        <div class="text-xs font-semibold text-zinc-600 mb-2">中文 ↔ 英文</div>
-        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">我love你</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">我 love 你</code></div>
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">使用React构建</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">使用 React 构建</code></div>
+      <div class="rule-card">
+        <div class="text-xs font-semibold mb-2" style="color: var(--text-muted)">中文 ↔ 英文</div>
+        <div class="text-xs space-y-1.5" style="color: var(--text-faint)">
+          <div><code class="before">我love你</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">我 love 你</code></div>
+          <div><code class="before">使用React构建</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">使用 React 构建</code></div>
         </div>
       </div>
-      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
-        <div class="text-xs font-semibold text-zinc-600 mb-2">中文 ↔ 数字</div>
-        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">共3条数据</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">共 3 条数据</code></div>
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">版本1.0发布</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">版本 1.0 发布</code></div>
+      <div class="rule-card">
+        <div class="text-xs font-semibold mb-2" style="color: var(--text-muted)">中文 ↔ 数字</div>
+        <div class="text-xs space-y-1.5" style="color: var(--text-faint)">
+          <div><code class="before">共3条数据</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">共 3 条数据</code></div>
+          <div><code class="before">版本1.0发布</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">版本 1.0 发布</code></div>
         </div>
       </div>
-      <div class="bg-white/60 border border-zinc-200/50 rounded-md px-4 py-3.5">
-        <div class="text-xs font-semibold text-zinc-600 mb-2">全角标点边界</div>
-        <div class="text-xs text-zinc-500 leading-relaxed space-y-1">
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">「hello」world</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">「hello」 world</code></div>
-          <div><code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-600">（test）完成</code><span class="text-zinc-300 mx-1.5">→</span><code class="bg-violet-50 px-1 py-0.5 rounded text-violet-700">（test）完成</code></div>
+      <div class="rule-card">
+        <div class="text-xs font-semibold mb-2" style="color: var(--text-muted)">全角标点边界</div>
+        <div class="text-xs space-y-1.5" style="color: var(--text-faint)">
+          <div><code class="before">「hello」world</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">「hello」 world</code></div>
+          <div><code class="before">（test）完成</code><span class="mx-1.5" style="color: var(--text-faint)">→</span><code class="after">（test）完成</code></div>
         </div>
       </div>
     </div>
 
-    <footer class="mt-10 pt-5 border-t border-zinc-200/50">
-      <p class="text-xs text-zinc-400 text-center">基于 <a href="https://github.com/vinta/pangu.js" target="_blank" rel="noopener" class="underline decoration-zinc-300 hover:text-zinc-600 hover:decoration-zinc-500 transition-colors duration-150">pangu.js</a> · 致敬盘古大神，字里行间，正一正间距。</p>
+    <footer class="mt-10 pt-5" style="border-top: 1px solid var(--border)">
+      <p class="text-xs text-center" style="color: var(--text-faint)">基于 <a href="https://github.com/vinta/pangu.js" target="_blank" rel="noopener" class="underline transition-colors duration-150" style="text-decoration-color: var(--border); color: var(--text-muted)" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-muted)'">pangu.js</a> · 致敬盘古大神，字里行间，正一正间距。</p>
     </footer>
   </div>
 
@@ -212,8 +315,7 @@
     let currentMode = 'format'
     let processedText = ''
 
-    // Count added spaces by aligning original vs processed
-    // pangu only inserts spaces, never removes chars
+    // pangu only inserts spaces, never removes chars — walk both strings to count insertions
     function computeChanges(original, processed) {
       let added = 0
       let i = 0
@@ -245,13 +347,8 @@
       }
 
       return parts.map(({ ch, added }) => {
-        const safe = ch
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-        return added
-          ? `<span class="added-mark">${safe}</span>`
-          : safe
+        const safe = ch.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        return added ? `<span class="added-mark">${safe}</span>` : safe
       }).join('')
     }
 
@@ -262,7 +359,7 @@
       if (!input) {
         processedText = ''
         outputEl.value = ''
-        diffContent.innerHTML = '<span style="color:#d4d4d8">差异将在此显示…</span>'
+        diffContent.innerHTML = `<span style="color:var(--text-faint)">差异将在此显示…</span>`
         outputCount.textContent = '0 字符'
         badgeClean.classList.add('hidden')
         badgeChanges.classList.add('hidden')
@@ -273,7 +370,9 @@
       const changes = computeChanges(input, processedText)
 
       outputEl.value = processedText
-      diffContent.innerHTML = buildDiffHTML(input, processedText)
+      if (currentMode === 'diff') {
+        diffContent.innerHTML = buildDiffHTML(input, processedText)
+      }
 
       outputCount.textContent = `${processedText.length} 字符`
 
@@ -314,7 +413,7 @@
       try {
         await navigator.clipboard.writeText(processedText)
         copyLabel.textContent = '已复制'
-        copyIcon.innerHTML = '<path d="M2 6l3.5 3.5L10 3" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+        copyIcon.innerHTML = '<path d="M2 6l3.5 3.5L10 3" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
         btnCopy.classList.add('copy-success')
         setTimeout(() => {
           copyLabel.textContent = '复制'
@@ -328,12 +427,16 @@
       currentMode = mode
       const isFormat = mode === 'format'
 
+      if (!isFormat && inputEl.value) {
+        diffContent.innerHTML = buildDiffHTML(inputEl.value, processedText)
+      }
+
       outputEl.classList.toggle('hidden', !isFormat)
       diffView.classList.toggle('hidden', isFormat)
       diffLegend.classList.toggle('hidden', isFormat)
 
-      tabFormat.className = `${isFormat ? 'tab-active' : 'tab-inactive'} px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150`
-      tabDiff.className = `${!isFormat ? 'tab-active' : 'tab-inactive'} px-3 py-1.5 text-xs font-medium rounded transition-colors duration-150`
+      tabFormat.className = `tab-base ${isFormat ? 'tab-active' : 'tab-inactive'}`
+      tabDiff.className = `tab-base ${!isFormat ? 'tab-active' : 'tab-inactive'}`
     }
 
     tabFormat.addEventListener('click', () => setMode('format'))
