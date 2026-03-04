@@ -10,8 +10,8 @@
 
 | 应用 | 描述 |
 |------|------|
-| [扫雷](https://html.viki.moe/minesweeper.html) | Claude Code 利用 `single-html-app` Skill 完成的扫雷游戏 |
-| [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版格式化工具，基于 pangu.js 自动插入间距空格，支持差异对比高亮 |
+| [扫雷](https://html.viki.moe/minesweeper.html) | 经典扫雷游戏 |
+| [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版格式化/差异对比工具 |
 
 ## 添加新应用
 
