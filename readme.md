@@ -4,14 +4,14 @@
 
 ## 在线访问
 
-- [单文件 HTML 应用集合](https://vikiboss.github.io/single-html-app/)
+- [单文件 HTML 应用集合](https://html.viki.moe/)
 
 ## 应用列表
 
 | 应用 | 描述 |
 |------|------|
-| [扫雷](https://vikiboss.github.io/single-html-app/minesweeper.html) | Claude Code 利用 `single-html-app` Skill 完成的扫雷游戏 |
-| [盘古之白](https://vikiboss.github.io/single-html-app/pangu.html) | 中英文排版格式化工具，基于 pangu.js 自动插入间距空格，支持差异对比高亮 |
+| [扫雷](https://html.viki.moe/minesweeper.html) | Claude Code 利用 `single-html-app` Skill 完成的扫雷游戏 |
+| [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版格式化工具，基于 pangu.js 自动插入间距空格，支持差异对比高亮 |
 
 ## 添加新应用
 
