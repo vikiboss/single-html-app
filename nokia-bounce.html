@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nokia Bounce — 滚球</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --bg: #0a0a12;
+        --lcd-bg: #9bbc0f;
+        --lcd-dark: #0f380f;
+        --lcd-mid: #306230;
+        --lcd-light: #8bac0f;
+        --phone-body: linear-gradient(170deg, #2c2c3a 0%, #1c1c26 50%, #222230 100%);
+        --btn-bg: linear-gradient(180deg, #32323e 0%, #222230 100%);
+      }
+
+      body {
+        background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a1a2e 0%, #0a0a12 70%);
+        min-height: 100svh;
+      }
+
+      .phone-shell {
+        background: var(--phone-body);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset -1px 0 0 rgba(255, 255, 255, 0.02),
+          0 40px 100px rgba(0, 0, 0, 0.95),
+          0 0 0 1px rgba(255, 255, 255, 0.04),
+          0 0 80px rgba(155, 188, 15, 0.06);
+      }
+
+      .screen-bezel {
+        background: #060609;
+        box-shadow:
+          inset 0 3px 14px rgba(0, 0, 0, 0.98),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.9);
+      }
+
+      .lcd-wrap {
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* CRT scanlines — Tailwind cannot express repeating-linear-gradient */
+      .lcd-scanlines {
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.07) 3px,
+          rgba(0, 0, 0, 0.07) 4px
+        );
+        pointer-events: none;
+      }
+
+      /* LCD glass glare */
+      .lcd-glare {
+        background: linear-gradient(170deg, rgba(255, 255, 255, 0.05) 0%, transparent 55%);
+        pointer-events: none;
+      }
+
+      .btn-round {
+        background: var(--btn-bg);
+        box-shadow:
+          0 4px 8px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 0 0 1px rgba(0, 0, 0, 0.6);
+        transition:
+          box-shadow 0.08s ease,
+          transform 0.08s ease,
+          background 0.08s ease;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+      }
+
+      .btn-round:active,
+      .btn-round.pressed {
+        background: linear-gradient(180deg, #1a1a22 0%, #141418 100%);
+        box-shadow:
+          0 1px 4px rgba(0, 0, 0, 0.7),
+          inset 0 2px 6px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(0, 0, 0, 0.6);
+        transform: translateY(1px);
+      }
+
+      .btn-ok {
+        background: radial-gradient(circle at 38% 35%, #3a3a4e, #1e1e28);
+        box-shadow:
+          0 4px 10px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.07),
+          0 0 0 1px rgba(0, 0, 0, 0.6);
+        transition:
+          box-shadow 0.08s ease,
+          transform 0.08s ease;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .btn-ok:active {
+        background: radial-gradient(circle at 38% 35%, #22222e, #101014);
+        transform: translateY(1px) scale(0.96);
+        box-shadow:
+          0 1px 5px rgba(0, 0, 0, 0.7),
+          inset 0 2px 6px rgba(0, 0, 0, 0.5);
+      }
+
+      .btn-soft {
+        background: var(--btn-bg);
+        box-shadow:
+          0 3px 6px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04),
+          0 0 0 1px rgba(0, 0, 0, 0.5);
+        transition:
+          box-shadow 0.08s,
+          transform 0.08s;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .btn-soft:active {
+        transform: translateY(1px);
+        box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.6),
+          inset 0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+
+      @keyframes phone-shake {
+        0%,
+        100% {
+          transform: translateX(0) rotate(0deg);
+        }
+        15% {
+          transform: translateX(-5px) rotate(-1deg);
+        }
+        30% {
+          transform: translateX(5px) rotate(1deg);
+        }
+        45% {
+          transform: translateX(-4px) rotate(-0.5deg);
+        }
+        60% {
+          transform: translateX(4px) rotate(0.5deg);
+        }
+        75% {
+          transform: translateX(-2px);
+        }
+      }
+
+      .shake {
+        animation: phone-shake 0.45s ease;
+      }
+
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+    </style>
+  </head>
+  <body class="flex items-center justify-center min-h-svh p-4">
+    <div class="flex flex-col items-center gap-5">
+      <!-- Nokia Phone Shell -->
+      <div
+        id="phoneShell"
+        class="phone-shell rounded-[38px] flex flex-col items-center pt-5 pb-7 px-6 w-[310px] sm:w-[324px]"
+      >
+        <!-- Top decorations -->
+        <div class="flex items-center justify-between w-full mb-4 px-1">
+          <div class="flex gap-1.5">
+            <div class="w-1.5 h-1.5 rounded-full bg-[#252532]"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-[#252532]"></div>
+          </div>
+          <span class="text-[11px] font-bold tracking-[0.32em] text-[#38384a] uppercase select-none"
+            >Nokia</span
+          >
+          <!-- Camera / sensor -->
+          <div
+            class="w-3.5 h-3.5 rounded-full border border-[#282832] flex items-center justify-center bg-[#18181e]"
+          >
+            <div class="w-1.5 h-1.5 rounded-full bg-[#0e0e12]"></div>
+          </div>
+        </div>
+
+        <!-- Screen -->
+        <div class="screen-bezel rounded-md w-full p-2">
+          <div class="lcd-wrap rounded-sm">
+            <canvas id="gameCanvas" width="274" height="352"></canvas>
+            <div class="lcd-scanlines absolute inset-0 rounded-sm"></div>
+            <div class="lcd-glare absolute inset-0 rounded-sm"></div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="flex items-center gap-2 w-full mt-4 mb-3 px-3">
+          <div class="flex-1 h-px bg-[#242430]"></div>
+          <div class="flex gap-1">
+            <div class="w-1 h-1 rounded-full bg-[#242430]"></div>
+            <div class="w-1 h-1 rounded-full bg-[#242430]"></div>
+            <div class="w-1 h-1 rounded-full bg-[#242430]"></div>
+          </div>
+          <div class="flex-1 h-px bg-[#242430]"></div>
+        </div>
+
+        <!-- D-pad row -->
+        <div class="flex items-center gap-3.5 mt-1">
+          <!-- Left -->
+          <button
+            id="leftBtn"
+            class="btn-round rounded-full w-[54px] h-[54px] flex items-center justify-center"
+            aria-label="向左"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#4a4a60">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+          </button>
+
+          <!-- OK center -->
+          <button
+            id="startBtn"
+            class="btn-ok rounded-full w-11 h-11 flex items-center justify-center"
+            aria-label="开始"
+          >
+            <span class="text-[10px] font-bold text-[#484860] tracking-wider select-none"
+              >OK</span
+            >
+          </button>
+
+          <!-- Right -->
+          <button
+            id="rightBtn"
+            class="btn-round rounded-full w-[54px] h-[54px] flex items-center justify-center"
+            aria-label="向右"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#4a4a60">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Soft keys row -->
+        <div class="flex gap-3 mt-4">
+          <button class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
+            >菜单</button
+          >
+          <button class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
+            >返回</button
+          >
+        </div>
+
+        <!-- Carrier text -->
+        <div class="mt-5 text-[9px] tracking-[0.28em] text-[#202028] uppercase select-none">
+          Connecting People
+        </div>
+      </div>
+
+      <!-- Keyboard hint -->
+      <div class="text-[#2e2e3e] text-[11px] tracking-wide select-none">
+        ← → 移动 &nbsp;·&nbsp; Enter / OK 开始
+      </div>
+    </div>
+
+    <script type="module">
+      const canvas = document.getElementById('gameCanvas')
+      const ctx = canvas.getContext('2d')
+      const W = canvas.width   // 274
+      const H = canvas.height  // 352
+      const shell = document.getElementById('phoneShell')
+
+      // ── Nokia LCD palette ───────────────────────────────────────────────
+      const C = {
+        bg:    '#9bbc0f',
+        dark:  '#0f380f',
+        mid:   '#306230',
+        light: '#8bac0f',
+      }
+
+      // ── Game constants ──────────────────────────────────────────────────
+      const BALL_R      = 9
+      const PLAT_H      = 7
+      const GRAVITY     = 0.42
+      const MAX_VX      = 5.5
+      const GND_ACCEL   = 1.5
+      const AIR_ACCEL   = 0.7
+      const FRICTION_G  = 0.75
+      const FRICTION_A  = 0.95
+      const TERM_VY     = 13
+      const INIT_SCROLL = 1.25
+      const PLAT_GAP_Y  = 112  // vertical spacing between platforms
+      const REACH       = 75   // max horizontal distance between adjacent platforms
+
+      // Fixed-timestep loop: 60 physics ticks / second
+      const TICK_MS = 1000 / 60
+
+      // ── State ───────────────────────────────────────────────────────────
+      let gameState = 'menu'  // 'menu' | 'playing' | 'dead'
+      let score     = 0
+      let best      = parseInt(localStorage.getItem('nokia_bounce_best') || '0')
+      let scrollSpeed = INIT_SCROLL
+      let tick      = 0       // physics tick count
+      let blinkTick = 0       // used for blinking text
+      let deadTicks = 0
+
+      let platforms = []
+      let ball      = null
+      let particles = []
+
+      // ── Input state ─────────────────────────────────────────────────────
+      const keys = { left: false, right: false }
+
+      // Keyboard
+      document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') keys.left  = true
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true
+        if ((e.key === 'Enter' || e.key === ' ') && gameState !== 'playing') {
+          e.preventDefault()
+          startGame()
+        }
+      })
+      document.addEventListener('keyup', e => {
+        if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') keys.left  = false
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false
+      })
+
+      // Buttons
+      function bindBtn(btn, key) {
+        btn.addEventListener('pointerdown', e => {
+          e.preventDefault()
+          keys[key] = true
+          btn.classList.add('pressed')
+        })
+        const release = () => { keys[key] = false; btn.classList.remove('pressed') }
+        btn.addEventListener('pointerup',    release)
+        btn.addEventListener('pointerleave', release)
+        btn.addEventListener('pointercancel',release)
+      }
+      bindBtn(document.getElementById('leftBtn'),  'left')
+      bindBtn(document.getElementById('rightBtn'), 'right')
+
+      document.getElementById('startBtn').addEventListener('click', () => {
+        if (gameState !== 'playing') startGame()
+      })
+
+      // Canvas touch: left half = left, right half = right
+      const getCanvasX = touch => {
+        const r = canvas.getBoundingClientRect()
+        return (touch.clientX - r.left) * (W / r.width)
+      }
+      canvas.addEventListener('touchstart', e => {
+        e.preventDefault()
+        if (gameState !== 'playing') { startGame(); return }
+        const x = getCanvasX(e.touches[0])
+        keys.left  = x < W / 2
+        keys.right = x >= W / 2
+      }, { passive: false })
+      canvas.addEventListener('touchmove', e => {
+        e.preventDefault()
+        const x = getCanvasX(e.touches[0])
+        keys.left  = x < W / 2
+        keys.right = x >= W / 2
+      }, { passive: false })
+      canvas.addEventListener('touchend', e => {
+        e.preventDefault()
+        keys.left = keys.right = false
+      }, { passive: false })
+
+      // ── Platform helpers ─────────────────────────────────────────────────
+      function makePlatform(y, prev, isFirst) {
+        const minW = isFirst ? 120 : 58
+        const maxW = isFirst ? 150 : 152
+        const w = minW + Math.random() * (maxW - minW)
+        let x
+        if (isFirst || !prev) {
+          x = (W - w) / 2
+        } else {
+          // Constrain so ball can reach it (±REACH from prev edges)
+          const lo = Math.max(8,      prev.x - REACH)
+          const hi = Math.min(W - w - 8, prev.x + prev.w + REACH - w)
+          x = lo + Math.random() * Math.max(0, hi - lo)
+        }
+        return { x, y, w }
+      }
+
+      function ensurePlatforms() {
+        // Keep filling platforms below the screen
+        while (
+          platforms.length === 0 ||
+          platforms[platforms.length - 1].y < H + PLAT_GAP_Y
+        ) {
+          const prev  = platforms.length > 0 ? platforms[platforms.length - 1] : null
+          const baseY = prev ? prev.y : H
+          const jitter = Math.random() * 24 - 12
+          platforms.push(makePlatform(baseY + PLAT_GAP_Y + jitter, prev, false))
+        }
+      }
+
+      // ── Particles ────────────────────────────────────────────────────────
+      function spawnDust(x, y) {
+        for (let i = 0; i < 5; i++) {
+          particles.push({
+            x: x + (Math.random() - 0.5) * 18,
+            y,
+            vx: (Math.random() - 0.5) * 2.8,
+            vy: -Math.random() * 2.2 - 0.4,
+            life: 1,
+            size: Math.random() * 3 + 1,
+          })
+        }
+      }
+
+      // ── Game init ─────────────────────────────────────────────────────────
+      function startGame() {
+        gameState   = 'playing'
+        score       = 0
+        scrollSpeed = INIT_SCROLL
+        tick        = 0
+        blinkTick   = 0
+        particles   = []
+        keys.left   = keys.right = false
+
+        const sp = { x: (W - 130) / 2, y: 285, w: 130 }
+        platforms = [sp]
+        ensurePlatforms()
+
+        ball = {
+          x: sp.x + sp.w / 2,
+          y: sp.y - BALL_R,
+          vx: 0,
+          vy: 0,
+          onGround: true,
+          plat: sp,
+          prevY: sp.y - BALL_R,
+        }
+      }
+
+      // ── Physics tick (called at fixed 60Hz) ───────────────────────────────
+      function physicsTick() {
+        tick++
+        score++
+        blinkTick++
+        scrollSpeed = INIT_SCROLL + score * 0.00085
+
+        // Scroll platforms upward
+        for (const p of platforms) p.y -= scrollSpeed
+
+        // Remove platforms scrolled off the top
+        platforms = platforms.filter(p => p.y + PLAT_H > -12)
+
+        // Detach ball if its platform was culled
+        if (ball.onGround && ball.plat && !platforms.includes(ball.plat)) {
+          ball.onGround = false
+          ball.plat     = null
+        }
+
+        // Generate new platforms at the bottom
+        ensurePlatforms()
+
+        // ── Horizontal input ──
+        const accel = ball.onGround ? GND_ACCEL : AIR_ACCEL
+        const fric  = ball.onGround ? FRICTION_G : FRICTION_A
+
+        if (keys.left && !keys.right) {
+          ball.vx = Math.max(ball.vx - accel, -MAX_VX)
+        } else if (keys.right && !keys.left) {
+          ball.vx = Math.min(ball.vx + accel,  MAX_VX)
+        } else {
+          ball.vx *= fric
+          if (Math.abs(ball.vx) < 0.04) ball.vx = 0
+        }
+
+        ball.x += ball.vx
+
+        // Wall bounce
+        if (ball.x - BALL_R < 0) {
+          ball.x  = BALL_R
+          ball.vx = Math.abs(ball.vx) * 0.4
+        }
+        if (ball.x + BALL_R > W) {
+          ball.x  = W - BALL_R
+          ball.vx = -Math.abs(ball.vx) * 0.4
+        }
+
+        // ── Vertical / ground logic ──
+        ball.prevY = ball.y
+
+        if (ball.onGround && ball.plat) {
+          // Ride platform
+          ball.y = ball.plat.y - BALL_R
+          // Roll off edge?
+          if (ball.x < ball.plat.x || ball.x > ball.plat.x + ball.plat.w) {
+            ball.onGround = false
+            ball.plat     = null
+            ball.vy       = -0.3  // tiny pop
+          }
+        } else {
+          // Gravity
+          ball.vy = Math.min(ball.vy + GRAVITY, TERM_VY)
+          ball.y += ball.vy
+
+          // Platform landing (only while falling)
+          if (ball.vy > 0) {
+            const prevBot = ball.prevY + BALL_R
+            const currBot = ball.y     + BALL_R
+            for (const p of platforms) {
+              // Account for platform also moving up this tick
+              const prevPlatTop = p.y + scrollSpeed
+              if (prevBot <= prevPlatTop + 2 && currBot >= p.y) {
+                if (ball.x >= p.x - 1 && ball.x <= p.x + p.w + 1) {
+                  ball.y = p.y - BALL_R
+                  if (Math.abs(ball.vy) > 2.5) spawnDust(ball.x, p.y)
+                  ball.vy       = 0
+                  ball.onGround = true
+                  ball.plat     = p
+                  break
+                }
+              }
+            }
+          }
+        }
+
+        // ── Particles ──
+        for (const p of particles) {
+          p.vy += 0.14
+          p.x  += p.vx
+          p.y  += p.vy
+          p.life -= 0.038
+        }
+        particles = particles.filter(p => p.life > 0)
+
+        // ── Game over ──
+        if (ball.y - BALL_R > H + 40) {
+          if (score > best) {
+            best = score
+            localStorage.setItem('nokia_bounce_best', best)
+          }
+          gameState = 'dead'
+          deadTicks = 200
+          shell.classList.add('shake')
+          setTimeout(() => shell.classList.remove('shake'), 500)
+        }
+      }
+
+      // ── Draw helpers ─────────────────────────────────────────────────────
+      function txt(s, x, y, size, color, align = 'left') {
+        ctx.font      = `bold ${size}px "Courier New", monospace`
+        ctx.fillStyle = color
+        ctx.textAlign = align
+        ctx.fillText(s, x, y)
+        ctx.textAlign = 'left'
+      }
+
+      // ── Draw scenes ─────────────────────────────────────────────────────
+      function drawGame() {
+        // LCD background
+        ctx.fillStyle = C.bg
+        ctx.fillRect(0, 0, W, H)
+
+        // Faint dot grid (Nokia LCD texture)
+        ctx.fillStyle = C.mid
+        ctx.globalAlpha = 0.08
+        for (let gx = 4; gx < W; gx += 8)
+          for (let gy = 32; gy < H; gy += 8)
+            ctx.fillRect(gx, gy, 1, 1)
+        ctx.globalAlpha = 1
+
+        // ── HUD ──
+        const pts = Math.floor(score / 30)
+        const lv  = Math.floor(score / 600) + 1
+        txt(`${pts}`, 8, 22, 14, C.dark)
+        txt(`LV.${lv}`, W / 2, 22, 11, C.mid, 'center')
+        txt(`BEST ${Math.floor(best / 30)}`, W - 8, 22, 10, C.mid, 'right')
+        ctx.fillStyle = C.mid
+        ctx.fillRect(0, 28, W, 1)
+
+        // Danger zone fade at bottom
+        if (ball && ball.y > H * 0.68) {
+          const t = Math.min((ball.y - H * 0.68) / (H * 0.32), 1)
+          ctx.globalAlpha = t * 0.18 * (0.6 + 0.4 * Math.sin(tick * 0.22))
+          ctx.fillStyle   = C.dark
+          ctx.fillRect(0, H * 0.68, W, H * 0.32)
+          ctx.globalAlpha = 1
+        }
+
+        // ── Platforms ──
+        for (const p of platforms) {
+          if (p.y + PLAT_H < 28 || p.y > H) continue
+          const px = Math.round(p.x), py = Math.round(p.y), pw = Math.round(p.w)
+
+          // Warn: platform about to leave top
+          const fading = py < 60
+          ctx.globalAlpha = fading ? Math.max(0.2, py / 60) : 1
+
+          // Body
+          ctx.fillStyle = C.dark
+          ctx.fillRect(px, py, pw, PLAT_H)
+          // Top sheen
+          ctx.fillStyle = C.mid
+          ctx.fillRect(px + 2, py + 1, pw - 4, 2)
+          // End caps
+          ctx.fillRect(px, py + 2, 2, PLAT_H - 2)
+          ctx.fillRect(px + pw - 2, py + 2, 2, PLAT_H - 2)
+
+          ctx.globalAlpha = 1
+        }
+
+        // ── Particles ──
+        for (const p of particles) {
+          ctx.globalAlpha = Math.max(0, p.life)
+          ctx.fillStyle   = C.mid
+          ctx.fillRect(Math.round(p.x), Math.round(p.y), Math.ceil(p.size), Math.ceil(p.size))
+        }
+        ctx.globalAlpha = 1
+
+        // ── Ball ──
+        if (ball && ball.y - BALL_R < H + 20) {
+          const bx = Math.round(ball.x)
+          const by = Math.round(ball.y)
+
+          // Ground shadow
+          if (ball.onGround) {
+            ctx.globalAlpha = 0.35
+            ctx.fillStyle   = C.mid
+            ctx.fillRect(bx - BALL_R + 1, by + BALL_R - 2, (BALL_R - 1) * 2, 3)
+            ctx.globalAlpha = 1
+          }
+
+          // Ball body
+          ctx.fillStyle = C.dark
+          ctx.beginPath()
+          ctx.arc(bx, by, BALL_R, 0, Math.PI * 2)
+          ctx.fill()
+
+          // Shine
+          ctx.fillStyle = C.light
+          ctx.beginPath()
+          ctx.arc(bx - 3, by - 3, Math.floor(BALL_R * 0.36), 0, Math.PI * 2)
+          ctx.fill()
+
+          // Stripe (Nokia ball style)
+          ctx.strokeStyle = C.mid
+          ctx.lineWidth   = 1.5
+          ctx.globalAlpha = 0.45
+          ctx.beginPath()
+          ctx.moveTo(bx - BALL_R + 3, by + 2)
+          ctx.lineTo(bx + BALL_R - 3, by + 2)
+          ctx.stroke()
+          ctx.globalAlpha = 1
+        }
+      }
+
+      function drawMenu() {
+        ctx.fillStyle = C.bg
+        ctx.fillRect(0, 0, W, H)
+
+        // Decorative zigzag lines
+        ctx.strokeStyle = C.mid
+        ctx.lineWidth   = 2
+        ctx.globalAlpha = 0.5
+        for (let i = 0; i < 5; i++) {
+          ctx.beginPath()
+          ctx.moveTo(i * 56,     72)
+          ctx.lineTo(i * 56 + 28, 80)
+          ctx.lineTo(i * 56 + 56, 72)
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.moveTo(i * 56,      H - 72)
+          ctx.lineTo(i * 56 + 28, H - 64)
+          ctx.lineTo(i * 56 + 56, H - 72)
+          ctx.stroke()
+        }
+        ctx.globalAlpha = 1
+
+        // Title
+        ctx.fillStyle = C.dark
+        ctx.font      = 'bold 30px "Courier New", monospace'
+        ctx.textAlign = 'center'
+        ctx.fillText('BOUNCE', W / 2, 132)
+        ctx.fillStyle = C.mid
+        ctx.font      = 'bold 11px "Courier New", monospace'
+        ctx.fillText('Nokia Classic', W / 2, 153)
+
+        // Mini preview
+        ctx.fillStyle = C.dark
+        ctx.fillRect(W / 2 - 55, 200, 110, PLAT_H)
+        ctx.beginPath()
+        ctx.arc(W / 2, 200 - BALL_R, BALL_R, 0, Math.PI * 2)
+        ctx.fill()
+        // shine
+        ctx.fillStyle = C.light
+        ctx.beginPath()
+        ctx.arc(W / 2 - 3, 200 - BALL_R - 3, 3, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Instructions
+        ctx.fillStyle = C.dark
+        ctx.font      = '11px "Courier New", monospace'
+        ctx.fillText('← →  控制小球左右', W / 2, 244)
+        ctx.fillText('落在平台上  不要掉落！', W / 2, 262)
+
+        // Blink start prompt
+        if (Math.floor(blinkTick / 28) % 2 === 0) {
+          ctx.fillStyle = C.dark
+          ctx.font      = 'bold 12px "Courier New", monospace'
+          ctx.fillText('[ 按 OK 或 Enter 开始 ]', W / 2, 306)
+        }
+
+        if (best > 0) {
+          ctx.fillStyle = C.mid
+          ctx.font      = '11px "Courier New", monospace'
+          ctx.fillText(`最高分  ${Math.floor(best / 30)}`, W / 2, 334)
+        }
+
+        ctx.textAlign = 'left'
+        blinkTick++
+      }
+
+      function drawDead() {
+        ctx.fillStyle = C.bg
+        ctx.fillRect(0, 0, W, H)
+
+        // Thick border
+        ctx.strokeStyle = C.dark
+        ctx.lineWidth   = 5
+        ctx.strokeRect(5, 5, W - 10, H - 10)
+        ctx.strokeStyle = C.mid
+        ctx.lineWidth   = 2
+        ctx.strokeRect(10, 10, W - 20, H - 20)
+
+        ctx.textAlign = 'center'
+
+        ctx.fillStyle = C.dark
+        ctx.font      = 'bold 24px "Courier New", monospace'
+        ctx.fillText('GAME OVER', W / 2, 128)
+
+        ctx.fillStyle = C.mid
+        ctx.font      = '11px "Courier New", monospace'
+        ctx.fillText('得分', W / 2, 168)
+        ctx.fillStyle = C.dark
+        ctx.font      = 'bold 36px "Courier New", monospace'
+        ctx.fillText(Math.floor(score / 30), W / 2, 212)
+
+        if (score >= best && best > 0) {
+          ctx.fillStyle = C.dark
+          ctx.font      = 'bold 13px "Courier New", monospace'
+          ctx.fillText('★ 新纪录！★', W / 2, 244)
+        } else if (best > 0) {
+          ctx.fillStyle = C.mid
+          ctx.font      = '11px "Courier New", monospace'
+          ctx.fillText(`最高分  ${Math.floor(best / 30)}`, W / 2, 244)
+        }
+
+        if (deadTicks < 155 && Math.floor(blinkTick / 26) % 2 === 0) {
+          ctx.fillStyle = C.dark
+          ctx.font      = '12px "Courier New", monospace'
+          ctx.fillText('[ 再来一局 ]', W / 2, 302)
+        }
+
+        ctx.textAlign = 'left'
+        blinkTick++
+        deadTicks--
+        if (deadTicks <= 0) gameState = 'menu'
+      }
+
+      // ── Main loop: fixed-timestep + requestAnimationFrame ────────────────
+      // Physics runs at exactly 60 ticks/sec regardless of display refresh rate.
+      // Rendering runs as fast as rAF (60/120/144 Hz) without accumulating extra ticks.
+      let lastTimestamp  = null
+      let accumulator    = 0
+
+      function loop(timestamp) {
+        if (lastTimestamp === null) lastTimestamp = timestamp
+
+        // Cap delta to 100ms to avoid spiral-of-death on tab focus restore
+        const delta = Math.min(timestamp - lastTimestamp, 100)
+        lastTimestamp = timestamp
+
+        if (gameState === 'playing') {
+          accumulator += delta
+          // Drain accumulated time in fixed TICK_MS steps
+          while (accumulator >= TICK_MS) {
+            physicsTick()
+            accumulator -= TICK_MS
+            // Safety: bail out if we fall behind to keep rendering responsive
+            if (accumulator > TICK_MS * 4) {
+              accumulator = 0
+              break
+            }
+          }
+          drawGame()
+        } else if (gameState === 'menu') {
+          accumulator = 0
+          drawMenu()
+        } else if (gameState === 'dead') {
+          accumulator = 0
+          drawDead()
+        }
+
+        requestAnimationFrame(loop)
+      }
+
+      requestAnimationFrame(loop)
+    </script>
+  </body>
+</html>

@@ -16,6 +16,7 @@
 | [2048](https://html.viki.moe/2048.html) | 经典 2048 游戏 |
 | [连连看](https://html.viki.moe/lianliankan.html) | 经典连连看游戏 |
 | [贪吃蛇](https://html.viki.moe/snake.html) | 经典贪吃蛇游戏 |
+| [Nokia 滚球](https://html.viki.moe/nokia-bounce.html) | 诺基亚经典滚球游戏 |
 
 ## 添加新应用
 
