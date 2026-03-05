@@ -44,8 +44,8 @@
       }
       .fade-in { animation: fadeIn 0.25s ease-out both; }
 
-      /* 禁止横向侧滑触发浏览器返回/前进手势 */
-      html, body { overscroll-behavior-x: none; touch-action: manipulation; }
+      /* 禁止横向侧滑触发浏览器返回/前进手势，以及 iOS 弹性滚动 */
+      html, body { overscroll-behavior: none; touch-action: manipulation; }
     </style>
   </head>
   <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex items-center justify-center p-4">
