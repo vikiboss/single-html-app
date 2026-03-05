@@ -107,8 +107,12 @@
     <!-- 标题栏 -->
     <div class="relative z-10 w-full max-w-[720px] px-4 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center">
-        <svg class="w-5 h-5 text-[var(--accent-contrast)]" viewBox="0 0 20 20" fill="currentColor">
+        <div class="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center">
+          <svg
+            class="w-5 h-5 text-[var(--accent-contrast)]"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
             <rect x="3" y="3" width="6" height="6" rx="1" />
             <rect x="11" y="3" width="6" height="6" rx="1" opacity=".5" />
             <rect x="3" y="11" width="6" height="6" rx="1" opacity=".5" />
@@ -147,7 +151,10 @@
     </div>
 
     <!-- 游戏画布 -->
-    <div class="relative z-10 w-full max-w-[760px] px-4 flex items-center justify-center" id="boardFrame">
+    <div
+      class="relative z-10 w-full max-w-[760px] px-4 flex items-center justify-center"
+      id="boardFrame"
+    >
       <div class="relative" id="canvasWrap">
         <canvas id="game" class="rounded-md block"></canvas>
         <!-- 胜利覆盖层 -->
@@ -164,7 +171,7 @@
           </div>
           <button
             id="nextLevelBtn"
-          class="mt-2 px-5 py-2 rounded bg-[var(--accent)] text-[var(--accent-contrast)] text-sm font-semibold hover:brightness-110 active:brightness-90 transition-all"
+            class="mt-2 px-5 py-2 rounded bg-[var(--accent)] text-[var(--accent-contrast)] text-sm font-semibold hover:brightness-110 active:brightness-90 transition-all"
           >
             下一关
           </button>
@@ -269,7 +276,9 @@
     </div>
 
     <!-- 按键提示 -->
-    <div class="relative z-10 mt-2 flex flex-wrap items-center justify-center gap-3 text-xs text-[var(--fg-muted)] px-4">
+    <div
+      class="relative z-10 mt-2 flex flex-wrap items-center justify-center gap-3 text-xs text-[var(--fg-muted)] px-4"
+    >
       <span>↑↓←→ / WASD 移动</span>
       <span class="w-px h-3 bg-[var(--border)]"></span>
       <span>Z 撤销</span>
@@ -709,9 +718,9 @@
           dot.className = [
             'w-6 h-6 rounded text-[10px] font-semibold transition-all tabular-nums',
             i === currentLevel
-              ? 'bg-[var(--accent)] text-stone-900 scale-110'
+              ? 'bg-[var(--accent)] text-[var(--accent-contrast)] scale-110'
               : done
-                ? 'bg-stone-700 text-stone-200 hover:brightness-110'
+                ? 'bg-stone-700 text-stone-200 dark:bg-stone-700 dark:text-stone-200 hover:brightness-110'
                 : 'bg-[var(--bg-overlay)] text-[var(--fg-muted)] hover:brightness-110 border border-[var(--border)]',
           ].join(' ')
           dot.textContent = i + 1
