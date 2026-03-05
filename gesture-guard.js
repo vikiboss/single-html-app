@@ -11,6 +11,8 @@
   let atLeftEdge = false
   let atRightEdge = false
   const edgeSize = 24
+  const edgeCommit = 32
+  const refreshCommit = 12
 
   window.addEventListener('touchstart', (event) => {
     if (event.touches.length !== 1) return
@@ -32,12 +34,17 @@
     const absX = Math.abs(dx)
     const absY = Math.abs(dy)
 
-    if (atTop && dy > 0 && absY > absX) {
-      event.preventDefault()
+    const edgeSwipe = (atLeftEdge && dx > 0) || (atRightEdge && dx < 0)
+    const horizontalIntent = absX > absY && absX > edgeCommit
+
+    if (edgeSwipe && horizontalIntent) {
+      tracking = false
       return
     }
-    if ((atLeftEdge && dx > 0 && absX > absY) || (atRightEdge && dx < 0 && absX > absY)) {
+
+    if (atTop && dy > 0 && absY > absX && absY > refreshCommit) {
       event.preventDefault()
+      return
     }
   }, { passive: false })
 
