@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>我的应用</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="favicon.ico" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="R2 Web" />
     <style>
       :root {
         --grain-opacity: 0.035;
@@ -67,6 +74,20 @@
       // =====================================================
       const APPS = [
         {
+          title: '扫雷',
+          description: '经典扫雷游戏',
+          href: 'minesweeper.html',
+          tags: ['游戏'],
+          date: '2026-03-04',
+        },
+        {
+          title: '盘古之白',
+          description: '中英文排版工具',
+          href: 'pangu.html',
+          tags: ['工具'],
+          date: '2026-03-04',
+        },
+        {
           title: '数独',
           description: '经典数独游戏',
           href: 'sudoku.html',
@@ -74,24 +95,27 @@
           date: '2026-03-05',
         },
         {
-          title: '盘古之白',
-          description: '中英文排版格式化/对比工具',
-          href: 'pangu.html',
-          tags: ['工具'],
-          date: '2026-03-04',
+          title: '2048',
+          description: '经典 2048 游戏',
+          href: '2048.html',
+          tags: ['游戏'],
+          date: '2026-03-05',
         },
         {
-          title: '扫雷',
-          description: '经典扫雷游戏',
-          href: 'minesweeper.html',
+          title: '连连看',
+          description: '经典连连看游戏',
+          href: 'lianliankan.html',
           tags: ['游戏'],
-          date: '2026-03-04',
+          date: '2026-03-05',
         },
-      ].toSorted((a, b) => {
-          const dateA = new Date(a.date || '1970-01-01')
-          const dateB = new Date(b.date || '1970-01-01')
-          return dateB - dateA
-      })
+        {
+          title: '贪吃蛇',
+          description: '经典贪吃蛇游戏',
+          href: 'snake.html',
+          tags: ['游戏'],
+          date: '2026-03-05',
+        },
+      ].toReversed() // 最新的应用放在最前面
 
       // =====================================================
       // 以下无需修改
@@ -99,7 +123,7 @@
 
       const ME = {
         name: '我的应用',
-        subtitle: '单页 HTML 应用工具、游戏与实验项目合集。',
+        subtitle: 'Viki 的单页 HTML 应用工具、游戏与实验项目合集。',
         github: 'https://github.com/vikiboss/single-html-app',
         author: { name: 'Viki', handle: 'vikiboss', email: 'hi@viki.moe' },
       }

@@ -11,12 +11,15 @@
 | 应用 | 描述 |
 |------|------|
 | [扫雷](https://html.viki.moe/minesweeper.html) | 经典扫雷游戏 |
-| [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版格式化/差异对比工具 |
-| [数独](https://html.viki.moe/sudoku.html) | 经典数独游戏，支持简单 / 中等 / 困难三种难度 |
+| [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版工具 |
+| [数独](https://html.viki.moe/sudoku.html) | 经典数独游戏 |
+| [2048](https://html.viki.moe/2048.html) | 经典 2048 游戏 |
+| [连连看](https://html.viki.moe/lianliankan.html) | 经典连连看游戏 |
+| [贪吃蛇](https://html.viki.moe/snake.html) | 经典贪吃蛇游戏 |
 
 ## 添加新应用
 
-编辑 `index.html` 中的 `APPS` 数组，往最前面追加：
+编辑 `index.html` 中的 `APPS` 数组：
 
 ```js
 const APPS = [

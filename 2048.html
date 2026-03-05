@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2048</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-raised: #18181b;
+      --bg-overlay: #27272a;
+      --fg: #f4f4f5;
+      --fg-muted: #a1a1aa;
+      --border: #3f3f46;
+      --accent: #f59f00;
+      --board-bg: #3b3b42;
+      --cell-bg: #52525b;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #faf9f5;
+        --bg-raised: #f0ede6;
+        --bg-overlay: #e8e4da;
+        --fg: #1a1a1a;
+        --fg-muted: #71717a;
+        --border: #d4d4d8;
+        --accent: #e67e00;
+        --board-bg: #bbada0;
+        --cell-bg: #cdc1b4;
+      }
+    }
+
+    /* Classic 2048 tile palette */
+    .t2    { background: #eee4da; color: #776e65; }
+    .t4    { background: #ede0c8; color: #776e65; }
+    .t8    { background: #f2b179; color: #f9f6f2; }
+    .t16   { background: #f59563; color: #f9f6f2; }
+    .t32   { background: #f67c5f; color: #f9f6f2; }
+    .t64   { background: #f65e3b; color: #f9f6f2; }
+    .t128  { background: #edcf72; color: #f9f6f2; font-size: 1.4rem; }
+    .t256  { background: #edcc61; color: #f9f6f2; font-size: 1.4rem; }
+    .t512  { background: #edc850; color: #f9f6f2; font-size: 1.4rem; }
+    .t1024 { background: #edc53f; color: #f9f6f2; font-size: 1.1rem; }
+    .t2048 { background: #edc22e; color: #f9f6f2; font-size: 1.1rem; box-shadow: 0 0 28px 6px rgba(237,194,46,0.45); }
+    .t-super { background: #3c3a32; color: #f9f6f2; font-size: 0.85rem; }
+
+    @keyframes pop-in {
+      0%   { transform: scale(0); opacity: 0; }
+      70%  { transform: scale(1.12); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes merge-pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.22); }
+      100% { transform: scale(1); }
+    }
+    .tile-new    { animation: pop-in    0.15s ease forwards; }
+    .tile-merged { animation: merge-pop 0.15s ease forwards; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4 bg-[var(--bg)] text-[var(--fg)]">
+  <div style="width:344px;max-width:100%">
+
+    <!-- Header -->
+    <div class="flex items-end justify-between mb-5">
+      <div>
+        <h1 class="text-5xl font-black tracking-tight leading-none text-[var(--accent)]">2048</h1>
+        <p class="text-xs mt-1.5 text-[var(--fg-muted)]">合并相同数字，达到 2048！</p>
+      </div>
+      <div class="text-center rounded px-3 py-2 min-w-[62px] bg-[var(--board-bg)]">
+        <div class="text-[10px] font-semibold tracking-[0.1em] uppercase text-[var(--fg-muted)]">分数</div>
+        <div id="score" class="text-lg font-bold leading-tight text-[var(--fg)]">0</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex justify-end mb-3">
+      <button id="btn-new"
+              class="text-sm font-medium rounded px-3 py-1.5 transition-opacity hover:opacity-70 bg-[var(--board-bg)] text-[var(--fg-muted)]">
+        新游戏
+      </button>
+    </div>
+
+    <!-- Board -->
+    <div class="relative w-fit">
+      <div id="board"
+           class="relative w-fit grid grid-cols-[repeat(4,76px)] gap-2 p-2 rounded bg-[var(--board-bg)] touch-none">
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div class="w-[76px] h-[76px] rounded bg-[var(--cell-bg)]"></div>
+        <div id="tiles" class="absolute inset-0 pointer-events-none"></div>
+      </div>
+
+      <!-- Game over / win overlay -->
+      <div id="overlay"
+           class="absolute inset-0 rounded bg-black/80 backdrop-blur-sm flex-col items-center justify-center z-20"
+           style="display:none">
+        <div id="overlay-title" class="text-3xl font-black mb-5 text-[var(--fg)]">游戏结束</div>
+        <div class="flex gap-3">
+          <button id="btn-continue"
+                  class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--bg-overlay)] text-[var(--fg)]"
+                  style="display:none">
+            继续游戏
+          </button>
+          <button id="btn-retry"
+                  class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--accent)] text-white">
+            再来一局
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hint -->
+    <p class="text-center text-xs mt-5 text-[var(--fg-muted)]">
+      方向键 / WASD 移动 · 手机端支持滑动操作
+    </p>
+  </div>
+
+  <script type="module">
+    const SIZE = 4
+    const CELL = 76
+    const GAP  = 8
+    const PAD  = 8
+    const STEP = CELL + GAP  // 84
+    const ANIM = 110         // ms
+
+    const TILE_BASE = 'absolute w-[76px] h-[76px] rounded flex items-center justify-center font-extrabold text-[1.75rem] select-none z-[2] [transition:top_0.1s_ease,left_0.1s_ease]'
+
+    // ─── State ───────────────────────────────────────────────────────────────
+    let cells     // cells[r][c] = tile | null
+    let tileList  // flat array of all alive + in-flight tiles
+    let nextId = 1
+    let score = 0
+    let gameOver  = false
+    let wonShown  = false
+    let moving    = false
+
+    // ─── DOM refs ─────────────────────────────────────────────────────────────
+    const $board     = document.getElementById('board')
+    const $tiles     = document.getElementById('tiles')
+    const $score     = document.getElementById('score')
+    const $overlay   = document.getElementById('overlay')
+    const $oTitle    = document.getElementById('overlay-title')
+    const $oContinue = document.getElementById('btn-continue')
+
+    // ─── Tile helpers ─────────────────────────────────────────────────────────
+    const tileClass = v => v <= 2048 ? 't' + v : 't-super'
+    const tileTop   = r => PAD + r * STEP
+    const tileLeft  = c => PAD + c * STEP
+
+    function createTileEl(tile, extraClass = '') {
+      const el = document.createElement('div')
+      el.id = 't' + tile.id
+      el.className = TILE_BASE + ' ' + tileClass(tile.value) + (extraClass ? ' ' + extraClass : '')
+      el.style.top  = tileTop(tile.r)  + 'px'
+      el.style.left = tileLeft(tile.c) + 'px'
+      el.textContent = tile.value
+      $tiles.appendChild(el)
+    }
+
+    function moveTileEl(tile) {
+      const el = document.getElementById('t' + tile.id)
+      if (!el) return
+      el.style.top  = tileTop(tile.r)  + 'px'
+      el.style.left = tileLeft(tile.c) + 'px'
+    }
+
+    function refreshTileEl(tile, merged = false) {
+      const el = document.getElementById('t' + tile.id)
+      if (!el) return
+      el.className = TILE_BASE + ' ' + tileClass(tile.value) + (merged ? ' tile-merged' : '')
+      el.textContent = tile.value
+    }
+
+    // ─── Game logic ───────────────────────────────────────────────────────────
+    function spawnTile() {
+      const empties = []
+      for (let r = 0; r < SIZE; r++)
+        for (let c = 0; c < SIZE; c++)
+          if (!cells[r][c]) empties.push([r, c])
+      if (!empties.length) return null
+      const [r, c] = empties[Math.floor(Math.random() * empties.length)]
+      const tile = { id: nextId++, value: Math.random() < 0.9 ? 2 : 4, r, c }
+      cells[r][c] = tile
+      tileList.push(tile)
+      return tile
+    }
+
+    function startGame() {
+      cells    = Array.from({ length: SIZE }, () => Array(SIZE).fill(null))
+      tileList = []
+      score    = 0
+      gameOver = false
+      wonShown = false
+      moving   = false
+      $overlay.style.display = 'none'
+      $tiles.innerHTML = ''
+      $score.textContent = '0'
+      createTileEl(spawnTile())
+      createTileEl(spawnTile())
+    }
+
+    function checkGameState() {
+      if (!wonShown) {
+        for (let r = 0; r < SIZE; r++)
+          for (let c = 0; c < SIZE; c++)
+            if (cells[r][c]?.value === 2048) {
+              wonShown = true
+              $oTitle.textContent = '你赢了！'
+              $oContinue.style.display = 'block'
+              $overlay.style.display = 'flex'
+              return
+            }
+      }
+      for (let r = 0; r < SIZE; r++)
+        for (let c = 0; c < SIZE; c++) {
+          if (!cells[r][c]) return
+          if (c + 1 < SIZE && cells[r][c].value === cells[r][c + 1]?.value) return
+          if (r + 1 < SIZE && cells[r][c].value === cells[r + 1][c]?.value) return
+        }
+      gameOver = true
+      $oTitle.textContent = '游戏结束'
+      $oContinue.style.display = 'none'
+      $overlay.style.display = 'flex'
+    }
+
+    function slideLine(line) {
+      const src = line.filter(Boolean)
+      const out  = []
+      let gain = 0
+      for (let i = 0; i < src.length; i++) {
+        if (i + 1 < src.length && src[i].value === src[i + 1].value) {
+          out.push({ tile: src[i], value: src[i].value * 2, consumed: src[i + 1] })
+          gain += src[i].value * 2
+          i++
+        } else {
+          out.push({ tile: src[i], value: src[i].value })
+        }
+      }
+      while (out.length < SIZE) out.push(null)
+      return { out, gain }
+    }
+
+    function move(dir) {
+      if (gameOver || moving) return
+      moving = true
+
+      const snap = cells.map(row => row.map(t => t?.id ?? 0))
+      let totalGain = 0
+      const toRemove = []
+      const toMerge  = []
+
+      for (let i = 0; i < SIZE; i++) {
+        let line
+        if      (dir === 'left')  line = cells[i].slice()
+        else if (dir === 'right') line = [...cells[i]].reverse()
+        else if (dir === 'up')    line = cells.map(row => row[i])
+        else                      line = cells.map(row => row[i]).reverse()
+
+        const { out, gain } = slideLine(line)
+        if (dir === 'right' || dir === 'down') out.reverse()
+        totalGain += gain
+
+        for (let j = 0; j < SIZE; j++) {
+          const r = (dir === 'left' || dir === 'right') ? i : j
+          const c = (dir === 'left' || dir === 'right') ? j : i
+          if (out[j]) {
+            const { tile, value, consumed } = out[j]
+            cells[r][c] = tile
+            tile.r = r
+            tile.c = c
+            if (consumed) {
+              consumed.r = r
+              consumed.c = c
+              toRemove.push(consumed.id)
+              toMerge.push({ tile, value })
+            }
+          } else {
+            cells[r][c] = null
+          }
+        }
+      }
+
+      let moved = false
+      outer: for (let r = 0; r < SIZE; r++)
+        for (let c = 0; c < SIZE; c++)
+          if ((cells[r][c]?.id ?? 0) !== snap[r][c]) { moved = true; break outer }
+
+      if (!moved) { moving = false; return }
+
+      score += totalGain
+      $score.textContent = score
+
+      tileList.forEach(moveTileEl)
+
+      setTimeout(() => {
+        toRemove.forEach(id => {
+          document.getElementById('t' + id)?.remove()
+          const idx = tileList.findIndex(t => t.id === id)
+          if (idx !== -1) tileList.splice(idx, 1)
+        })
+        toMerge.forEach(({ tile, value }) => {
+          tile.value = value
+          refreshTileEl(tile, true)
+        })
+        const spawned = spawnTile()
+        if (spawned) createTileEl(spawned, 'tile-new')
+        checkGameState()
+        moving = false
+      }, ANIM)
+    }
+
+    // ─── Input ────────────────────────────────────────────────────────────────
+    const KEY_MAP = {
+      ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
+      a: 'left', d: 'right', w: 'up', s: 'down',
+      A: 'left', D: 'right', W: 'up', S: 'down',
+    }
+    document.addEventListener('keydown', e => {
+      const dir = KEY_MAP[e.key]
+      if (dir) { e.preventDefault(); move(dir) }
+    })
+
+    let touch0 = null
+    $board.addEventListener('touchstart', e => {
+      touch0 = [e.touches[0].clientX, e.touches[0].clientY]
+    }, { passive: true })
+    $board.addEventListener('touchend', e => {
+      if (!touch0) return
+      const dx = e.changedTouches[0].clientX - touch0[0]
+      const dy = e.changedTouches[0].clientY - touch0[1]
+      touch0 = null
+      if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return
+      move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'))
+    }, { passive: true })
+
+    document.getElementById('btn-new').addEventListener('click', startGame)
+    document.getElementById('btn-retry').addEventListener('click', startGame)
+    $oContinue.addEventListener('click', () => { $overlay.style.display = 'none' })
+
+    startGame()
+  </script>
+</body>
+</html>

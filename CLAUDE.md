@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 添加新应用时，**必须同时修改以下两处**：
 
-1. **`index.html`** — 在 `APPS` 数组中最前方追加条目：
+1. **`index.html`** — 在 `APPS` 数组中添加新应用对象：
 
 ```js
 const APPS = [
