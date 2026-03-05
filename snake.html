@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>贪吃蛇</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -34,7 +37,7 @@
       }
 
       /* Manual theme overrides */
-      html[data-theme="dark"] {
+      html[data-theme='dark'] {
         --bg: #09090b;
         --bg-raised: #18181b;
         --bg-overlay: #27272a;
@@ -45,7 +48,7 @@
         --accent-dim: #16a34a;
         --food: #f43f5e;
       }
-      html[data-theme="light"] {
+      html[data-theme='light'] {
         --bg: #f4f4f5;
         --bg-raised: #ffffff;
         --bg-overlay: #e4e4e7;
@@ -58,19 +61,39 @@
       }
 
       @keyframes pop {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.08); }
-        100% { transform: scale(1); }
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
-      .pop { animation: pop 0.15s ease-out; }
+      .pop {
+        animation: pop 0.15s ease-out;
+      }
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-      .fade-in { animation: fadeIn 0.25s ease-out both; }
+      .fade-in {
+        animation: fadeIn 0.25s ease-out both;
+      }
 
       /* 禁止横向侧滑触发浏览器返回/前进手势，以及 iOS 弹性滚动 */
-      html, body { overscroll-behavior: none; touch-action: manipulation; }
+      html,
+      body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+      }
     </style>
   </head>
   <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex items-center justify-center p-4">
@@ -79,7 +102,11 @@
       <div class="w-full flex items-center justify-between">
         <div class="w-8"></div>
         <h1 class="text-base font-semibold tracking-tight">贪吃蛇</h1>
-        <button id="theme-toggle" title="切换明暗主题" class="w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
+        <button
+          id="theme-toggle"
+          title="切换明暗主题"
+          class="w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+        ></button>
       </div>
 
       <!-- Stats -->
@@ -90,7 +117,9 @@
         </div>
         <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3 text-center">
           <div class="text-xs text-[var(--fg-muted)] mb-1">最高分</div>
-          <div id="best" class="text-xl font-mono font-bold tabular-nums text-[var(--accent)]">0</div>
+          <div id="best" class="text-xl font-mono font-bold tabular-nums text-[var(--accent)]">
+            0
+          </div>
         </div>
         <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3 text-center">
           <div class="text-xs text-[var(--fg-muted)] mb-1">等级</div>
@@ -103,18 +132,31 @@
         <canvas id="canvas" class="block w-full rounded-md border border-[var(--border)]"></canvas>
 
         <!-- Overlay -->
-        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-zinc-950/85 backdrop-blur-sm fade-in">
+        <div
+          id="overlay"
+          class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-zinc-950/85 backdrop-blur-sm fade-in"
+        >
           <div id="overlay-icon" class="text-4xl mb-3 select-none">🐍</div>
           <div id="overlay-title" class="text-xl font-bold mb-1">贪吃蛇</div>
-          <div id="overlay-sub" class="text-[var(--fg-muted)] text-sm mb-6 text-center px-4">吃到食物得 1 分，撞墙或咬到自己即结束</div>
-          <button id="start-btn" class="px-6 py-2 bg-[var(--accent)] hover:bg-[var(--accent-dim)] active:scale-95 text-white rounded font-medium transition-all text-sm">
+          <div id="overlay-sub" class="text-[var(--fg-muted)] text-sm mb-6 text-center px-4">
+            吃到食物得 1 分，撞墙或咬到自己即结束
+          </div>
+          <button
+            id="start-btn"
+            class="px-6 py-2 bg-[var(--accent)] hover:bg-[var(--accent-dim)] active:scale-95 text-white rounded font-medium transition-all text-sm"
+          >
             开始游戏
           </button>
-          <div class="mt-4 text-[var(--fg-muted)] text-xs hidden sm:block">← → ↑ ↓ 或 WASD 控制 &nbsp;·&nbsp; 空格暂停</div>
+          <div class="mt-4 text-[var(--fg-muted)] text-xs hidden sm:block">
+            ← → ↑ ↓ 或 WASD 控制 &nbsp;·&nbsp; 空格暂停
+          </div>
         </div>
 
         <!-- Pause badge -->
-        <div id="pause-badge" class="hidden absolute top-2 right-2 bg-zinc-900/80 backdrop-blur-sm border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--fg-muted)]">
+        <div
+          id="pause-badge"
+          class="hidden absolute top-2 right-2 bg-zinc-900/80 backdrop-blur-sm border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--fg-muted)]"
+        >
           已暂停
         </div>
       </div>
@@ -122,18 +164,58 @@
       <!-- Mobile D-pad -->
       <div class="grid grid-cols-3 gap-2 w-36">
         <div></div>
-        <button data-dir="up" class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+        <button
+          data-dir="up"
+          class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M5 15l7-7 7 7"
+            />
+          </svg>
         </button>
         <div></div>
-        <button data-dir="left" class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        <button
+          data-dir="left"
+          class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
         </button>
-        <button data-dir="down" class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        <button
+          data-dir="down"
+          class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
         </button>
-        <button data-dir="right" class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        <button
+          data-dir="right"
+          class="dpad-btn bg-[var(--bg-raised)] border border-[var(--border)] rounded-md h-10 flex items-center justify-center active:bg-[var(--bg-overlay)] active:scale-95 transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
         </button>
       </div>
     </div>
@@ -313,24 +395,44 @@
         const es = Math.max(2, CELL * 0.1)
         const em = Math.floor(CELL * 0.28)
         if (dir.x === 1) {
-          ctx.beginPath(); ctx.arc(head.x * CELL + CELL - em, head.y * CELL + em, es, 0, Math.PI * 2); ctx.fill()
-          ctx.beginPath(); ctx.arc(head.x * CELL + CELL - em, head.y * CELL + CELL - em, es, 0, Math.PI * 2); ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + CELL - em, head.y * CELL + em, es, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + CELL - em, head.y * CELL + CELL - em, es, 0, Math.PI * 2)
+          ctx.fill()
         } else if (dir.x === -1) {
-          ctx.beginPath(); ctx.arc(head.x * CELL + em, head.y * CELL + em, es, 0, Math.PI * 2); ctx.fill()
-          ctx.beginPath(); ctx.arc(head.x * CELL + em, head.y * CELL + CELL - em, es, 0, Math.PI * 2); ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + em, head.y * CELL + em, es, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + em, head.y * CELL + CELL - em, es, 0, Math.PI * 2)
+          ctx.fill()
         } else if (dir.y === -1) {
-          ctx.beginPath(); ctx.arc(head.x * CELL + em, head.y * CELL + em, es, 0, Math.PI * 2); ctx.fill()
-          ctx.beginPath(); ctx.arc(head.x * CELL + CELL - em, head.y * CELL + em, es, 0, Math.PI * 2); ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + em, head.y * CELL + em, es, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + CELL - em, head.y * CELL + em, es, 0, Math.PI * 2)
+          ctx.fill()
         } else {
-          ctx.beginPath(); ctx.arc(head.x * CELL + em, head.y * CELL + CELL - em, es, 0, Math.PI * 2); ctx.fill()
-          ctx.beginPath(); ctx.arc(head.x * CELL + CELL - em, head.y * CELL + CELL - em, es, 0, Math.PI * 2); ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + em, head.y * CELL + CELL - em, es, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(head.x * CELL + CELL - em, head.y * CELL + CELL - em, es, 0, Math.PI * 2)
+          ctx.fill()
         }
       }
 
       function init() {
         const mx = Math.floor(COLS / 2)
         const my = Math.floor(ROWS / 2)
-        snake = [{ x: mx, y: my }, { x: mx - 1, y: my }, { x: mx - 2, y: my }]
+        snake = [
+          { x: mx, y: my },
+          { x: mx - 1, y: my },
+          { x: mx - 2, y: my },
+        ]
         dir = { x: 1, y: 0 }
         nextDir = { x: 1, y: 0 }
         score = 0
@@ -370,7 +472,9 @@
         draw()
       }
 
-      function tick() { if (!paused) step() }
+      function tick() {
+        if (!paused) step()
+      }
 
       function gameOver() {
         clearInterval(gameLoop)
@@ -403,10 +507,18 @@
       // Keyboard
       document.addEventListener('keydown', e => {
         const map = {
-          ArrowUp: { x: 0, y: -1 }, w: { x: 0, y: -1 }, W: { x: 0, y: -1 },
-          ArrowDown: { x: 0, y: 1 }, s: { x: 0, y: 1 }, S: { x: 0, y: 1 },
-          ArrowLeft: { x: -1, y: 0 }, a: { x: -1, y: 0 }, A: { x: -1, y: 0 },
-          ArrowRight: { x: 1, y: 0 }, d: { x: 1, y: 0 }, D: { x: 1, y: 0 },
+          ArrowUp: { x: 0, y: -1 },
+          w: { x: 0, y: -1 },
+          W: { x: 0, y: -1 },
+          ArrowDown: { x: 0, y: 1 },
+          s: { x: 0, y: 1 },
+          S: { x: 0, y: 1 },
+          ArrowLeft: { x: -1, y: 0 },
+          a: { x: -1, y: 0 },
+          A: { x: -1, y: 0 },
+          ArrowRight: { x: 1, y: 0 },
+          d: { x: 1, y: 0 },
+          D: { x: 1, y: 0 },
         }
         const nd = map[e.key]
         if (nd) {
@@ -431,7 +543,12 @@
       document.querySelectorAll('.dpad-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           if (!running) return
-          const dirMap = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } }
+          const dirMap = {
+            up: { x: 0, y: -1 },
+            down: { x: 0, y: 1 },
+            left: { x: -1, y: 0 },
+            right: { x: 1, y: 0 },
+          }
           const nd = dirMap[btn.dataset.dir]
           if (nd.x === -dir.x && nd.y === -dir.y) return
           nextDir = nd
@@ -444,31 +561,44 @@
 
       // Touch swipe on canvas
       let touchStart = null
-      canvas.addEventListener('touchstart', e => {
-        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-        e.preventDefault()
-      }, { passive: false })
-      canvas.addEventListener('touchmove', e => {
-        e.preventDefault()  // 阻断拖动期间的侧滑返回手势
-      }, { passive: false })
-      canvas.addEventListener('touchend', e => {
-        if (!touchStart || !running) return
-        const dx = e.changedTouches[0].clientX - touchStart.x
-        const dy = e.changedTouches[0].clientY - touchStart.y
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
-        let nd
-        if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 }
-        else nd = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 }
-        if (nd.x === -dir.x && nd.y === -dir.y) return
-        nextDir = nd
-        touchStart = null
-        e.preventDefault()
-      }, { passive: false })
+      canvas.addEventListener(
+        'touchstart',
+        e => {
+          touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+          e.preventDefault()
+        },
+        { passive: false },
+      )
+      canvas.addEventListener(
+        'touchmove',
+        e => {
+          e.preventDefault() // 阻断拖动期间的侧滑返回手势
+        },
+        { passive: false },
+      )
+      canvas.addEventListener(
+        'touchend',
+        e => {
+          if (!touchStart || !running) return
+          const dx = e.changedTouches[0].clientX - touchStart.x
+          const dy = e.changedTouches[0].clientY - touchStart.y
+          if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+          let nd
+          if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 }
+          else nd = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 }
+          if (nd.x === -dir.x && nd.y === -dir.y) return
+          nextDir = nd
+          touchStart = null
+          e.preventDefault()
+        },
+        { passive: false },
+      )
 
       // Init
       resize()
       init()
       draw()
     </script>
+    <script src="gesture-guard.js"></script>
   </body>
 </html>

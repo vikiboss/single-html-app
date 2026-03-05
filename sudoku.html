@@ -1,369 +1,401 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>数独</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class' }</script>
-  <style>
-      html, body { touch-action: manipulation; }
-    :root {
-      --accent-dim: rgba(99,102,241,0.11);
-      --accent-mid: rgba(99,102,241,0.25);
-      --accent-sel: rgba(99,102,241,0.38);
-    }
-    @media (prefers-color-scheme: light) {
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>数独</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: 'class' }
+    </script>
+    <style>
+      html,
+      body {
+        touch-action: manipulation;
+      }
       :root {
-        --accent-dim: rgba(79,70,229,0.08);
-        --accent-mid: rgba(79,70,229,0.17);
-        --accent-sel: rgba(79,70,229,0.26);
+        --accent-dim: rgba(99, 102, 241, 0.11);
+        --accent-mid: rgba(99, 102, 241, 0.25);
+        --accent-sel: rgba(99, 102, 241, 0.38);
       }
-    }
-    /* Manual override via JS */
-    html[data-theme="dark"] {
-      --accent-dim: rgba(99,102,241,0.11);
-      --accent-mid: rgba(99,102,241,0.25);
-      --accent-sel: rgba(99,102,241,0.38);
-    }
-    html[data-theme="light"] {
-      --accent-dim: rgba(79,70,229,0.08);
-      --accent-mid: rgba(79,70,229,0.17);
-      --accent-sel: rgba(79,70,229,0.26);
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: 9999;
-    }
-    .fs-cell   { font-size: clamp(15px, 3.5vw, 22px); }
-    .fs-note   { font-size: clamp(6px,  1.3vw, 10px); }
-    .fs-numpad { font-size: clamp(14px, 4.5vw, 22px); }
-    .fs-count  { font-size: clamp(7px,  1.6vw, 10px); }
-
-    #notes-btn.notes-active {
-      color: rgb(99,102,241);
-      border-color: rgb(99,102,241);
-      background-color: rgba(99,102,241,0.1);
-    }
-  </style>
-</head>
-<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
-
-  <div id="app" class="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-5"></div>
-
-  <script type="module">
-    // ── Sudoku Engine ──────────────────────────────────────────────────────────
-
-    const shuffle = arr => {
-      const a = [...arr]
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]]
+      @media (prefers-color-scheme: light) {
+        :root {
+          --accent-dim: rgba(79, 70, 229, 0.08);
+          --accent-mid: rgba(79, 70, 229, 0.17);
+          --accent-sel: rgba(79, 70, 229, 0.26);
+        }
       }
-      return a
-    }
-
-    const isValidPlacement = (board, row, col, num) => {
-      for (let i = 0; i < 9; i++) {
-        if (board[row][i] === num || board[i][col] === num) return false
+      /* Manual override via JS */
+      html[data-theme='dark'] {
+        --accent-dim: rgba(99, 102, 241, 0.11);
+        --accent-mid: rgba(99, 102, 241, 0.25);
+        --accent-sel: rgba(99, 102, 241, 0.38);
       }
-      const br = Math.floor(row / 3) * 3
-      const bc = Math.floor(col / 3) * 3
-      for (let i = 0; i < 3; i++)
-        for (let j = 0; j < 3; j++)
-          if (board[br + i][bc + j] === num) return false
-      return true
-    }
+      html[data-theme='light'] {
+        --accent-dim: rgba(79, 70, 229, 0.08);
+        --accent-mid: rgba(79, 70, 229, 0.17);
+        --accent-sel: rgba(79, 70, 229, 0.26);
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: 0.03;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      .fs-cell {
+        font-size: clamp(15px, 3.5vw, 22px);
+      }
+      .fs-note {
+        font-size: clamp(6px, 1.3vw, 10px);
+      }
+      .fs-numpad {
+        font-size: clamp(14px, 4.5vw, 22px);
+      }
+      .fs-count {
+        font-size: clamp(7px, 1.6vw, 10px);
+      }
 
-    const generateFullBoard = () => {
-      const b = Array.from({ length: 9 }, () => Array(9).fill(0))
-      const fill = () => {
-        for (let r = 0; r < 9; r++)
-          for (let c = 0; c < 9; c++)
-            if (b[r][c] === 0) {
-              for (const n of shuffle([1,2,3,4,5,6,7,8,9])) {
-                if (isValidPlacement(b, r, c, n)) {
-                  b[r][c] = n
-                  if (fill()) return true
-                  b[r][c] = 0
-                }
-              }
-              return false
-            }
+      #notes-btn.notes-active {
+        color: rgb(99, 102, 241);
+        border-color: rgb(99, 102, 241);
+        background-color: rgba(99, 102, 241, 0.1);
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+    <div
+      id="app"
+      class="min-h-screen flex flex-col items-center justify-center gap-4 px-4 py-5"
+    ></div>
+
+    <script type="module">
+      // ── Sudoku Engine ──────────────────────────────────────────────────────────
+
+      const shuffle = arr => {
+        const a = [...arr]
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[a[i], a[j]] = [a[j], a[i]]
+        }
+        return a
+      }
+
+      const isValidPlacement = (board, row, col, num) => {
+        for (let i = 0; i < 9; i++) {
+          if (board[row][i] === num || board[i][col] === num) return false
+        }
+        const br = Math.floor(row / 3) * 3
+        const bc = Math.floor(col / 3) * 3
+        for (let i = 0; i < 3; i++)
+          for (let j = 0; j < 3; j++) if (board[br + i][bc + j] === num) return false
         return true
       }
-      fill()
-      return b
-    }
 
-    const countSolutions = (board, limit = 2) => {
-      const b = board.map(r => [...r])
-      let count = 0
-      const solve = () => {
-        for (let r = 0; r < 9; r++)
-          for (let c = 0; c < 9; c++)
-            if (b[r][c] === 0) {
-              for (let n = 1; n <= 9; n++) {
-                if (isValidPlacement(b, r, c, n)) {
-                  b[r][c] = n
-                  solve()
-                  if (count >= limit) return
-                  b[r][c] = 0
+      const generateFullBoard = () => {
+        const b = Array.from({ length: 9 }, () => Array(9).fill(0))
+        const fill = () => {
+          for (let r = 0; r < 9; r++)
+            for (let c = 0; c < 9; c++)
+              if (b[r][c] === 0) {
+                for (const n of shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])) {
+                  if (isValidPlacement(b, r, c, n)) {
+                    b[r][c] = n
+                    if (fill()) return true
+                    b[r][c] = 0
+                  }
                 }
+                return false
               }
-              return
-            }
-        count++
+          return true
+        }
+        fill()
+        return b
       }
-      solve()
-      return count
-    }
 
-    const REMOVALS = { easy: 36, medium: 46, hard: 56 }
-
-    const generatePuzzle = difficulty => {
-      const solution = generateFullBoard()
-      const puzzle = solution.map(r => [...r])
-      let removed = 0
-      for (const idx of shuffle(Array.from({ length: 81 }, (_, i) => i))) {
-        if (removed >= REMOVALS[difficulty]) break
-        const r = Math.floor(idx / 9), c = idx % 9
-        const backup = puzzle[r][c]
-        puzzle[r][c] = 0
-        if (countSolutions(puzzle) === 1) removed++
-        else puzzle[r][c] = backup
+      const countSolutions = (board, limit = 2) => {
+        const b = board.map(r => [...r])
+        let count = 0
+        const solve = () => {
+          for (let r = 0; r < 9; r++)
+            for (let c = 0; c < 9; c++)
+              if (b[r][c] === 0) {
+                for (let n = 1; n <= 9; n++) {
+                  if (isValidPlacement(b, r, c, n)) {
+                    b[r][c] = n
+                    solve()
+                    if (count >= limit) return
+                    b[r][c] = 0
+                  }
+                }
+                return
+              }
+          count++
+        }
+        solve()
+        return count
       }
-      return { puzzle, solution }
-    }
 
-    // ── State ──────────────────────────────────────────────────────────────────
+      const REMOVALS = { easy: 36, medium: 46, hard: 56 }
 
-    let st = null
-
-    const initState = difficulty => {
-      const { puzzle, solution } = generatePuzzle(difficulty)
-      return {
-        puzzle, solution,
-        board: puzzle.map(r => [...r]),
-        notes: Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set())),
-        given: Array.from({ length: 9 }, (_, r) => Array.from({ length: 9 }, (_, c) => puzzle[r][c] !== 0)),
-        errors: new Set(),
-        selected: null,
-        notesMode: false,
-        difficulty,
-        mistakes: 0,
-        timer: 0,
-        history: [],
-        completed: false,
+      const generatePuzzle = difficulty => {
+        const solution = generateFullBoard()
+        const puzzle = solution.map(r => [...r])
+        let removed = 0
+        for (const idx of shuffle(Array.from({ length: 81 }, (_, i) => i))) {
+          if (removed >= REMOVALS[difficulty]) break
+          const r = Math.floor(idx / 9),
+            c = idx % 9
+          const backup = puzzle[r][c]
+          puzzle[r][c] = 0
+          if (countSolutions(puzzle) === 1) removed++
+          else puzzle[r][c] = backup
+        }
+        return { puzzle, solution }
       }
-    }
 
-    const cellKey = (r, c) => r * 9 + c
+      // ── State ──────────────────────────────────────────────────────────────────
 
-    // ── Game Actions ───────────────────────────────────────────────────────────
+      let st = null
 
-    const selectCell = (r, c) => {
-      st.selected = [r, c]
-      renderGrid()
-      renderNumPad()
-    }
+      const initState = difficulty => {
+        const { puzzle, solution } = generatePuzzle(difficulty)
+        return {
+          puzzle,
+          solution,
+          board: puzzle.map(r => [...r]),
+          notes: Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set())),
+          given: Array.from({ length: 9 }, (_, r) =>
+            Array.from({ length: 9 }, (_, c) => puzzle[r][c] !== 0),
+          ),
+          errors: new Set(),
+          selected: null,
+          notesMode: false,
+          difficulty,
+          mistakes: 0,
+          timer: 0,
+          history: [],
+          completed: false,
+        }
+      }
 
-    const inputNumber = num => {
-      if (!st.selected || st.completed) return
-      const [r, c] = st.selected
-      if (st.given[r][c]) return
+      const cellKey = (r, c) => r * 9 + c
 
-      st.history.push({
-        r, c,
-        value: st.board[r][c],
-        notes: new Set(st.notes[r][c]),
-        errors: new Set(st.errors),
-        mistakes: st.mistakes,
-      })
+      // ── Game Actions ───────────────────────────────────────────────────────────
 
-      if (st.notesMode) {
-        if (st.board[r][c] !== 0) return
-        if (num === 0) st.notes[r][c].clear()
-        else if (st.notes[r][c].has(num)) st.notes[r][c].delete(num)
-        else st.notes[r][c].add(num)
-      } else {
-        st.board[r][c] = num
-        st.notes[r][c].clear()
-        if (num !== 0) {
-          for (let i = 0; i < 9; i++) {
-            st.notes[r][i].delete(num)
-            st.notes[i][c].delete(num)
-          }
-          const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3
-          for (let i = 0; i < 3; i++)
-            for (let j = 0; j < 3; j++)
-              st.notes[br + i][bc + j].delete(num)
-          const key = cellKey(r, c)
-          if (st.solution[r][c] !== num) {
-            st.errors.add(key)
-            st.mistakes++
-            document.getElementById('mistakes-val').textContent = st.mistakes
-          } else {
-            st.errors.delete(key)
-            checkCompletion()
-          }
+      const selectCell = (r, c) => {
+        st.selected = [r, c]
+        renderGrid()
+        renderNumPad()
+      }
+
+      const inputNumber = num => {
+        if (!st.selected || st.completed) return
+        const [r, c] = st.selected
+        if (st.given[r][c]) return
+
+        st.history.push({
+          r,
+          c,
+          value: st.board[r][c],
+          notes: new Set(st.notes[r][c]),
+          errors: new Set(st.errors),
+          mistakes: st.mistakes,
+        })
+
+        if (st.notesMode) {
+          if (st.board[r][c] !== 0) return
+          if (num === 0) st.notes[r][c].clear()
+          else if (st.notes[r][c].has(num)) st.notes[r][c].delete(num)
+          else st.notes[r][c].add(num)
         } else {
-          st.errors.delete(cellKey(r, c))
-        }
-      }
-      renderGrid()
-      renderNumPad()
-    }
-
-    const undo = () => {
-      if (!st.history.length) return
-      const snap = st.history.pop()
-      st.board[snap.r][snap.c] = snap.value
-      st.notes[snap.r][snap.c] = snap.notes
-      st.errors = snap.errors
-      st.mistakes = snap.mistakes
-      document.getElementById('mistakes-val').textContent = st.mistakes
-      renderGrid()
-      renderNumPad()
-    }
-
-    const hint = () => {
-      if (!st.selected || st.completed) return
-      const [r, c] = st.selected
-      if (st.given[r][c] || st.board[r][c] === st.solution[r][c]) return
-      st.history.push({
-        r, c,
-        value: st.board[r][c],
-        notes: new Set(st.notes[r][c]),
-        errors: new Set(st.errors),
-        mistakes: st.mistakes,
-      })
-      st.board[r][c] = st.solution[r][c]
-      st.notes[r][c].clear()
-      st.errors.delete(cellKey(r, c))
-      checkCompletion()
-      renderGrid()
-      renderNumPad()
-    }
-
-    const checkCompletion = () => {
-      for (let r = 0; r < 9; r++)
-        for (let c = 0; c < 9; c++)
-          if (st.board[r][c] !== st.solution[r][c]) return
-      st.completed = true
-      clearInterval(timerRef)
-      setTimeout(showVictory, 400)
-    }
-
-    const countOnBoard = n => {
-      let k = 0
-      for (let r = 0; r < 9; r++)
-        for (let c = 0; c < 9; c++)
-          if (st.board[r][c] === n) k++
-      return k
-    }
-
-    // ── Timer ──────────────────────────────────────────────────────────────────
-
-    let timerRef = null
-
-    const formatTime = s => {
-      const m = Math.floor(s / 60)
-      return `${String(m).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`
-    }
-
-    const startTimer = () => {
-      clearInterval(timerRef)
-      timerRef = setInterval(() => {
-        st.timer++
-        const el = document.getElementById('timer-val')
-        if (el) el.textContent = formatTime(st.timer)
-      }, 1000)
-    }
-
-    // ── Render ─────────────────────────────────────────────────────────────────
-
-    const renderGrid = () => {
-      const grid = document.getElementById('grid')
-      if (!grid) return
-      const [sr, sc] = st.selected ?? [-1, -1]
-      const selNum = st.selected ? st.board[sr][sc] : 0
-
-      grid.innerHTML = ''
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          const val = st.board[r][c]
-          const isGiven = st.given[r][c]
-          const isSelected = r === sr && c === sc
-          const isHighlighted = !isSelected && st.selected &&
-            (sr === r || sc === c ||
-             (Math.floor(sr/3) === Math.floor(r/3) && Math.floor(sc/3) === Math.floor(c/3)))
-          const isSameNum = !isSelected && selNum !== 0 && val === selNum
-          const hasError = st.errors.has(cellKey(r, c))
-
-          const cell = document.createElement('div')
-
-          // 背景色用 CSS 变量（响应亮/暗主题）
-          const bg = isSelected   ? 'var(--accent-sel)'
-                   : isSameNum    ? 'var(--accent-mid)'
-                   : isHighlighted ? 'var(--accent-dim)'
-                   : 'transparent'
-
-          // 宫格粗边框（inline 保留，条件逻辑更清晰）
-          const bRight  = (c === 2 || c === 5) ? '2px solid #71717a' : '1px solid #3f3f4640'
-          const bBottom = (r === 2 || r === 5) ? '2px solid #71717a' : '1px solid #3f3f4640'
-
-          cell.className = 'flex items-center justify-center cursor-pointer select-none transition-[background-color] duration-75 w-full h-full'
-          cell.style.cssText = `background:${bg};border-right:${bRight};border-bottom:${bBottom};`
-          cell.addEventListener('click', () => selectCell(r, c))
-
-          if (val !== 0) {
-            const span = document.createElement('span')
-            span.className = 'fs-cell leading-none ' + (
-              hasError  ? 'text-red-400 font-medium' :
-              isGiven   ? 'text-zinc-900 dark:text-zinc-100 font-semibold' :
-                          'text-indigo-500 font-medium'
-            )
-            span.textContent = val
-            cell.appendChild(span)
-          } else if (st.notes[r][c].size > 0) {
-            const ng = document.createElement('div')
-            ng.className = 'grid grid-cols-3 grid-rows-3 w-full h-full p-0.5'
-            for (let n = 1; n <= 9; n++) {
-              const nd = document.createElement('div')
-              nd.className = 'fs-note flex items-center justify-center text-indigo-400 opacity-75 leading-none'
-              nd.textContent = st.notes[r][c].has(n) ? n : ''
-              ng.appendChild(nd)
+          st.board[r][c] = num
+          st.notes[r][c].clear()
+          if (num !== 0) {
+            for (let i = 0; i < 9; i++) {
+              st.notes[r][i].delete(num)
+              st.notes[i][c].delete(num)
             }
-            cell.appendChild(ng)
+            const br = Math.floor(r / 3) * 3,
+              bc = Math.floor(c / 3) * 3
+            for (let i = 0; i < 3; i++)
+              for (let j = 0; j < 3; j++) st.notes[br + i][bc + j].delete(num)
+            const key = cellKey(r, c)
+            if (st.solution[r][c] !== num) {
+              st.errors.add(key)
+              st.mistakes++
+              document.getElementById('mistakes-val').textContent = st.mistakes
+            } else {
+              st.errors.delete(key)
+              checkCompletion()
+            }
+          } else {
+            st.errors.delete(cellKey(r, c))
           }
+        }
+        renderGrid()
+        renderNumPad()
+      }
 
-          grid.appendChild(cell)
+      const undo = () => {
+        if (!st.history.length) return
+        const snap = st.history.pop()
+        st.board[snap.r][snap.c] = snap.value
+        st.notes[snap.r][snap.c] = snap.notes
+        st.errors = snap.errors
+        st.mistakes = snap.mistakes
+        document.getElementById('mistakes-val').textContent = st.mistakes
+        renderGrid()
+        renderNumPad()
+      }
+
+      const hint = () => {
+        if (!st.selected || st.completed) return
+        const [r, c] = st.selected
+        if (st.given[r][c] || st.board[r][c] === st.solution[r][c]) return
+        st.history.push({
+          r,
+          c,
+          value: st.board[r][c],
+          notes: new Set(st.notes[r][c]),
+          errors: new Set(st.errors),
+          mistakes: st.mistakes,
+        })
+        st.board[r][c] = st.solution[r][c]
+        st.notes[r][c].clear()
+        st.errors.delete(cellKey(r, c))
+        checkCompletion()
+        renderGrid()
+        renderNumPad()
+      }
+
+      const checkCompletion = () => {
+        for (let r = 0; r < 9; r++)
+          for (let c = 0; c < 9; c++) if (st.board[r][c] !== st.solution[r][c]) return
+        st.completed = true
+        clearInterval(timerRef)
+        setTimeout(showVictory, 400)
+      }
+
+      const countOnBoard = n => {
+        let k = 0
+        for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (st.board[r][c] === n) k++
+        return k
+      }
+
+      // ── Timer ──────────────────────────────────────────────────────────────────
+
+      let timerRef = null
+
+      const formatTime = s => {
+        const m = Math.floor(s / 60)
+        return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+      }
+
+      const startTimer = () => {
+        clearInterval(timerRef)
+        timerRef = setInterval(() => {
+          st.timer++
+          const el = document.getElementById('timer-val')
+          if (el) el.textContent = formatTime(st.timer)
+        }, 1000)
+      }
+
+      // ── Render ─────────────────────────────────────────────────────────────────
+
+      const renderGrid = () => {
+        const grid = document.getElementById('grid')
+        if (!grid) return
+        const [sr, sc] = st.selected ?? [-1, -1]
+        const selNum = st.selected ? st.board[sr][sc] : 0
+
+        grid.innerHTML = ''
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            const val = st.board[r][c]
+            const isGiven = st.given[r][c]
+            const isSelected = r === sr && c === sc
+            const isHighlighted =
+              !isSelected &&
+              st.selected &&
+              (sr === r ||
+                sc === c ||
+                (Math.floor(sr / 3) === Math.floor(r / 3) &&
+                  Math.floor(sc / 3) === Math.floor(c / 3)))
+            const isSameNum = !isSelected && selNum !== 0 && val === selNum
+            const hasError = st.errors.has(cellKey(r, c))
+
+            const cell = document.createElement('div')
+
+            // 背景色用 CSS 变量（响应亮/暗主题）
+            const bg = isSelected
+              ? 'var(--accent-sel)'
+              : isSameNum
+                ? 'var(--accent-mid)'
+                : isHighlighted
+                  ? 'var(--accent-dim)'
+                  : 'transparent'
+
+            // 宫格粗边框（inline 保留，条件逻辑更清晰）
+            const bRight = c === 2 || c === 5 ? '2px solid #71717a' : '1px solid #3f3f4640'
+            const bBottom = r === 2 || r === 5 ? '2px solid #71717a' : '1px solid #3f3f4640'
+
+            cell.className =
+              'flex items-center justify-center cursor-pointer select-none transition-[background-color] duration-75 w-full h-full'
+            cell.style.cssText = `background:${bg};border-right:${bRight};border-bottom:${bBottom};`
+            cell.addEventListener('click', () => selectCell(r, c))
+
+            if (val !== 0) {
+              const span = document.createElement('span')
+              span.className =
+                'fs-cell leading-none ' +
+                (hasError
+                  ? 'text-red-400 font-medium'
+                  : isGiven
+                    ? 'text-zinc-900 dark:text-zinc-100 font-semibold'
+                    : 'text-indigo-500 font-medium')
+              span.textContent = val
+              cell.appendChild(span)
+            } else if (st.notes[r][c].size > 0) {
+              const ng = document.createElement('div')
+              ng.className = 'grid grid-cols-3 grid-rows-3 w-full h-full p-0.5'
+              for (let n = 1; n <= 9; n++) {
+                const nd = document.createElement('div')
+                nd.className =
+                  'fs-note flex items-center justify-center text-indigo-400 opacity-75 leading-none'
+                nd.textContent = st.notes[r][c].has(n) ? n : ''
+                ng.appendChild(nd)
+              }
+              cell.appendChild(ng)
+            }
+
+            grid.appendChild(cell)
+          }
         }
       }
-    }
 
-    const renderNumPad = () => {
-      document.querySelectorAll('.numpad-btn').forEach((btn, i) => {
-        const n = i + 1
-        const left = 9 - countOnBoard(n)
-        btn.classList.toggle('opacity-20', left === 0)
-        btn.classList.toggle('pointer-events-none', left === 0)
-        btn.querySelector('.numpad-count').textContent = left > 0 ? left : ''
-      })
-    }
+      const renderNumPad = () => {
+        document.querySelectorAll('.numpad-btn').forEach((btn, i) => {
+          const n = i + 1
+          const left = 9 - countOnBoard(n)
+          btn.classList.toggle('opacity-20', left === 0)
+          btn.classList.toggle('pointer-events-none', left === 0)
+          btn.querySelector('.numpad-count').textContent = left > 0 ? left : ''
+        })
+      }
 
-    const showVictory = () => {
-      const diffLabel = { easy: '简单', medium: '中等', hard: '困难' }
-      const modal = document.createElement('div')
-      modal.className = 'fixed inset-0 bg-black/65 backdrop-blur-md flex items-center justify-center z-50'
-      modal.innerHTML = `
+      const showVictory = () => {
+        const diffLabel = { easy: '简单', medium: '中等', hard: '困难' }
+        const modal = document.createElement('div')
+        modal.className =
+          'fixed inset-0 bg-black/65 backdrop-blur-md flex items-center justify-center z-50'
+        modal.innerHTML = `
         <div class="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-9 text-center max-w-[300px] w-[90%] shadow-2xl">
           <div class="text-5xl mb-3">🎉</div>
           <div class="text-xl font-bold mb-2">恭喜完成！</div>
@@ -376,24 +408,24 @@
           </button>
         </div>
       `
-      document.body.appendChild(modal)
-      document.getElementById('modal-newgame').addEventListener('click', () => {
-        modal.remove()
-        startGame(st.difficulty)
-      })
-    }
+        document.body.appendChild(modal)
+        document.getElementById('modal-newgame').addEventListener('click', () => {
+          modal.remove()
+          startGame(st.difficulty)
+        })
+      }
 
-    // ── Build DOM ──────────────────────────────────────────────────────────────
+      // ── Build DOM ──────────────────────────────────────────────────────────────
 
-    const W = 'w-[min(420px,calc(100vw-32px))]'   // 统一宽度 token
+      const W = 'w-[min(420px,calc(100vw-32px))]' // 统一宽度 token
 
-    const buildApp = () => {
-      const app = document.getElementById('app')
+      const buildApp = () => {
+        const app = document.getElementById('app')
 
-      // ── 顶部标题栏
-      const header = document.createElement('div')
-      header.className = `${W} flex items-center justify-between`
-      header.innerHTML = `
+        // ── 顶部标题栏
+        const header = document.createElement('div')
+        header.className = `${W} flex items-center justify-between`
+        header.innerHTML = `
         <div>
           <div class="text-xl font-bold tracking-tight">数独</div>
           <div class="text-xs text-zinc-500 mt-0.5">Sudoku</div>
@@ -413,169 +445,191 @@
             class="w-7 h-7 flex items-center justify-center rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100 transition-colors"></button>
         </div>
       `
-      app.appendChild(header)
+        app.appendChild(header)
 
-      // ── 难度选择
-      const diffRow = document.createElement('div')
-      diffRow.className = 'flex gap-1.5'
-      ;['easy', 'medium', 'hard'].forEach(d => {
-        const btn = document.createElement('button')
-        btn.className = 'diff-btn px-3.5 py-1 rounded-full text-xs cursor-pointer border transition-all duration-150 border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
-        btn.dataset.diff = d
-        btn.textContent = { easy: '简单', medium: '中等', hard: '困难' }[d]
-        btn.addEventListener('click', () => startGame(d))
-        diffRow.appendChild(btn)
-      })
-      app.appendChild(diffRow)
+        // ── 难度选择
+        const diffRow = document.createElement('div')
+        diffRow.className = 'flex gap-1.5'
+        ;['easy', 'medium', 'hard'].forEach(d => {
+          const btn = document.createElement('button')
+          btn.className =
+            'diff-btn px-3.5 py-1 rounded-full text-xs cursor-pointer border transition-all duration-150 border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+          btn.dataset.diff = d
+          btn.textContent = { easy: '简单', medium: '中等', hard: '困难' }[d]
+          btn.addEventListener('click', () => startGame(d))
+          diffRow.appendChild(btn)
+        })
+        app.appendChild(diffRow)
 
-      // ── 棋盘
-      const gridWrap = document.createElement('div')
-      gridWrap.className = `${W} aspect-square border-2 border-zinc-400 dark:border-zinc-500 rounded-md overflow-hidden bg-zinc-50 dark:bg-zinc-900 shadow-[0_8px_40px_rgba(0,0,0,0.22)]`
-      const grid = document.createElement('div')
-      grid.id = 'grid'
-      grid.className = 'grid grid-cols-9 w-full h-full'
-      gridWrap.appendChild(grid)
-      app.appendChild(gridWrap)
+        // ── 棋盘
+        const gridWrap = document.createElement('div')
+        gridWrap.className = `${W} aspect-square border-2 border-zinc-400 dark:border-zinc-500 rounded-md overflow-hidden bg-zinc-50 dark:bg-zinc-900 shadow-[0_8px_40px_rgba(0,0,0,0.22)]`
+        const grid = document.createElement('div')
+        grid.id = 'grid'
+        grid.className = 'grid grid-cols-9 w-full h-full'
+        gridWrap.appendChild(grid)
+        app.appendChild(gridWrap)
 
-      // ── 操作按钮
-      const actions = document.createElement('div')
-      actions.className = `${W} flex gap-2`
+        // ── 操作按钮
+        const actions = document.createElement('div')
+        actions.className = `${W} flex gap-2`
 
-      const actionDefs = [
-        {
-          id: 'undo-btn', label: '撤销',
-          icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        const actionDefs = [
+          {
+            id: 'undo-btn',
+            label: '撤销',
+            icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M3 7v6h6"/><path d="M3 13C5 8 9.5 5 14 5c4 0 7 2.5 8 6"/>
           </svg>`,
-          onclick: undo,
-        },
-        {
-          id: 'notes-btn', label: '笔记',
-          icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            onclick: undo,
+          },
+          {
+            id: 'notes-btn',
+            label: '笔记',
+            icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/>
           </svg>`,
-          onclick: () => {
-            st.notesMode = !st.notesMode
-            document.getElementById('notes-btn').classList.toggle('notes-active', st.notesMode)
+            onclick: () => {
+              st.notesMode = !st.notesMode
+              document.getElementById('notes-btn').classList.toggle('notes-active', st.notesMode)
+            },
           },
-        },
-        {
-          id: 'erase-btn', label: '擦除',
-          icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          {
+            id: 'erase-btn',
+            label: '擦除',
+            icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/>
           </svg>`,
-          onclick: () => inputNumber(0),
-        },
-        {
-          id: 'hint-btn', label: '提示',
-          icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            onclick: () => inputNumber(0),
+          },
+          {
+            id: 'hint-btn',
+            label: '提示',
+            icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/>
           </svg>`,
-          onclick: hint,
-        },
-      ]
+            onclick: hint,
+          },
+        ]
 
-      actionDefs.forEach(({ id, label, icon, onclick }) => {
-        const btn = document.createElement('button')
-        btn.id = id
-        btn.className = 'flex flex-col items-center gap-1 py-2 flex-1 rounded-md cursor-pointer bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 text-[11px] transition-colors duration-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 select-none'
-        btn.innerHTML = `${icon}<span>${label}</span>`
-        btn.addEventListener('click', onclick)
-        actions.appendChild(btn)
+        actionDefs.forEach(({ id, label, icon, onclick }) => {
+          const btn = document.createElement('button')
+          btn.id = id
+          btn.className =
+            'flex flex-col items-center gap-1 py-2 flex-1 rounded-md cursor-pointer bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-500 text-[11px] transition-colors duration-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 select-none'
+          btn.innerHTML = `${icon}<span>${label}</span>`
+          btn.addEventListener('click', onclick)
+          actions.appendChild(btn)
+        })
+        app.appendChild(actions)
+
+        // ── 数字键盘
+        const pad = document.createElement('div')
+        pad.id = 'numpad'
+        pad.className = `${W} grid gap-[5px]`
+        pad.style.gridTemplateColumns = 'repeat(9, minmax(0, 1fr))'
+
+        for (let n = 1; n <= 9; n++) {
+          const btn = document.createElement('button')
+          btn.className =
+            'numpad-btn numpad-font aspect-square min-w-0 rounded-md flex items-center justify-center font-medium cursor-pointer bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 relative overflow-hidden transition-colors duration-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 active:scale-[0.93]'
+          btn.innerHTML = `<span>${n}</span><span class="numpad-count fs-count absolute bottom-[3px] right-[4px] text-zinc-400 dark:text-zinc-500 font-normal leading-none tabular-nums"></span>`
+          btn.addEventListener('click', () => inputNumber(n))
+          pad.appendChild(btn)
+        }
+        app.appendChild(pad)
+      }
+
+      // ── Start / Restart ────────────────────────────────────────────────────────
+
+      const startGame = difficulty => {
+        clearInterval(timerRef)
+        st = initState(difficulty)
+
+        document.querySelectorAll('.diff-btn').forEach(b => {
+          const active = b.dataset.diff === difficulty
+          b.classList.toggle('bg-indigo-500', active)
+          b.classList.toggle('border-indigo-500', active)
+          b.classList.toggle('text-white', active)
+          b.classList.toggle('bg-zinc-100', !active)
+          b.classList.toggle('dark:bg-zinc-900', !active)
+          b.classList.toggle('border-zinc-300', !active)
+          b.classList.toggle('dark:border-zinc-700', !active)
+          b.classList.toggle('text-zinc-500', !active)
+        })
+
+        document.getElementById('mistakes-val').textContent = '0'
+        document.getElementById('timer-val').textContent = '00:00'
+        document.getElementById('notes-btn').classList.remove('notes-active')
+        st.notesMode = false
+
+        renderGrid()
+        renderNumPad()
+        startTimer()
+      }
+
+      // ── Keyboard ───────────────────────────────────────────────────────────────
+
+      document.addEventListener('keydown', e => {
+        if (!st || st.completed) return
+        const k = e.key
+
+        if (k >= '1' && k <= '9') return inputNumber(+k)
+        if (k === '0' || k === 'Backspace' || k === 'Delete') return inputNumber(0)
+        if ((k === 'z' || k === 'Z') && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault()
+          return undo()
+        }
+        if (k === 'n' || k === 'N') {
+          st.notesMode = !st.notesMode
+          document.getElementById('notes-btn')?.classList.toggle('notes-active', st.notesMode)
+          return
+        }
+        if (!st.selected) return
+        const [r, c] = st.selected
+        if (k === 'ArrowUp' && r > 0) {
+          e.preventDefault()
+          selectCell(r - 1, c)
+        }
+        if (k === 'ArrowDown' && r < 8) {
+          e.preventDefault()
+          selectCell(r + 1, c)
+        }
+        if (k === 'ArrowLeft' && c > 0) {
+          e.preventDefault()
+          selectCell(r, c - 1)
+        }
+        if (k === 'ArrowRight' && c < 8) {
+          e.preventDefault()
+          selectCell(r, c + 1)
+        }
       })
-      app.appendChild(actions)
 
-      // ── 数字键盘
-      const pad = document.createElement('div')
-      pad.id = 'numpad'
-      pad.className = `${W} grid gap-[5px]`
-      pad.style.gridTemplateColumns = 'repeat(9, minmax(0, 1fr))'
+      // ── Init ───────────────────────────────────────────────────────────────────
 
-      for (let n = 1; n <= 9; n++) {
-        const btn = document.createElement('button')
-        btn.className = 'numpad-btn numpad-font aspect-square min-w-0 rounded-md flex items-center justify-center font-medium cursor-pointer bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 relative overflow-hidden transition-colors duration-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 active:scale-[0.93]'
-        btn.innerHTML = `<span>${n}</span><span class="numpad-count fs-count absolute bottom-[3px] right-[4px] text-zinc-400 dark:text-zinc-500 font-normal leading-none tabular-nums"></span>`
-        btn.addEventListener('click', () => inputNumber(n))
-        pad.appendChild(btn)
-      }
-      app.appendChild(pad)
-    }
+      buildApp()
+      startGame('medium')
 
-    // ── Start / Restart ────────────────────────────────────────────────────────
-
-    const startGame = difficulty => {
-      clearInterval(timerRef)
-      st = initState(difficulty)
-
-      document.querySelectorAll('.diff-btn').forEach(b => {
-        const active = b.dataset.diff === difficulty
-        b.classList.toggle('bg-indigo-500',  active)
-        b.classList.toggle('border-indigo-500', active)
-        b.classList.toggle('text-white',     active)
-        b.classList.toggle('bg-zinc-100',    !active)
-        b.classList.toggle('dark:bg-zinc-900', !active)
-        b.classList.toggle('border-zinc-300', !active)
-        b.classList.toggle('dark:border-zinc-700', !active)
-        b.classList.toggle('text-zinc-500',  !active)
-      })
-
-      document.getElementById('mistakes-val').textContent = '0'
-      document.getElementById('timer-val').textContent = '00:00'
-      document.getElementById('notes-btn').classList.remove('notes-active')
-      st.notesMode = false
-
-      renderGrid()
-      renderNumPad()
-      startTimer()
-    }
-
-    // ── Keyboard ───────────────────────────────────────────────────────────────
-
-    document.addEventListener('keydown', e => {
-      if (!st || st.completed) return
-      const k = e.key
-
-      if (k >= '1' && k <= '9') return inputNumber(+k)
-      if (k === '0' || k === 'Backspace' || k === 'Delete') return inputNumber(0)
-      if ((k === 'z' || k === 'Z') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); return undo() }
-      if (k === 'n' || k === 'N') {
-        st.notesMode = !st.notesMode
-        document.getElementById('notes-btn')?.classList.toggle('notes-active', st.notesMode)
-        return
-      }
-      if (!st.selected) return
-      const [r, c] = st.selected
-      if (k === 'ArrowUp'    && r > 0) { e.preventDefault(); selectCell(r - 1, c) }
-      if (k === 'ArrowDown'  && r < 8) { e.preventDefault(); selectCell(r + 1, c) }
-      if (k === 'ArrowLeft'  && c > 0) { e.preventDefault(); selectCell(r, c - 1) }
-      if (k === 'ArrowRight' && c < 8) { e.preventDefault(); selectCell(r, c + 1) }
-    })
-
-    // ── Init ───────────────────────────────────────────────────────────────────
-
-    buildApp()
-    startGame('medium')
-
-    // ─── Theme Toggle ────────────────────────────────────────────────────────
-    ;(() => {
-      const _html = document.documentElement
-      const _isDark = matchMedia('(prefers-color-scheme: dark)').matches
-      _isDark ? _html.classList.add('dark') : _html.classList.remove('dark')
-      _html.dataset.theme = _isDark ? 'dark' : 'light'
-      const _btn = document.getElementById('theme-toggle')
-      const _sunSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
-      const _moonSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
-      function _updateIcon() {
-        _btn.innerHTML = _html.classList.contains('dark') ? _sunSVG : _moonSVG
-      }
-      _btn.addEventListener('click', () => {
-        const nowDark = _html.classList.toggle('dark')
-        _html.dataset.theme = nowDark ? 'dark' : 'light'
+      // ─── Theme Toggle ────────────────────────────────────────────────────────
+      ;(() => {
+        const _html = document.documentElement
+        const _isDark = matchMedia('(prefers-color-scheme: dark)').matches
+        _isDark ? _html.classList.add('dark') : _html.classList.remove('dark')
+        _html.dataset.theme = _isDark ? 'dark' : 'light'
+        const _btn = document.getElementById('theme-toggle')
+        const _sunSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+        const _moonSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+        function _updateIcon() {
+          _btn.innerHTML = _html.classList.contains('dark') ? _sunSVG : _moonSVG
+        }
+        _btn.addEventListener('click', () => {
+          const nowDark = _html.classList.toggle('dark')
+          _html.dataset.theme = nowDark ? 'dark' : 'light'
+          _updateIcon()
+        })
         _updateIcon()
-      })
-      _updateIcon()
-    })()
-    // ─────────────────────────────────────────────────────────────────────────
-  </script>
-</body>
+      })()
+      // ─────────────────────────────────────────────────────────────────────────
+    </script>
+  </body>
 </html>

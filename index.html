@@ -3,7 +3,10 @@
   <head>
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>我的应用</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="favicon.ico" />
@@ -14,7 +17,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="R2 Web" />
     <style>
-      html, body { touch-action: manipulation; }
+      html,
+      body {
+        touch-action: manipulation;
+      }
       :root {
         --grain-opacity: 0.035;
       }
@@ -63,56 +69,100 @@
       }
 
       /* ── Dark mode overrides ─────────────────────────────────────────── */
-      html[data-theme="dark"] {
+      html[data-theme='dark'] {
         --grain-opacity: 0.022;
       }
-      html[data-theme="dark"] body {
+      html[data-theme='dark'] body {
         color: #f4f4f5;
         background: linear-gradient(135deg, #09090b 0%, #111115 50%, #0e0c14 100%) !important;
       }
-      html[data-theme="dark"] .card-hover {
+      html[data-theme='dark'] .card-hover {
         background-color: #18181b !important;
         border-color: #3f3f46 !important;
         color: #f4f4f5;
       }
-      html[data-theme="dark"] .card-hover:hover {
-        border-color: rgba(255,255,255,0.12) !important;
+      html[data-theme='dark'] .card-hover:hover {
+        border-color: rgba(255, 255, 255, 0.12) !important;
         background-color: #27272a !important;
       }
-      html[data-theme="dark"] .text-zinc-900 { color: #f4f4f5 !important; }
-      html[data-theme="dark"] .text-zinc-700 { color: #d4d4d8 !important; }
-      html[data-theme="dark"] .text-zinc-500 { color: #a1a1aa !important; }
-      html[data-theme="dark"] .text-zinc-400 { color: #71717a !important; }
-      html[data-theme="dark"] .text-zinc-300 { color: #52525b !important; }
-      html[data-theme="dark"] .bg-white { background-color: #18181b !important; }
-      html[data-theme="dark"] .border-zinc-200 { border-color: #3f3f46 !important; }
-      html[data-theme="dark"] .border-zinc-200\/60 { border-color: rgba(63,63,70,0.6) !important; }
-      html[data-theme="dark"] .bg-zinc-100 { background-color: #27272a !important; color: #a1a1aa; }
-      html[data-theme="dark"] .bg-zinc-800 { background-color: #f4f4f5 !important; color: #09090b !important; }
-      html[data-theme="dark"] .text-white { color: #09090b !important; }
-      html[data-theme="dark"] .bg-zinc-900 { background-color: #f4f4f5 !important; }
-      html[data-theme="dark"] .hover\:bg-zinc-200:hover { background-color: #3f3f46 !important; }
-      html[data-theme="dark"] .hover\:text-zinc-700:hover { color: #f4f4f5 !important; }
-      html[data-theme="dark"] .hover\:text-zinc-600:hover { color: #d4d4d8 !important; }
-      html[data-theme="dark"] .group:hover .group-hover\:text-zinc-700 { color: #a1a1aa !important; }
-      html[data-theme="dark"] #search-input {
+      html[data-theme='dark'] .text-zinc-900 {
+        color: #f4f4f5 !important;
+      }
+      html[data-theme='dark'] .text-zinc-700 {
+        color: #d4d4d8 !important;
+      }
+      html[data-theme='dark'] .text-zinc-500 {
+        color: #a1a1aa !important;
+      }
+      html[data-theme='dark'] .text-zinc-400 {
+        color: #71717a !important;
+      }
+      html[data-theme='dark'] .text-zinc-300 {
+        color: #52525b !important;
+      }
+      html[data-theme='dark'] .bg-white {
+        background-color: #18181b !important;
+      }
+      html[data-theme='dark'] .border-zinc-200 {
+        border-color: #3f3f46 !important;
+      }
+      html[data-theme='dark'] .border-zinc-200\/60 {
+        border-color: rgba(63, 63, 70, 0.6) !important;
+      }
+      html[data-theme='dark'] .bg-zinc-100 {
+        background-color: #27272a !important;
+        color: #a1a1aa;
+      }
+      html[data-theme='dark'] .bg-zinc-800 {
+        background-color: #f4f4f5 !important;
+        color: #09090b !important;
+      }
+      html[data-theme='dark'] .text-white {
+        color: #09090b !important;
+      }
+      html[data-theme='dark'] .bg-zinc-900 {
+        background-color: #f4f4f5 !important;
+      }
+      html[data-theme='dark'] .hover\:bg-zinc-200:hover {
+        background-color: #3f3f46 !important;
+      }
+      html[data-theme='dark'] .hover\:text-zinc-700:hover {
+        color: #f4f4f5 !important;
+      }
+      html[data-theme='dark'] .hover\:text-zinc-600:hover {
+        color: #d4d4d8 !important;
+      }
+      html[data-theme='dark'] .group:hover .group-hover\:text-zinc-700 {
+        color: #a1a1aa !important;
+      }
+      html[data-theme='dark'] #search-input {
         background-color: #18181b !important;
         border-color: #3f3f46 !important;
         color: #f4f4f5 !important;
       }
-      html[data-theme="dark"] #search-input::placeholder { color: #52525b; }
-      html[data-theme="dark"] #search-input:focus {
-        border-color: rgba(255,255,255,0.2) !important;
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.04) !important;
+      html[data-theme='dark'] #search-input::placeholder {
+        color: #52525b;
       }
-      html[data-theme="dark"] code.bg-zinc-100 {
+      html[data-theme='dark'] #search-input:focus {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04) !important;
+      }
+      html[data-theme='dark'] code.bg-zinc-100 {
         background-color: #27272a !important;
         color: #a1a1aa !important;
       }
-      html[data-theme="dark"] a.text-zinc-500 { color: #a1a1aa !important; }
-      html[data-theme="dark"] a.hover\:text-zinc-700:hover { color: #f4f4f5 !important; }
-      html[data-theme="dark"] #theme-toggle { color: #71717a; }
-      html[data-theme="dark"] #theme-toggle:hover { color: #f4f4f5; }
+      html[data-theme='dark'] a.text-zinc-500 {
+        color: #a1a1aa !important;
+      }
+      html[data-theme='dark'] a.hover\:text-zinc-700:hover {
+        color: #f4f4f5 !important;
+      }
+      html[data-theme='dark'] #theme-toggle {
+        color: #71717a;
+      }
+      html[data-theme='dark'] #theme-toggle:hover {
+        color: #f4f4f5;
+      }
     </style>
   </head>
   <body
@@ -482,5 +532,6 @@
       })()
       // ─────────────────────────────────────────────────────────────────────────
     </script>
+    <script src="gesture-guard.js"></script>
   </body>
 </html>

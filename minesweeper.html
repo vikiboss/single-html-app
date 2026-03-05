@@ -1,41 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>扫雷</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-      html, body { overscroll-behavior: none; touch-action: manipulation; }
-    :root {
-      --cell-size: 32px;
-      --accent: #f59e0b;
-      --danger: #ef4444;
-      --safe: #10b981;
-      --danger-rgb: 239, 68, 68;
-      --accent-rgb: 245, 158, 11;
-      --safe-rgb: 16, 185, 129;
-      --bg: #0f0f0f;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
-      --muted-strong: #94a3b8;
-      --panel: rgba(0,0,0,0.5);
-      --panel-border: rgba(255,255,255,0.08);
-      --divider: rgba(255,255,255,0.1);
-      --overlay-bg: rgba(0,0,0,0.75);
-      --cell-hidden: rgba(255,255,255,0.07);
-      --cell-hidden-hover: rgba(255,255,255,0.13);
-      --cell-hidden-active: rgba(255,255,255,0.04);
-      --cell-revealed: rgba(255,255,255,0.03);
-      --cell-border: rgba(255,255,255,0.06);
-      --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.4);
-      --cell-revealed-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-      --noise-opacity: 0.04;
-    }
-
-    @media (prefers-color-scheme: light) {
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>扫雷</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+      }
       :root {
+        --cell-size: 32px;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --safe: #10b981;
+        --danger-rgb: 239, 68, 68;
+        --accent-rgb: 245, 158, 11;
+        --safe-rgb: 16, 185, 129;
+        --bg: #0f0f0f;
+        --text: #f4f4f5;
+        --muted: #a1a1aa;
+        --muted-strong: #94a3b8;
+        --panel: rgba(0, 0, 0, 0.5);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --divider: rgba(255, 255, 255, 0.1);
+        --overlay-bg: rgba(0, 0, 0, 0.75);
+        --cell-hidden: rgba(255, 255, 255, 0.07);
+        --cell-hidden-hover: rgba(255, 255, 255, 0.13);
+        --cell-hidden-active: rgba(255, 255, 255, 0.04);
+        --cell-revealed: rgba(255, 255, 255, 0.03);
+        --cell-border: rgba(255, 255, 255, 0.06);
+        --cell-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 2px rgba(0, 0, 0, 0.4);
+        --cell-revealed-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+        --noise-opacity: 0.04;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --accent: #d97706;
+          --danger: #dc2626;
+          --safe: #059669;
+          --danger-rgb: 220, 38, 38;
+          --accent-rgb: 217, 119, 6;
+          --safe-rgb: 5, 150, 105;
+          --bg: #f4f5f7;
+          --text: #111827;
+          --muted: #6b7280;
+          --muted-strong: #64748b;
+          --panel: rgba(255, 255, 255, 0.8);
+          --panel-border: rgba(17, 24, 39, 0.12);
+          --divider: rgba(17, 24, 39, 0.12);
+          --overlay-bg: rgba(255, 255, 255, 0.82);
+          --cell-hidden: rgba(17, 24, 39, 0.06);
+          --cell-hidden-hover: rgba(17, 24, 39, 0.1);
+          --cell-hidden-active: rgba(17, 24, 39, 0.04);
+          --cell-revealed: rgba(17, 24, 39, 0.02);
+          --cell-border: rgba(17, 24, 39, 0.08);
+          --cell-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 1px 2px rgba(0, 0, 0, 0.08);
+          --cell-revealed-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+          --noise-opacity: 0.025;
+        }
+      }
+
+      /* Manual theme overrides */
+      html[data-theme='dark'] {
+        --cell-size: 32px;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --safe: #10b981;
+        --danger-rgb: 239, 68, 68;
+        --accent-rgb: 245, 158, 11;
+        --safe-rgb: 16, 185, 129;
+        --bg: #0f0f0f;
+        --text: #f4f4f5;
+        --muted: #a1a1aa;
+        --muted-strong: #94a3b8;
+        --panel: rgba(0, 0, 0, 0.5);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --divider: rgba(255, 255, 255, 0.1);
+        --overlay-bg: rgba(0, 0, 0, 0.75);
+        --cell-hidden: rgba(255, 255, 255, 0.07);
+        --cell-hidden-hover: rgba(255, 255, 255, 0.13);
+        --cell-hidden-active: rgba(255, 255, 255, 0.04);
+        --cell-revealed: rgba(255, 255, 255, 0.03);
+        --cell-border: rgba(255, 255, 255, 0.06);
+        --cell-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 2px rgba(0, 0, 0, 0.4);
+        --cell-revealed-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+      }
+      html[data-theme='light'] {
         --accent: #d97706;
         --danger: #dc2626;
         --safe: #059669;
@@ -46,605 +104,700 @@
         --text: #111827;
         --muted: #6b7280;
         --muted-strong: #64748b;
-        --panel: rgba(255,255,255,0.8);
-        --panel-border: rgba(17,24,39,0.12);
-        --divider: rgba(17,24,39,0.12);
-        --overlay-bg: rgba(255,255,255,0.82);
-        --cell-hidden: rgba(17,24,39,0.06);
-        --cell-hidden-hover: rgba(17,24,39,0.1);
-        --cell-hidden-active: rgba(17,24,39,0.04);
-        --cell-revealed: rgba(17,24,39,0.02);
-        --cell-border: rgba(17,24,39,0.08);
-        --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.08);
-        --cell-revealed-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
-        --noise-opacity: 0.025;
+        --panel: rgba(255, 255, 255, 0.8);
+        --panel-border: rgba(17, 24, 39, 0.12);
+        --divider: rgba(17, 24, 39, 0.12);
+        --overlay-bg: rgba(255, 255, 255, 0.82);
+        --cell-hidden: rgba(17, 24, 39, 0.06);
+        --cell-hidden-hover: rgba(17, 24, 39, 0.1);
+        --cell-hidden-active: rgba(17, 24, 39, 0.04);
+        --cell-revealed: rgba(17, 24, 39, 0.02);
+        --cell-border: rgba(17, 24, 39, 0.08);
+        --cell-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 1px 2px rgba(0, 0, 0, 0.08);
+        --cell-revealed-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
       }
-    }
 
-    /* Manual theme overrides */
-    html[data-theme="dark"] {
-      --cell-size: 32px;
-      --accent: #f59e0b;
-      --danger: #ef4444;
-      --safe: #10b981;
-      --danger-rgb: 239, 68, 68;
-      --accent-rgb: 245, 158, 11;
-      --safe-rgb: 16, 185, 129;
-      --bg: #0f0f0f;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
-      --muted-strong: #94a3b8;
-      --panel: rgba(0,0,0,0.5);
-      --panel-border: rgba(255,255,255,0.08);
-      --divider: rgba(255,255,255,0.1);
-      --overlay-bg: rgba(0,0,0,0.75);
-      --cell-hidden: rgba(255,255,255,0.07);
-      --cell-hidden-hover: rgba(255,255,255,0.13);
-      --cell-hidden-active: rgba(255,255,255,0.04);
-      --cell-revealed: rgba(255,255,255,0.03);
-      --cell-border: rgba(255,255,255,0.06);
-      --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.4);
-      --cell-revealed-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-    }
-    html[data-theme="light"] {
-      --accent: #d97706;
-      --danger: #dc2626;
-      --safe: #059669;
-      --danger-rgb: 220, 38, 38;
-      --accent-rgb: 217, 119, 6;
-      --safe-rgb: 5, 150, 105;
-      --bg: #f4f5f7;
-      --text: #111827;
-      --muted: #6b7280;
-      --muted-strong: #64748b;
-      --panel: rgba(255,255,255,0.8);
-      --panel-border: rgba(17,24,39,0.12);
-      --divider: rgba(17,24,39,0.12);
-      --overlay-bg: rgba(255,255,255,0.82);
-      --cell-hidden: rgba(17,24,39,0.06);
-      --cell-hidden-hover: rgba(17,24,39,0.1);
-      --cell-hidden-active: rgba(17,24,39,0.04);
-      --cell-revealed: rgba(17,24,39,0.02);
-      --cell-border: rgba(17,24,39,0.08);
-      --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.08);
-      --cell-revealed-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
-    }
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
 
-    * {
-      -webkit-tap-highlight-color: transparent;
-    }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        background-image:
+          radial-gradient(
+            ellipse 80% 60% at 20% 10%,
+            rgba(var(--accent-rgb), 0.07) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 80% at 80% 90%,
+            rgba(var(--safe-rgb), 0.05) 0%,
+            transparent 60%
+          ),
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        min-height: 100vh;
+      }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      background-image:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(var(--accent-rgb),0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(var(--safe-rgb),0.05) 0%, transparent 60%),
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      min-height: 100vh;
-    }
+      .cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        cursor: pointer;
+        border-radius: 4px;
+        transition:
+          background 0.1s,
+          transform 0.08s,
+          box-shadow 0.1s;
+        position: relative;
+        border: 1px solid var(--cell-border);
+        touch-action: manipulation;
+      }
 
-    .cell {
-      width: var(--cell-size);
-      height: var(--cell-size);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
-      position: relative;
-      border: 1px solid var(--cell-border);
-      touch-action: manipulation;
-    }
+      .cell-hidden {
+        background: var(--cell-hidden);
+        box-shadow: var(--cell-shadow);
+      }
 
-    .cell-hidden {
-      background: var(--cell-hidden);
-      box-shadow: var(--cell-shadow);
-    }
+      .cell-hidden:hover {
+        background: var(--cell-hidden-hover);
+        transform: scale(1.05);
+        z-index: 1;
+      }
 
-    .cell-hidden:hover {
-      background: var(--cell-hidden-hover);
-      transform: scale(1.05);
-      z-index: 1;
-    }
+      .cell-hidden:active {
+        transform: scale(0.95);
+        background: var(--cell-hidden-active);
+      }
 
-    .cell-hidden:active {
-      transform: scale(0.95);
-      background: var(--cell-hidden-active);
-    }
+      .cell-revealed {
+        background: var(--cell-revealed);
+        cursor: default;
+        box-shadow: var(--cell-revealed-shadow);
+      }
 
-    .cell-revealed {
-      background: var(--cell-revealed);
-      cursor: default;
-      box-shadow: var(--cell-revealed-shadow);
-    }
+      .cell-mine-hit {
+        background: rgba(var(--danger-rgb), 0.3) !important;
+        animation: shakeCell 0.3s ease;
+      }
 
-    .cell-mine-hit {
-      background: rgba(var(--danger-rgb),0.3) !important;
-      animation: shakeCell 0.3s ease;
-    }
+      .cell-mine-show {
+        background: rgba(var(--danger-rgb), 0.12);
+      }
 
-    .cell-mine-show {
-      background: rgba(var(--danger-rgb),0.12);
-    }
+      .cell-flagged {
+        background: rgba(var(--accent-rgb), 0.12);
+      }
 
-    .cell-flagged {
-      background: rgba(var(--accent-rgb),0.12);
-    }
+      .cell-safe-reveal {
+        animation: revealPop 0.15s ease-out;
+      }
 
-    .cell-safe-reveal {
-      animation: revealPop 0.15s ease-out;
-    }
+      @keyframes revealPop {
+        0% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
 
-    @keyframes revealPop {
-      0% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
+      @keyframes shakeCell {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-3px);
+        }
+        75% {
+          transform: translateX(3px);
+        }
+      }
 
-    @keyframes shakeCell {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-3px); }
-      75% { transform: translateX(3px); }
-    }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+      @keyframes winPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+        }
+      }
 
-    @keyframes winPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
-      50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
-    }
+      .game-board {
+        display: grid;
+        gap: 2px;
+        touch-action: manipulation;
+      }
 
-    .game-board {
-      display: grid;
-      gap: 2px;
-      touch-action: manipulation;
-    }
+      .result-overlay {
+        animation: fadeIn 0.25s ease-out;
+      }
 
-    .result-overlay {
-      animation: fadeIn 0.25s ease-out;
-    }
+      .digit-display {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 4px 10px;
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 700;
+        min-width: 52px;
+        text-align: center;
+      }
 
-    .digit-display {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.05em;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 6px;
-      padding: 4px 10px;
-      color: var(--accent);
-      font-size: 18px;
-      font-weight: 700;
-      min-width: 52px;
-      text-align: center;
-    }
+      .text-muted {
+        color: var(--muted);
+      }
 
-    .text-muted {
-      color: var(--muted);
-    }
+      .text-muted-strong {
+        color: var(--muted-strong);
+      }
 
-    .text-muted-strong {
-      color: var(--muted-strong);
-    }
+      .text-accent {
+        color: var(--accent);
+      }
 
-    .text-accent {
-      color: var(--accent);
-    }
+      .text-danger {
+        color: var(--danger);
+      }
 
-    .text-danger {
-      color: var(--danger);
-    }
+      .divider {
+        width: 1px;
+        height: 24px;
+        background: var(--divider);
+      }
 
-    .divider {
-      width: 1px;
-      height: 24px;
-      background: var(--divider);
-    }
+      .icon-mine {
+        color: var(--danger);
+      }
 
-    .icon-mine {
-      color: var(--danger);
-    }
+      .icon-flag {
+        color: var(--accent);
+      }
 
-    .icon-flag {
-      color: var(--accent);
-    }
+      #timer {
+        min-width: 96px;
+      }
 
-    #timer {
-      min-width: 96px;
-    }
+      .n1 {
+        color: #60a5fa;
+      }
+      .n2 {
+        color: #34d399;
+      }
+      .n3 {
+        color: #f87171;
+      }
+      .n4 {
+        color: #818cf8;
+      }
+      .n5 {
+        color: #fb923c;
+      }
+      .n6 {
+        color: #22d3ee;
+      }
+      .n7 {
+        color: #e879f9;
+      }
+      .n8 {
+        color: #94a3b8;
+      }
 
-    .n1 { color: #60a5fa; }
-    .n2 { color: #34d399; }
-    .n3 { color: #f87171; }
-    .n4 { color: #818cf8; }
-    .n5 { color: #fb923c; }
-    .n6 { color: #22d3ee; }
-    .n7 { color: #e879f9; }
-    .n8 { color: #94a3b8; }
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px !important;
+      }
 
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 30px !important;
-    }
+      .control-surface {
+        background: var(--cell-hidden);
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+      }
 
-    .control-surface {
-      background: var(--cell-hidden);
-      border: 1px solid var(--panel-border);
-      color: var(--text);
-    }
-
-    .control-surface:focus {
-      border-color: rgba(var(--accent-rgb),0.5);
-    }
-  </style>
-</head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
-
-  <div class="flex flex-col items-center gap-5" style="animation: fadeIn 0.4s ease-out">
-    <!-- Header -->
-    <div class="flex flex-col items-center gap-1">
-      <div class="flex items-center gap-2">
-        <svg class="text-accent" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
-          <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <h1 class="text-xl font-bold tracking-widest uppercase" style="letter-spacing: 0.25em">扫雷</h1>
+      .control-surface:focus {
+        border-color: rgba(var(--accent-rgb), 0.5);
+      }
+    </style>
+  </head>
+  <body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="flex flex-col items-center gap-5" style="animation: fadeIn 0.4s ease-out">
+      <!-- Header -->
+      <div class="flex flex-col items-center gap-1">
+        <div class="flex items-center gap-2">
+          <svg
+            class="text-accent"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="2" x2="12" y2="4" />
+            <line x1="12" y1="20" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="4" y2="12" />
+            <line x1="20" y1="12" x2="22" y2="12" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <h1 class="text-xl font-bold tracking-widest uppercase" style="letter-spacing: 0.25em">
+            扫雷
+          </h1>
+        </div>
+        <p class="text-xs text-muted">翻开安全格，数字代表周围八格的雷数，标记可疑位置</p>
       </div>
-      <p class="text-xs text-muted">翻开安全格，数字代表周围八格的雷数，标记可疑位置</p>
-    </div>
 
-    <!-- Control bar -->
-    <div class="flex items-center gap-3 flex-wrap justify-center">
-      <select id="difficulty"
-        class="control-surface text-sm px-3 py-1.5 rounded focus:outline-none transition-colors cursor-pointer">
-        <option value="easy">简单  9×9  10 雷</option>
-        <option value="medium">中等  16×16  40 雷</option>
-        <option value="hard">困难  30×16  99 雷</option>
-      </select>
-      <button id="theme-toggle" title="切换明暗主题" class="control-surface rounded px-2 py-1.5 flex items-center justify-center w-8 h-8 cursor-pointer transition-colors"></button>
-      <button id="newGameBtn"
-        class="flex items-center gap-1.5 px-4 py-1.5 rounded text-sm font-medium transition-all duration-150
-               bg-amber-500/10 border border-amber-500/30 text-amber-400
-               hover:bg-amber-500/20 hover:border-amber-500/50 active:scale-95">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-        </svg>
-        新游戏
-      </button>
-    </div>
-
-    <!-- Stats bar -->
-    <div class="flex items-center gap-4">
-      <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
-        <svg class="icon-mine" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2"/>
-          <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>
-          <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2"/>
-          <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
-          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="currentColor" stroke-width="2"/>
-          <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/>
-          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="currentColor" stroke-width="2"/>
-          <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <span id="mineCount" class="text-danger" style="min-width: 2ch; text-align: center;">00</span>
-        <span class="text-muted text-xs">/</span>
-        <svg class="icon-flag" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
-          <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
-        </svg>
-        <span id="flagCount" class="text-accent" style="min-width: 2ch; text-align: center;">00</span>
-      </div>
-      <div class="divider"></div>
-      <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
-        <svg class="text-muted-strong" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        <span id="timer" class="text-muted-strong" style="text-align: center;">00:00:00</span>
-      </div>
-    </div>
-
-    <!-- Board container -->
-    <div id="boardWrap" class="relative">
-      <div id="board" class="game-board"></div>
-      <!-- Result overlay -->
-      <div id="resultOverlay" class="hidden result-overlay absolute inset-0 flex flex-col items-center justify-center rounded"
-           style="background: var(--overlay-bg); backdrop-filter: blur(4px)">
-        <div id="resultIcon" class="mb-2"></div>
-        <div id="resultText" class="text-lg font-bold mb-1"></div>
-        <div id="resultSub" class="text-xs text-muted mb-4"></div>
-        <button id="resultBtn"
-          class="px-5 py-1.5 rounded text-sm font-medium bg-amber-500/20 border border-amber-500/40 text-amber-400
-                 hover:bg-amber-500/30 transition-all active:scale-95">
-          再来一局
+      <!-- Control bar -->
+      <div class="flex items-center gap-3 flex-wrap justify-center">
+        <select
+          id="difficulty"
+          class="control-surface text-sm px-3 py-1.5 rounded focus:outline-none transition-colors cursor-pointer"
+        >
+          <option value="easy">简单 9×9 10 雷</option>
+          <option value="medium">中等 16×16 40 雷</option>
+          <option value="hard">困难 30×16 99 雷</option>
+        </select>
+        <button
+          id="theme-toggle"
+          title="切换明暗主题"
+          class="control-surface rounded px-2 py-1.5 flex items-center justify-center w-8 h-8 cursor-pointer transition-colors"
+        ></button>
+        <button
+          id="newGameBtn"
+          class="flex items-center gap-1.5 px-4 py-1.5 rounded text-sm font-medium transition-all duration-150 bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50 active:scale-95"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          新游戏
         </button>
       </div>
+
+      <!-- Stats bar -->
+      <div class="flex items-center gap-4">
+        <div class="digit-display flex items-center gap-2" style="padding: 4px 8px">
+          <svg
+            class="icon-mine"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke="currentColor"
+            stroke-width="0"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2" />
+            <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2" />
+            <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2" />
+            <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2" />
+            <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="currentColor" stroke-width="2" />
+            <line
+              x1="16.95"
+              y1="16.95"
+              x2="19.07"
+              y2="19.07"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <line
+              x1="4.93"
+              y1="19.07"
+              x2="7.05"
+              y2="16.95"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <line
+              x1="16.95"
+              y1="7.05"
+              x2="19.07"
+              y2="4.93"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+          </svg>
+          <span id="mineCount" class="text-danger" style="min-width: 2ch; text-align: center">
+            00
+          </span>
+          <span class="text-muted text-xs">/</span>
+          <svg
+            class="icon-flag"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke="currentColor"
+            stroke-width="0"
+          >
+            <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z" />
+          </svg>
+          <span id="flagCount" class="text-accent" style="min-width: 2ch; text-align: center">
+            00
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="digit-display flex items-center gap-2" style="padding: 4px 8px">
+          <svg
+            class="text-muted-strong"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span id="timer" class="text-muted-strong" style="text-align: center">00:00:00</span>
+        </div>
+      </div>
+
+      <!-- Board container -->
+      <div id="boardWrap" class="relative">
+        <div id="board" class="game-board"></div>
+        <!-- Result overlay -->
+        <div
+          id="resultOverlay"
+          class="hidden result-overlay absolute inset-0 flex flex-col items-center justify-center rounded"
+          style="background: var(--overlay-bg); backdrop-filter: blur(4px)"
+        >
+          <div id="resultIcon" class="mb-2"></div>
+          <div id="resultText" class="text-lg font-bold mb-1"></div>
+          <div id="resultSub" class="text-xs text-muted mb-4"></div>
+          <button
+            id="resultBtn"
+            class="px-5 py-1.5 rounded text-sm font-medium bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 transition-all active:scale-95"
+          >
+            再来一局
+          </button>
+        </div>
+      </div>
+
+      <p class="text-xs text-muted">双击数字快速展开・右键标记（移动端长按）</p>
     </div>
 
-    <p class="text-xs text-muted">双击数字快速展开・右键标记（移动端长按）</p>
-  </div>
-
-  <script type="module">
-    // ─── Theme Toggle ─────────────────────────────────────────────────────────
-    const _html = document.documentElement
-    _html.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
-      _updateThemeIcon()
-    })
-    function _updateThemeIcon() {
-      const isDark = _html.dataset.theme === 'dark'
-      document.getElementById('theme-toggle').innerHTML = isDark
-        ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
-        : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
-    }
-    _updateThemeIcon()
-
-    const LEVELS = {
-      easy:   { rows: 9,  cols: 9,  mines: 10 },
-      medium: { rows: 16, cols: 16, mines: 40 },
-      hard:   { rows: 16, cols: 30, mines: 99 },
-    }
-
-    const NUM_COLORS = ['', 'n1','n2','n3','n4','n5','n6','n7','n8']
-
-    let state = null
-    let timerInterval = null
-
-    const boardEl    = document.getElementById('board')
-    const mineCountEl = document.getElementById('mineCount')
-    const flagCountEl = document.getElementById('flagCount')
-    const timerEl    = document.getElementById('timer')
-    const overlay    = document.getElementById('resultOverlay')
-    const resultText = document.getElementById('resultText')
-    const resultSub  = document.getElementById('resultSub')
-    const resultIcon = document.getElementById('resultIcon')
-    const diffSelect = document.getElementById('difficulty')
-    const newGameBtn = document.getElementById('newGameBtn')
-    const resultBtn  = document.getElementById('resultBtn')
-
-    function formatCount(n) {
-      const sign = n < 0 ? '-' : ''
-      const v = Math.min(Math.abs(n), 99)
-      return sign + String(v).padStart(2, '0')
-    }
-
-    function formatTime(seconds) {
-      const hrs = Math.floor(seconds / 3600)
-      const mins = Math.floor((seconds % 3600) / 60)
-      const secs = seconds % 60
-      return [hrs, mins, secs].map(v => String(v).padStart(2, '0')).join(':')
-    }
-
-    function estimateBoardWidth(cols) {
-      const cellSize = cols > 20 ? 28 : 32
-      const gap = 2
-      return cols * cellSize + (cols - 1) * gap
-    }
-
-    function pickDefaultLevel() {
-      const viewport = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth)
-      const available = Math.max(240, viewport - 32)
-      const order = ['hard', 'medium', 'easy']
-      for (const key of order) {
-        if (estimateBoardWidth(LEVELS[key].cols) <= available) return key
-      }
-      return 'easy'
-    }
-
-    function initGame() {
-      clearInterval(timerInterval)
-      timerInterval = null
-      overlay.classList.add('hidden')
-
-      const level = LEVELS[diffSelect.value]
-      const { rows, cols, mines } = level
-
-      // CSS grid columns
-      boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`
-      // adjust cell size for hard mode
-      const cs = cols > 20 ? '28px' : '32px'
-      document.documentElement.style.setProperty('--cell-size', cs)
-
-      const total = rows * cols
-      const cells = Array.from({ length: total }, () => ({
-        isMine: false, isRevealed: false, isFlagged: false, neighbors: 0
-      }))
-
-      state = {
-        rows,
-        cols,
-        mines,
-        cells,
-        flags: 0,
-        revealed: 0,
-        status: 'idle',
-        startTime: 0,
-        elapsed: 0,
-        minesPlaced: false
-      }
-
-      timerEl.textContent = formatTime(0)
-      updateCounts()
-
-      renderBoard()
-    }
-
-    function placeMines(safeIdx) {
-      const { rows, cols, mines, cells } = state
-      const total = rows * cols
-      const candidates = Array.from({ length: total }, (_, i) => i).filter(i => i !== safeIdx)
-      // Fisher-Yates shuffle first `mines` picks
-      for (let i = 0; i < mines; i++) {
-        const j = i + Math.floor(Math.random() * (candidates.length - i))
-        ;[candidates[i], candidates[j]] = [candidates[j], candidates[i]]
-        cells[candidates[i]].isMine = true
-      }
-      // calc neighbor counts
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (cells[r * cols + c].isMine) continue
-          cells[r * cols + c].neighbors = eachNeighbor(r, c, (nr, nc) => cells[nr * cols + nc].isMine ? 1 : 0)
-            .reduce((a, b) => a + b, 0)
-        }
-      }
-    }
-
-    function eachNeighbor(r, c, fn) {
-      const { rows, cols } = state
-      const results = []
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue
-          const nr = r + dr, nc = c + dc
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) results.push(fn(nr, nc))
-        }
-      }
-      return results
-    }
-
-    function startTimer() {
-      if (timerInterval) return
-      state.startTime = Date.now() - state.elapsed * 1000
-      timerInterval = setInterval(() => {
-        state.elapsed = Math.floor((Date.now() - state.startTime) / 1000)
-        timerEl.textContent = formatTime(state.elapsed)
-      }, 500)
-    }
-
-    function reveal(idx) {
-      const { cells, cols } = state
-      const cell = cells[idx]
-      if (cell.isRevealed || cell.isFlagged) return
-
-      if (!state.minesPlaced) {
-        placeMines(idx)
-        state.minesPlaced = true
-      }
-      if (state.status === 'idle') state.status = 'playing'
-      startTimer()
-
-      if (cell.isMine) {
-        cell.isRevealed = true
-        cell.isHit = true
-        endGame(false, idx)
-        return
-      }
-
-      // BFS flood fill
-      const queue = [idx]
-      const visited = new Set([idx])
-      while (queue.length) {
-        const cur = queue.shift()
-        const curCell = cells[cur]
-        if (curCell.isRevealed) continue
-        curCell.isRevealed = true
-        state.revealed++
-
-        if (curCell.neighbors === 0 && !curCell.isMine) {
-          const r = Math.floor(cur / cols), c = cur % cols
-          eachNeighbor(r, c, (nr, nc) => {
-            const ni = nr * cols + nc
-            if (!visited.has(ni) && !cells[ni].isFlagged && !cells[ni].isRevealed) {
-              visited.add(ni)
-              queue.push(ni)
-            }
-          })
-        }
-      }
-
-      checkWin()
-      renderBoard()
-    }
-
-    function chord(idx) {
-      const { cells, cols } = state
-      const cell = cells[idx]
-      if (!cell.isRevealed || cell.neighbors === 0) return
-      const r = Math.floor(idx / cols), c = idx % cols
-      const flagCount = eachNeighbor(r, c, (nr, nc) => cells[nr * cols + nc].isFlagged ? 1 : 0).reduce((a,b)=>a+b,0)
-      if (flagCount !== cell.neighbors) return
-      eachNeighbor(r, c, (nr, nc) => {
-        const ni = nr * cols + nc
-        if (!cells[ni].isFlagged && !cells[ni].isRevealed) reveal(ni)
+    <script type="module">
+      // ─── Theme Toggle ─────────────────────────────────────────────────────────
+      const _html = document.documentElement
+      _html.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
+        _updateThemeIcon()
       })
-    }
-
-    function toggleFlag(idx) {
-      if (state.status === 'won' || state.status === 'lost') return
-      const cell = state.cells[idx]
-      if (cell.isRevealed) return
-      if (cell.isFlagged) {
-        cell.isFlagged = false
-        state.flags--
-      } else {
-        cell.isFlagged = true
-        state.flags++
+      function _updateThemeIcon() {
+        const isDark = _html.dataset.theme === 'dark'
+        document.getElementById('theme-toggle').innerHTML = isDark
+          ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+          : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
       }
-      updateCounts()
-      renderCell(idx)
-    }
+      _updateThemeIcon()
 
-    function checkWin() {
-      const { cells, mines, revealed, rows, cols } = state
-      if (revealed === rows * cols - mines) {
-        endGame(true)
+      const LEVELS = {
+        easy: { rows: 9, cols: 9, mines: 10 },
+        medium: { rows: 16, cols: 16, mines: 40 },
+        hard: { rows: 16, cols: 30, mines: 99 },
       }
-    }
 
-    function endGame(won, hitIdx = -1) {
-      clearInterval(timerInterval)
-      timerInterval = null
-      state.status = won ? 'won' : 'lost'
-      const { cells, rows, cols } = state
+      const NUM_COLORS = ['', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8']
 
-      if (!won) {
-        cells.forEach((c, i) => {
-          if (c.isMine && !c.isFlagged) c.isRevealed = true
+      let state = null
+      let timerInterval = null
+
+      const boardEl = document.getElementById('board')
+      const mineCountEl = document.getElementById('mineCount')
+      const flagCountEl = document.getElementById('flagCount')
+      const timerEl = document.getElementById('timer')
+      const overlay = document.getElementById('resultOverlay')
+      const resultText = document.getElementById('resultText')
+      const resultSub = document.getElementById('resultSub')
+      const resultIcon = document.getElementById('resultIcon')
+      const diffSelect = document.getElementById('difficulty')
+      const newGameBtn = document.getElementById('newGameBtn')
+      const resultBtn = document.getElementById('resultBtn')
+
+      function formatCount(n) {
+        const sign = n < 0 ? '-' : ''
+        const v = Math.min(Math.abs(n), 99)
+        return sign + String(v).padStart(2, '0')
+      }
+
+      function formatTime(seconds) {
+        const hrs = Math.floor(seconds / 3600)
+        const mins = Math.floor((seconds % 3600) / 60)
+        const secs = seconds % 60
+        return [hrs, mins, secs].map(v => String(v).padStart(2, '0')).join(':')
+      }
+
+      function estimateBoardWidth(cols) {
+        const cellSize = cols > 20 ? 28 : 32
+        const gap = 2
+        return cols * cellSize + (cols - 1) * gap
+      }
+
+      function pickDefaultLevel() {
+        const viewport = Math.min(
+          window.innerWidth,
+          document.documentElement.clientWidth || window.innerWidth,
+        )
+        const available = Math.max(240, viewport - 32)
+        const order = ['hard', 'medium', 'easy']
+        for (const key of order) {
+          if (estimateBoardWidth(LEVELS[key].cols) <= available) return key
+        }
+        return 'easy'
+      }
+
+      function initGame() {
+        clearInterval(timerInterval)
+        timerInterval = null
+        overlay.classList.add('hidden')
+
+        const level = LEVELS[diffSelect.value]
+        const { rows, cols, mines } = level
+
+        // CSS grid columns
+        boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`
+        // adjust cell size for hard mode
+        const cs = cols > 20 ? '28px' : '32px'
+        document.documentElement.style.setProperty('--cell-size', cs)
+
+        const total = rows * cols
+        const cells = Array.from({ length: total }, () => ({
+          isMine: false,
+          isRevealed: false,
+          isFlagged: false,
+          neighbors: 0,
+        }))
+
+        state = {
+          rows,
+          cols,
+          mines,
+          cells,
+          flags: 0,
+          revealed: 0,
+          status: 'idle',
+          startTime: 0,
+          elapsed: 0,
+          minesPlaced: false,
+        }
+
+        timerEl.textContent = formatTime(0)
+        updateCounts()
+
+        renderBoard()
+      }
+
+      function placeMines(safeIdx) {
+        const { rows, cols, mines, cells } = state
+        const total = rows * cols
+        const candidates = Array.from({ length: total }, (_, i) => i).filter(i => i !== safeIdx)
+        // Fisher-Yates shuffle first `mines` picks
+        for (let i = 0; i < mines; i++) {
+          const j = i + Math.floor(Math.random() * (candidates.length - i))
+          ;[candidates[i], candidates[j]] = [candidates[j], candidates[i]]
+          cells[candidates[i]].isMine = true
+        }
+        // calc neighbor counts
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (cells[r * cols + c].isMine) continue
+            cells[r * cols + c].neighbors = eachNeighbor(r, c, (nr, nc) =>
+              cells[nr * cols + nc].isMine ? 1 : 0,
+            ).reduce((a, b) => a + b, 0)
+          }
+        }
+      }
+
+      function eachNeighbor(r, c, fn) {
+        const { rows, cols } = state
+        const results = []
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue
+            const nr = r + dr,
+              nc = c + dc
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) results.push(fn(nr, nc))
+          }
+        }
+        return results
+      }
+
+      function startTimer() {
+        if (timerInterval) return
+        state.startTime = Date.now() - state.elapsed * 1000
+        timerInterval = setInterval(() => {
+          state.elapsed = Math.floor((Date.now() - state.startTime) / 1000)
+          timerEl.textContent = formatTime(state.elapsed)
+        }, 500)
+      }
+
+      function reveal(idx) {
+        const { cells, cols } = state
+        const cell = cells[idx]
+        if (cell.isRevealed || cell.isFlagged) return
+
+        if (!state.minesPlaced) {
+          placeMines(idx)
+          state.minesPlaced = true
+        }
+        if (state.status === 'idle') state.status = 'playing'
+        startTimer()
+
+        if (cell.isMine) {
+          cell.isRevealed = true
+          cell.isHit = true
+          endGame(false, idx)
+          return
+        }
+
+        // BFS flood fill
+        const queue = [idx]
+        const visited = new Set([idx])
+        while (queue.length) {
+          const cur = queue.shift()
+          const curCell = cells[cur]
+          if (curCell.isRevealed) continue
+          curCell.isRevealed = true
+          state.revealed++
+
+          if (curCell.neighbors === 0 && !curCell.isMine) {
+            const r = Math.floor(cur / cols),
+              c = cur % cols
+            eachNeighbor(r, c, (nr, nc) => {
+              const ni = nr * cols + nc
+              if (!visited.has(ni) && !cells[ni].isFlagged && !cells[ni].isRevealed) {
+                visited.add(ni)
+                queue.push(ni)
+              }
+            })
+          }
+        }
+
+        checkWin()
+        renderBoard()
+      }
+
+      function chord(idx) {
+        const { cells, cols } = state
+        const cell = cells[idx]
+        if (!cell.isRevealed || cell.neighbors === 0) return
+        const r = Math.floor(idx / cols),
+          c = idx % cols
+        const flagCount = eachNeighbor(r, c, (nr, nc) =>
+          cells[nr * cols + nc].isFlagged ? 1 : 0,
+        ).reduce((a, b) => a + b, 0)
+        if (flagCount !== cell.neighbors) return
+        eachNeighbor(r, c, (nr, nc) => {
+          const ni = nr * cols + nc
+          if (!cells[ni].isFlagged && !cells[ni].isRevealed) reveal(ni)
         })
-      } else {
-        cells.forEach(c => { if (c.isMine) c.isFlagged = true })
-        state.flags = state.mines
       }
 
-      updateCounts()
-      renderBoard()
+      function toggleFlag(idx) {
+        if (state.status === 'won' || state.status === 'lost') return
+        const cell = state.cells[idx]
+        if (cell.isRevealed) return
+        if (cell.isFlagged) {
+          cell.isFlagged = false
+          state.flags--
+        } else {
+          cell.isFlagged = true
+          state.flags++
+        }
+        updateCounts()
+        renderCell(idx)
+      }
 
-      setTimeout(() => {
-        overlay.classList.remove('hidden')
-        if (won) {
-          resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      function checkWin() {
+        const { cells, mines, revealed, rows, cols } = state
+        if (revealed === rows * cols - mines) {
+          endGame(true)
+        }
+      }
+
+      function endGame(won, hitIdx = -1) {
+        clearInterval(timerInterval)
+        timerInterval = null
+        state.status = won ? 'won' : 'lost'
+        const { cells, rows, cols } = state
+
+        if (!won) {
+          cells.forEach((c, i) => {
+            if (c.isMine && !c.isFlagged) c.isRevealed = true
+          })
+        } else {
+          cells.forEach(c => {
+            if (c.isMine) c.isFlagged = true
+          })
+          state.flags = state.mines
+        }
+
+        updateCounts()
+        renderBoard()
+
+        setTimeout(
+          () => {
+            overlay.classList.remove('hidden')
+            if (won) {
+              resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
           </svg>`
-          resultIcon.style.color = 'var(--safe)'
-          resultText.textContent = '恭喜，全部扫清！'
-          resultText.style.color = 'var(--safe)'
-          resultSub.textContent = `用时 ${formatTime(state.elapsed)}`
-        } else {
-          resultIcon.innerHTML = mineSvg(40)
-          resultIcon.style.color = 'var(--danger)'
-          resultText.textContent = '踩雷了！'
-          resultText.style.color = 'var(--danger)'
-          resultSub.textContent = `坚持了 ${formatTime(state.elapsed)}`
-        }
-      }, won ? 200 : 400)
-    }
+              resultIcon.style.color = 'var(--safe)'
+              resultText.textContent = '恭喜，全部扫清！'
+              resultText.style.color = 'var(--safe)'
+              resultSub.textContent = `用时 ${formatTime(state.elapsed)}`
+            } else {
+              resultIcon.innerHTML = mineSvg(40)
+              resultIcon.style.color = 'var(--danger)'
+              resultText.textContent = '踩雷了！'
+              resultText.style.color = 'var(--danger)'
+              resultSub.textContent = `坚持了 ${formatTime(state.elapsed)}`
+            }
+          },
+          won ? 200 : 400,
+        )
+      }
 
-    function mineSvg(size) {
-      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
+      function mineSvg(size) {
+        return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
         <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2"/>
         <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>
         <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2"/>
@@ -654,141 +807,160 @@
         <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="currentColor" stroke-width="2"/>
         <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="currentColor" stroke-width="2"/>
       </svg>`
-    }
+      }
 
-    function updateCounts() {
-      mineCountEl.textContent = formatCount(state.mines - state.flags)
-      flagCountEl.textContent = formatCount(state.flags)
-    }
+      function updateCounts() {
+        mineCountEl.textContent = formatCount(state.mines - state.flags)
+        flagCountEl.textContent = formatCount(state.flags)
+      }
 
-    function cellContent(cell, idx) {
-      if (cell.isFlagged && !cell.isRevealed) {
-        return `<span class="icon-flag">
+      function cellContent(cell, idx) {
+        if (cell.isFlagged && !cell.isRevealed) {
+          return `<span class="icon-flag">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
             <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
           </svg>
         </span>`
-      }
-      if (!cell.isRevealed) return ''
-      if (cell.isMine) {
-        return `<span class="icon-mine">${mineSvg(14)}</span>`
-      }
-      if (cell.neighbors === 0) return ''
-      return `<span class="${NUM_COLORS[cell.neighbors]}">${cell.neighbors}</span>`
-    }
-
-    function renderCell(idx) {
-      const el = boardEl.children[idx]
-      if (!el) return
-      const cell = state.cells[idx]
-      el.className = 'cell'
-      if (!cell.isRevealed) {
-        el.classList.add(cell.isFlagged ? 'cell-flagged' : 'cell-hidden')
-      } else if (cell.isMine) {
-        el.classList.add(cell.isHit ? 'cell-mine-hit' : 'cell-mine-show')
-      } else {
-        el.classList.add('cell-revealed')
-      }
-      el.innerHTML = cellContent(cell, idx)
-    }
-
-    function renderBoard() {
-      const { rows, cols, cells } = state
-      // Only do full re-render; for perf we could diff but board is ≤480 cells
-      if (boardEl.children.length !== rows * cols) {
-        boardEl.innerHTML = ''
-        cells.forEach((_, idx) => {
-          const el = document.createElement('div')
-          el.dataset.idx = idx
-          boardEl.appendChild(el)
-        })
-        attachEvents()
-      }
-      cells.forEach((_, idx) => renderCell(idx))
-    }
-
-    let lastTouchTime = 0
-    let longPressTimer = null
-    let isLongPress = false
-    let touchStartIdx = null
-    let eventsAttached = false
-
-    function attachEvents() {
-      if (eventsAttached) return
-      eventsAttached = true
-      boardEl.addEventListener('click', e => {
-        if (Date.now() - lastTouchTime < 450) return
-        if (state.status === 'won' || state.status === 'lost') return
-        const el = e.target.closest('[data-idx]')
-        if (!el) return
-        const idx = +el.dataset.idx
-        const cell = state.cells[idx]
-        if (cell.isRevealed) {
-          chord(idx)
-        } else {
-          reveal(idx)
-          if (!cell.isMine) el.classList.add('cell-safe-reveal')
         }
-      })
+        if (!cell.isRevealed) return ''
+        if (cell.isMine) {
+          return `<span class="icon-mine">${mineSvg(14)}</span>`
+        }
+        if (cell.neighbors === 0) return ''
+        return `<span class="${NUM_COLORS[cell.neighbors]}">${cell.neighbors}</span>`
+      }
 
-      boardEl.addEventListener('contextmenu', e => {
-        e.preventDefault()
-        if (state.status === 'won' || state.status === 'lost') return
-        const el = e.target.closest('[data-idx]')
+      function renderCell(idx) {
+        const el = boardEl.children[idx]
         if (!el) return
-        toggleFlag(+el.dataset.idx)
-      })
+        const cell = state.cells[idx]
+        el.className = 'cell'
+        if (!cell.isRevealed) {
+          el.classList.add(cell.isFlagged ? 'cell-flagged' : 'cell-hidden')
+        } else if (cell.isMine) {
+          el.classList.add(cell.isHit ? 'cell-mine-hit' : 'cell-mine-show')
+        } else {
+          el.classList.add('cell-revealed')
+        }
+        el.innerHTML = cellContent(cell, idx)
+      }
 
-      // Mobile: long press to flag, tap to reveal (no delay)
-      boardEl.addEventListener('touchstart', e => {
-        const el = e.target.closest('[data-idx]')
-        if (!el) return
-        touchStartIdx = +el.dataset.idx
-        isLongPress = false
-        longPressTimer = setTimeout(() => {
-          isLongPress = true
+      function renderBoard() {
+        const { rows, cols, cells } = state
+        // Only do full re-render; for perf we could diff but board is ≤480 cells
+        if (boardEl.children.length !== rows * cols) {
+          boardEl.innerHTML = ''
+          cells.forEach((_, idx) => {
+            const el = document.createElement('div')
+            el.dataset.idx = idx
+            boardEl.appendChild(el)
+          })
+          attachEvents()
+        }
+        cells.forEach((_, idx) => renderCell(idx))
+      }
+
+      let lastTouchTime = 0
+      let longPressTimer = null
+      let isLongPress = false
+      let touchStartIdx = null
+      let eventsAttached = false
+
+      function attachEvents() {
+        if (eventsAttached) return
+        eventsAttached = true
+        boardEl.addEventListener('click', e => {
+          if (Date.now() - lastTouchTime < 450) return
           if (state.status === 'won' || state.status === 'lost') return
-          const cell = state.cells[touchStartIdx]
-          if (!cell.isRevealed) {
-            toggleFlag(touchStartIdx)
-            if (navigator.vibrate) navigator.vibrate(50)
+          const el = e.target.closest('[data-idx]')
+          if (!el) return
+          const idx = +el.dataset.idx
+          const cell = state.cells[idx]
+          if (cell.isRevealed) {
+            chord(idx)
+          } else {
+            reveal(idx)
+            if (!cell.isMine) el.classList.add('cell-safe-reveal')
           }
-        }, 400)
-      }, { passive: true })
+        })
 
-      boardEl.addEventListener('touchend', e => {
-        lastTouchTime = Date.now()
-        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-        if (isLongPress) return
-        const el = e.target.closest('[data-idx]')
-        if (!el) return
-        const idx = +el.dataset.idx
-        if (idx !== touchStartIdx) return
-        if (state.status === 'won' || state.status === 'lost') return
-        const cell = state.cells[idx]
-        if (cell.isRevealed) {
-          chord(idx)
-        } else {
-          reveal(idx)
-          if (!cell.isMine) {
-            const cellEl = boardEl.children[idx]
-            if (cellEl) cellEl.classList.add('cell-safe-reveal')
-          }
-        }
-      }, { passive: true })
+        boardEl.addEventListener('contextmenu', e => {
+          e.preventDefault()
+          if (state.status === 'won' || state.status === 'lost') return
+          const el = e.target.closest('[data-idx]')
+          if (!el) return
+          toggleFlag(+el.dataset.idx)
+        })
 
-      boardEl.addEventListener('touchmove', () => {
-        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-        touchStartIdx = null
-      }, { passive: true })
-    }
+        // Mobile: long press to flag, tap to reveal (no delay)
+        boardEl.addEventListener(
+          'touchstart',
+          e => {
+            const el = e.target.closest('[data-idx]')
+            if (!el) return
+            touchStartIdx = +el.dataset.idx
+            isLongPress = false
+            longPressTimer = setTimeout(() => {
+              isLongPress = true
+              if (state.status === 'won' || state.status === 'lost') return
+              const cell = state.cells[touchStartIdx]
+              if (!cell.isRevealed) {
+                toggleFlag(touchStartIdx)
+                if (navigator.vibrate) navigator.vibrate(50)
+              }
+            }, 400)
+          },
+          { passive: true },
+        )
 
-    diffSelect.value = pickDefaultLevel()
-    newGameBtn.addEventListener('click', initGame)
-    resultBtn.addEventListener('click', initGame)
-    diffSelect.addEventListener('change', initGame)
+        boardEl.addEventListener(
+          'touchend',
+          e => {
+            lastTouchTime = Date.now()
+            if (longPressTimer) {
+              clearTimeout(longPressTimer)
+              longPressTimer = null
+            }
+            if (isLongPress) return
+            const el = e.target.closest('[data-idx]')
+            if (!el) return
+            const idx = +el.dataset.idx
+            if (idx !== touchStartIdx) return
+            if (state.status === 'won' || state.status === 'lost') return
+            const cell = state.cells[idx]
+            if (cell.isRevealed) {
+              chord(idx)
+            } else {
+              reveal(idx)
+              if (!cell.isMine) {
+                const cellEl = boardEl.children[idx]
+                if (cellEl) cellEl.classList.add('cell-safe-reveal')
+              }
+            }
+          },
+          { passive: true },
+        )
 
-    initGame()
-  </script>
-</body>
+        boardEl.addEventListener(
+          'touchmove',
+          () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer)
+              longPressTimer = null
+            }
+            touchStartIdx = null
+          },
+          { passive: true },
+        )
+      }
+
+      diffSelect.value = pickDefaultLevel()
+      newGameBtn.addEventListener('click', initGame)
+      resultBtn.addEventListener('click', initGame)
+      diffSelect.addEventListener('change', initGame)
+
+      initGame()
+    </script>
+    <script src="gesture-guard.js"></script>
+  </body>
 </html>

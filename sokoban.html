@@ -36,13 +36,23 @@
           --accent: #d97706;
         }
       }
-      html[data-theme="dark"] {
-        --bg: #0c0a09; --bg-raised: #1c1917; --bg-overlay: #292524;
-        --fg: #fafaf9; --fg-muted: #a8a29e; --border: #44403c; --accent: #f59e0b;
+      html[data-theme='dark'] {
+        --bg: #0c0a09;
+        --bg-raised: #1c1917;
+        --bg-overlay: #292524;
+        --fg: #fafaf9;
+        --fg-muted: #a8a29e;
+        --border: #44403c;
+        --accent: #f59e0b;
       }
-      html[data-theme="light"] {
-        --bg: #fafaf9; --bg-raised: #f5f5f4; --bg-overlay: #e7e5e4;
-        --fg: #1c1917; --fg-muted: #78716c; --border: #d6d3d1; --accent: #d97706;
+      html[data-theme='light'] {
+        --bg: #fafaf9;
+        --bg-raised: #f5f5f4;
+        --bg-overlay: #e7e5e4;
+        --fg: #1c1917;
+        --fg-muted: #78716c;
+        --border: #d6d3d1;
+        --accent: #d97706;
       }
       canvas {
         image-rendering: pixelated;
@@ -94,8 +104,11 @@
         </svg>
       </div>
       <h1 class="text-xl font-semibold tracking-tight">推箱子</h1>
-      <button id="theme-toggle" title="切换明暗主题"
-        class="ml-1 w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
+      <button
+        id="theme-toggle"
+        title="切换明暗主题"
+        class="ml-1 w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+      ></button>
     </div>
 
     <!-- 信息栏 -->
@@ -2601,5 +2614,6 @@
       // ── 启动
       loadLevel(0)
     </script>
+    <script src="gesture-guard.js"></script>
   </body>
 </html>

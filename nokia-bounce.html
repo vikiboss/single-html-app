@@ -2,11 +2,18 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Nokia Bounce — 滚球</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      html, body { overscroll-behavior: none; touch-action: manipulation; }
+      html,
+      body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+      }
       :root {
         --bg: #0a0a12;
         --lcd-bg: #9bbc0f;
@@ -20,7 +27,7 @@
         --toggle-color: #38384a;
         --toggle-hover: #5a5a70;
       }
-      html[data-theme="light"] {
+      html[data-theme='light'] {
         --phone-body: linear-gradient(170deg, #dddce6 0%, #d0cfda 50%, #d4d3de 100%);
         --btn-bg: linear-gradient(180deg, #cbcad4 0%, #bbbac6 100%);
         --page-bg: radial-gradient(ellipse 80% 60% at 50% 0%, #e4e2f0 0%, #f0eff8 70%);
@@ -28,7 +35,7 @@
         --toggle-color: #aaaabc;
         --toggle-hover: #888898;
       }
-      html[data-theme="dark"] {
+      html[data-theme='dark'] {
         --phone-body: linear-gradient(170deg, #2c2c3a 0%, #1c1c26 50%, #222230 100%);
         --btn-bg: linear-gradient(180deg, #32323e 0%, #222230 100%);
         --page-bg: radial-gradient(ellipse 80% 60% at 50% 0%, #1a1a2e 0%, #0a0a12 70%);
@@ -285,14 +292,17 @@
 
       <!-- Keyboard hint -->
       <div class="flex items-center gap-3">
-        <div class="text-[11px] tracking-wide select-none" style="color: var(--hint-color);">
+        <div class="text-[11px] tracking-wide select-none" style="color: var(--hint-color)">
           ← → 移动 &nbsp;·&nbsp; Enter / OK 开始
         </div>
-        <button id="theme-toggle" title="切换明暗主题"
+        <button
+          id="theme-toggle"
+          title="切换明暗主题"
           class="w-7 h-7 flex items-center justify-center rounded transition-colors"
-          style="color: var(--toggle-color);"
-          onmouseenter="this.style.color='var(--toggle-hover)'"
-          onmouseleave="this.style.color='var(--toggle-color)'"></button>
+          style="color: var(--toggle-color)"
+          onmouseenter="this.style.color = 'var(--toggle-hover)'"
+          onmouseleave="this.style.color = 'var(--toggle-color)'"
+        ></button>
       </div>
     </div>
 
@@ -954,5 +964,6 @@
 
       requestAnimationFrame(loop)
     </script>
+    <script src="gesture-guard.js"></script>
   </body>
 </html>
