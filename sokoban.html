@@ -27,13 +27,13 @@
       }
       @media (prefers-color-scheme: light) {
         :root {
-          --bg: #fafaf9;
-          --bg-raised: #f5f5f4;
-          --bg-overlay: #e7e5e4;
-          --fg: #1c1917;
-          --fg-muted: #78716c;
-          --border: #d6d3d1;
-          --accent: #d97706;
+          --bg: #f8fafc;
+          --bg-raised: #f1f5f9;
+          --bg-overlay: #e2e8f0;
+          --fg: #0f172a;
+          --fg-muted: #475569;
+          --border: #cbd5e1;
+          --accent: #b45309;
         }
       }
       html[data-theme='dark'] {
@@ -46,13 +46,13 @@
         --accent: #f59e0b;
       }
       html[data-theme='light'] {
-        --bg: #fafaf9;
-        --bg-raised: #f5f5f4;
-        --bg-overlay: #e7e5e4;
-        --fg: #1c1917;
-        --fg-muted: #78716c;
-        --border: #d6d3d1;
-        --accent: #d97706;
+        --bg: #f8fafc;
+        --bg-raised: #f1f5f9;
+        --bg-overlay: #e2e8f0;
+        --fg: #0f172a;
+        --fg-muted: #475569;
+        --border: #cbd5e1;
+        --accent: #b45309;
       }
       canvas {
         image-rendering: pixelated;
@@ -91,28 +91,35 @@
     </style>
   </head>
   <body
-    class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex flex-col items-center justify-center gap-4 py-6"
+    class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex flex-col items-center justify-center gap-4 py-6 relative overflow-x-hidden"
   >
+    <div
+      class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.08),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(99,102,241,0.12),_transparent_60%)]"
+    ></div>
     <!-- 标题栏 -->
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center">
-        <svg class="w-5 h-5 text-stone-900" viewBox="0 0 20 20" fill="currentColor">
-          <rect x="3" y="3" width="6" height="6" rx="1" />
-          <rect x="11" y="3" width="6" height="6" rx="1" opacity=".5" />
-          <rect x="3" y="11" width="6" height="6" rx="1" opacity=".5" />
-          <rect x="11" y="11" width="6" height="6" rx="1" />
-        </svg>
+    <div class="relative z-10 w-full max-w-[720px] px-4 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center">
+          <svg class="w-5 h-5 text-stone-900" viewBox="0 0 20 20" fill="currentColor">
+            <rect x="3" y="3" width="6" height="6" rx="1" />
+            <rect x="11" y="3" width="6" height="6" rx="1" opacity=".5" />
+            <rect x="3" y="11" width="6" height="6" rx="1" opacity=".5" />
+            <rect x="11" y="11" width="6" height="6" rx="1" />
+          </svg>
+        </div>
+        <h1 class="text-xl font-semibold tracking-tight">推箱子</h1>
       </div>
-      <h1 class="text-xl font-semibold tracking-tight">推箱子</h1>
       <button
         id="theme-toggle"
         title="切换明暗主题"
-        class="ml-1 w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+        class="w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
       ></button>
     </div>
 
     <!-- 信息栏 -->
-    <div class="flex items-center gap-6 text-sm text-[var(--fg-muted)]">
+    <div
+      class="relative z-10 w-full max-w-[720px] px-4 flex flex-wrap items-center justify-center gap-4 text-sm text-[var(--fg-muted)]"
+    >
       <div class="flex items-center gap-1.5">
         <span>关卡</span>
         <span id="levelNum" class="text-[var(--fg)] font-semibold tabular-nums">1</span>
@@ -132,35 +139,39 @@
     </div>
 
     <!-- 游戏画布 -->
-    <div class="relative" id="canvasWrap">
-      <canvas id="game" class="rounded-md block"></canvas>
-      <!-- 胜利覆盖层 -->
-      <div
-        id="winOverlay"
-        class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md bg-stone-950/80 backdrop-blur-sm"
-      >
-        <div class="text-4xl font-bold text-[var(--accent)] tracking-tight">通关！</div>
-        <div class="text-sm text-[var(--fg-muted)]">
-          <span id="winSteps"></span>
-          步 ·
-          <span id="winPushes"></span>
-          次推箱
-        </div>
-        <button
-          id="nextLevelBtn"
-          class="mt-2 px-5 py-2 rounded bg-[var(--accent)] text-stone-900 text-sm font-semibold hover:brightness-110 active:brightness-90 transition-all"
+    <div class="relative z-10 w-full max-w-[760px] px-4 flex items-center justify-center" id="boardFrame">
+      <div class="relative" id="canvasWrap">
+        <canvas id="game" class="rounded-md block"></canvas>
+        <!-- 胜利覆盖层 -->
+        <div
+          id="winOverlay"
+          class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md bg-stone-950/80 backdrop-blur-sm"
         >
-          下一关
-        </button>
+          <div class="text-4xl font-bold text-[var(--accent)] tracking-tight">恭喜通关</div>
+          <div class="text-sm text-center text-[var(--fg-muted)]">
+            <span id="winSteps"></span>
+            步 ·
+            <span id="winPushes"></span>
+            次推箱
+          </div>
+          <button
+            id="nextLevelBtn"
+            class="mt-2 px-5 py-2 rounded bg-[var(--accent)] text-stone-900 text-sm font-semibold hover:brightness-110 active:brightness-90 transition-all"
+          >
+            下一关
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 操作按钮 -->
-    <div class="flex items-center gap-2">
+    <div
+      class="relative z-10 w-full max-w-[720px] px-4 flex flex-wrap items-center justify-center gap-2"
+    >
       <button
         id="prevBtn"
         title="上一关"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-raised)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
       >
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
           <path d="M10 4L6 8l4 4" />
@@ -170,7 +181,7 @@
       <button
         id="resetBtn"
         title="重置 (R)"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-raised)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
       >
         <svg
           class="w-3.5 h-3.5"
@@ -187,7 +198,7 @@
       <button
         id="undoBtn"
         title="撤销 (Z)"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-raised)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
       >
         <svg
           class="w-3.5 h-3.5"
@@ -210,7 +221,7 @@
       <button
         id="nextBtn"
         title="下一关"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-raised)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors"
       >
         下一关
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
@@ -220,12 +231,37 @@
     </div>
 
     <!-- 关卡选择 -->
-    <div class="flex flex-wrap justify-center gap-1.5 max-w-sm">
-      <div id="levelDots" class="flex flex-wrap justify-center gap-1.5"></div>
+    <div class="relative z-10 w-full px-4 flex items-center justify-center">
+      <details id="levelPanel" class="group relative group-open:pt-56">
+        <summary
+          class="list-none flex items-center justify-center gap-2 rounded border border-[var(--border)] bg-[var(--bg-raised)] px-3 py-2 text-xs text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors cursor-pointer"
+        >
+          <span class="text-[var(--fg)] font-semibold">关卡</span>
+          <span id="levelNow" class="tabular-nums text-[var(--fg)]">1</span>
+          <span class="text-[var(--border)]">/</span>
+          <span id="levelTotalInline" class="tabular-nums">100</span>
+          <span id="levelProgress" class="hidden sm:inline">已通关 0</span>
+          <svg
+            class="w-3.5 h-3.5 text-[var(--fg-muted)] transition-transform group-open:rotate-180"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M4 6l4 4 4-4" />
+          </svg>
+        </summary>
+        <div
+          class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-[360px] max-w-[90vw] rounded-md border border-[var(--border)] bg-[var(--bg-raised)] p-2"
+        >
+          <div
+            id="levelDots"
+            class="grid grid-cols-8 sm:grid-cols-10 gap-1 max-h-44 overflow-auto pr-1"
+          ></div>
+        </div>
+      </details>
     </div>
 
     <!-- 按键提示 -->
-    <div class="flex items-center gap-4 text-xs text-[var(--fg-muted)]">
+    <div class="relative z-10 mt-2 flex flex-wrap items-center justify-center gap-3 text-xs text-[var(--fg-muted)] px-4">
       <span>↑↓←→ / WASD 移动</span>
       <span class="w-px h-3 bg-[var(--border)]"></span>
       <span>Z 撤销</span>
@@ -409,11 +445,16 @@
       // ── 渲染
       const canvas = document.getElementById('game')
       const ctx = canvas.getContext('2d')
+      const boardFrame = document.getElementById('boardFrame')
       const MAX_CELL = 56
       const MIN_CELL = 28
 
       function getCellSize(cols, rows) {
-        const maxW = Math.min(window.innerWidth - 32, 560)
+        const styles = getComputedStyle(boardFrame)
+        const padding =
+          parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0')
+        const frameW = Math.max(0, boardFrame.clientWidth - padding)
+        const maxW = Math.min(frameW || window.innerWidth - 32, 640)
         const maxH = Math.min(window.innerHeight * 0.55, 480)
         const byW = Math.floor(maxW / cols)
         const byH = Math.floor(maxH / rows)
@@ -560,28 +601,73 @@
       function drawPlayer(x, y, T, onGoal, dark) {
         const cx = x + T / 2,
           cy = y + T / 2
-        const r = T * 0.36
-        const headR = r * 0.42
+        const bodyW = T * 0.46
+        const bodyH = T * 0.52
+        const bodyX = cx - bodyW / 2
+        const bodyY = cy - bodyH / 2 + T * 0.08
+        const headR = T * 0.18
+
+        // 影子
+        ctx.fillStyle = dark ? 'rgba(0,0,0,0.35)' : 'rgba(28,25,23,0.2)'
+        ctx.beginPath()
+        ctx.ellipse(cx, y + T * 0.78, T * 0.26, T * 0.12, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 背包
+        ctx.fillStyle = dark ? '#1f2937' : '#111827'
+        ctx.beginPath()
+        roundRect(ctx, bodyX - bodyW * 0.12, bodyY + bodyH * 0.2, bodyW * 0.22, bodyH * 0.5, 3)
+        ctx.fill()
 
         // 身体
-        ctx.fillStyle = dark ? '#6366f1' : '#4f46e5'
+        const bodyGrad = ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY + bodyH)
+        bodyGrad.addColorStop(0, dark ? '#6366f1' : '#4f46e5')
+        bodyGrad.addColorStop(1, dark ? '#4338ca' : '#3730a3')
+        ctx.fillStyle = bodyGrad
         ctx.beginPath()
-        ctx.ellipse(cx, cy + r * 0.18, r * 0.55, r * 0.62, 0, 0, Math.PI * 2)
+        roundRect(ctx, bodyX, bodyY, bodyW, bodyH, 6)
         ctx.fill()
 
-        // 头
-        ctx.fillStyle = dark ? '#fde68a' : '#fbbf24'
+        // 胸前高光
+        ctx.fillStyle = dark ? 'rgba(199,210,254,0.35)' : 'rgba(224,231,255,0.5)'
         ctx.beginPath()
-        ctx.arc(cx, cy - r * 0.35, headR, 0, Math.PI * 2)
+        roundRect(ctx, bodyX + bodyW * 0.12, bodyY + bodyH * 0.1, bodyW * 0.25, bodyH * 0.18, 4)
         ctx.fill()
 
-        // 眼睛
-        const eyeR = Math.max(1.5, headR * 0.22)
+        // 腿/鞋
+        ctx.fillStyle = dark ? '#0f172a' : '#1e293b'
+        ctx.beginPath()
+        roundRect(ctx, cx - bodyW * 0.32, bodyY + bodyH * 0.78, bodyW * 0.25, bodyH * 0.2, 4)
+        roundRect(ctx, cx + bodyW * 0.07, bodyY + bodyH * 0.78, bodyW * 0.25, bodyH * 0.2, 4)
+        ctx.fill()
+
+        // 头部
+        const headY = bodyY - headR * 0.6
+        const skin = dark ? '#fde68a' : '#fbbf24'
+        ctx.fillStyle = skin
+        ctx.beginPath()
+        ctx.arc(cx, headY, headR, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 帽檐
+        ctx.fillStyle = dark ? '#1f2937' : '#0f172a'
+        ctx.beginPath()
+        ctx.ellipse(cx, headY - headR * 0.9, headR * 0.9, headR * 0.35, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 眼睛与嘴
         ctx.fillStyle = dark ? '#1c1917' : '#1c1917'
+        const eyeR = Math.max(1.2, headR * 0.18)
         ctx.beginPath()
-        ctx.arc(cx - headR * 0.3, cy - r * 0.38, eyeR, 0, Math.PI * 2)
-        ctx.arc(cx + headR * 0.3, cy - r * 0.38, eyeR, 0, Math.PI * 2)
+        ctx.arc(cx - headR * 0.35, headY - headR * 0.1, eyeR, 0, Math.PI * 2)
+        ctx.arc(cx + headR * 0.25, headY - headR * 0.1, eyeR, 0, Math.PI * 2)
         ctx.fill()
+        ctx.strokeStyle = dark ? '#1c1917' : '#1c1917'
+        ctx.lineWidth = Math.max(1, T / 28)
+        ctx.beginPath()
+        ctx.moveTo(cx - headR * 0.15, headY + headR * 0.35)
+        ctx.lineTo(cx + headR * 0.2, headY + headR * 0.35)
+        ctx.stroke()
       }
 
       function roundRect(ctx, x, y, w, h, r) {
@@ -599,6 +685,7 @@
       // ── UI 更新
       function updateUI() {
         document.getElementById('levelNum').textContent = currentLevel + 1
+        document.getElementById('levelNow').textContent = currentLevel + 1
         document.getElementById('moveCount').textContent = moves
         document.getElementById('pushCount').textContent = pushes
       }
@@ -606,21 +693,27 @@
       function updateDots() {
         const container = document.getElementById('levelDots')
         container.innerHTML = ''
+        let doneCount = 0
         LEVELS.forEach((_, i) => {
           const dot = document.createElement('button')
           const done = localStorage.getItem(`sokoban_done_${i}`) === '1'
+          if (done) doneCount++
           dot.className = [
-            'w-5 h-5 rounded text-xs font-medium transition-all',
+            'w-6 h-6 rounded text-[10px] font-semibold transition-all tabular-nums',
             i === currentLevel
               ? 'bg-[var(--accent)] text-stone-900 scale-110'
               : done
-                ? 'bg-stone-700 text-stone-300 hover:brightness-125'
-                : 'bg-[var(--bg-overlay)] text-[var(--fg-muted)] hover:brightness-125 border border-[var(--border)]',
+                ? 'bg-stone-700 text-stone-200 hover:brightness-110'
+                : 'bg-[var(--bg-overlay)] text-[var(--fg-muted)] hover:brightness-110 border border-[var(--border)]',
           ].join(' ')
           dot.textContent = i + 1
-          dot.addEventListener('click', () => loadLevel(i))
+          dot.addEventListener('click', () => {
+            loadLevel(i)
+            document.getElementById('levelPanel').open = false
+          })
           container.appendChild(dot)
         })
+        document.getElementById('levelProgress').textContent = `已通关 ${doneCount}`
       }
 
       // ── 彩屑动画
