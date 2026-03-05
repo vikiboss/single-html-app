@@ -62,9 +62,6 @@
 
     * {
       -webkit-tap-highlight-color: transparent;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
     }
 
     body {
@@ -87,7 +84,6 @@
       font-weight: 700;
       font-family: 'SF Mono', 'Fira Code', monospace;
       cursor: pointer;
-      user-select: none;
       border-radius: 4px;
       transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
       position: relative;
@@ -327,7 +323,7 @@
       </div>
     </div>
 
-    <p class="text-xs text-muted">双击数字可快速展开・右键可标记（移动端长按）</p>
+    <p class="text-xs text-muted">双击数字快速展开・右键标记（移动端双击）</p>
   </div>
 
   <script type="module">
@@ -645,16 +641,17 @@
       cells.forEach((_, idx) => renderCell(idx))
     }
 
-    let longPressTimer = null
-    let touchStartIdx = null
-    let longPressFired = false
-    let touchMoved = false
+    let lastTouchTime = 0
+    let lastTapTime = 0
+    let lastTapIdx = null
+    let singleTapTimer = null
     let eventsAttached = false
 
     function attachEvents() {
       if (eventsAttached) return
       eventsAttached = true
       boardEl.addEventListener('click', e => {
+        if (Date.now() - lastTouchTime < 450) return
         if (state.status === 'won' || state.status === 'lost') return
         const el = e.target.closest('[data-idx]')
         if (!el) return
@@ -676,45 +673,45 @@
         toggleFlag(+el.dataset.idx)
       })
 
-      // Mobile long press for flag
-      boardEl.addEventListener('touchstart', e => {
+      // Mobile double tap for flag
+      boardEl.addEventListener('touchend', e => {
         const el = e.target.closest('[data-idx]')
         if (!el) return
-        e.preventDefault()
-        touchStartIdx = +el.dataset.idx
-        touchMoved = false
-        longPressFired = false
-        longPressTimer = setTimeout(() => {
-          longPressFired = true
-          toggleFlag(touchStartIdx)
-          longPressTimer = null
-        }, 500)
-      }, { passive: false })
+        lastTouchTime = Date.now()
+        const idx = +el.dataset.idx
+        const now = Date.now()
+        const isDoubleTap = lastTapIdx === idx && (now - lastTapTime) < 300
+        lastTapTime = now
+        lastTapIdx = idx
 
-      boardEl.addEventListener('touchend', e => {
-        if (touchStartIdx === null) return
-        e.preventDefault()
-        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-        if (!longPressFired && !touchMoved) {
-          const idx = touchStartIdx
+        if (isDoubleTap) {
+          if (singleTapTimer) { clearTimeout(singleTapTimer); singleTapTimer = null }
+          const cell = state.cells[idx]
+          if (!cell.isRevealed) toggleFlag(idx)
+          return
+        }
+
+        if (singleTapTimer) clearTimeout(singleTapTimer)
+        singleTapTimer = setTimeout(() => {
           const cell = state.cells[idx]
           if (cell.isRevealed) {
             chord(idx)
           } else {
             reveal(idx)
             if (!cell.isMine) {
-              const el = boardEl.children[idx]
-              if (el) el.classList.add('cell-safe-reveal')
+              const cellEl = boardEl.children[idx]
+              if (cellEl) cellEl.classList.add('cell-safe-reveal')
             }
           }
-        }
-        touchStartIdx = null
-      }, { passive: false })
+          singleTapTimer = null
+        }, 260)
+      }, { passive: true })
 
       boardEl.addEventListener('touchmove', () => {
-        touchMoved = true
-        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-      }, { passive: false })
+        if (singleTapTimer) { clearTimeout(singleTapTimer); singleTapTimer = null }
+        lastTapTime = 0
+        lastTapIdx = null
+      }, { passive: true })
     }
 
     diffSelect.value = pickDefaultLevel()
