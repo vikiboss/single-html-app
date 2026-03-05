@@ -14,6 +14,8 @@
         --bg: #09090b;
         --bg-raised: #18181b;
         --bg-overlay: #27272a;
+        --overlay-bg: rgba(15, 15, 20, 0.88);
+        --overlay-fg: #e7e4dc;
         --fg: #f4f4f5;
         --fg-muted: #a1a1aa;
         --border: #3f3f46;
@@ -26,6 +28,8 @@
           --bg: #faf9f5;
           --bg-raised: #f0ede6;
           --bg-overlay: #e8e4da;
+          --overlay-bg: rgba(248, 246, 240, 0.9);
+          --overlay-fg: #2a2620;
           --fg: #1a1a1a;
           --fg-muted: #71717a;
           --border: #d4d4d8;
@@ -40,6 +44,8 @@
         --bg: #09090b;
         --bg-raised: #18181b;
         --bg-overlay: #27272a;
+        --overlay-bg: rgba(15, 15, 20, 0.88);
+        --overlay-fg: #e7e4dc;
         --fg: #f4f4f5;
         --fg-muted: #a1a1aa;
         --border: #3f3f46;
@@ -51,6 +57,8 @@
         --bg: #faf9f5;
         --bg-raised: #f0ede6;
         --bg-overlay: #e8e4da;
+        --overlay-bg: rgba(248, 246, 240, 0.9);
+        --overlay-fg: #2a2620;
         --fg: #1a1a1a;
         --fg-muted: #71717a;
         --border: #d4d4d8;
@@ -216,21 +224,23 @@
         <!-- Game over / win overlay -->
         <div
           id="overlay"
-          class="absolute inset-0 rounded bg-black/80 backdrop-blur-sm flex-col items-center justify-center z-20"
+          class="absolute inset-0 rounded bg-[var(--bg)]/85 backdrop-blur-sm flex-col items-center justify-center z-20"
           style="display: none"
         >
-          <div id="overlay-title" class="text-3xl font-black mb-5 text-[var(--fg)]">游戏结束</div>
+          <div id="overlay-title" class="text-3xl font-black mb-5 text-[var(--overlay-fg)]">
+            游戏结束
+          </div>
           <div class="flex gap-3">
             <button
               id="btn-continue"
-              class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--bg-overlay)] text-[var(--fg)]"
+              class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--bg-overlay)] text-[var(--overlay-fg)]"
               style="display: none"
             >
               继续游戏
             </button>
             <button
               id="btn-retry"
-              class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--accent)] text-white"
+              class="font-semibold rounded px-5 py-2 transition-opacity hover:opacity-80 bg-[var(--accent)] text-[var(--overlay-fg)]"
             >
               再来一局
             </button>

@@ -14,6 +14,8 @@
         --bg: #09090b;
         --bg-raised: #18181b;
         --bg-overlay: #27272a;
+        --overlay-bg: rgba(9, 9, 11, 0.85);
+        --badge-bg: rgba(9, 9, 11, 0.8);
         --fg: #f4f4f5;
         --fg-muted: #a1a1aa;
         --border: #3f3f46;
@@ -27,6 +29,8 @@
           --bg: #f4f4f5;
           --bg-raised: #ffffff;
           --bg-overlay: #e4e4e7;
+          --overlay-bg: rgba(244, 244, 245, 0.88);
+          --badge-bg: rgba(244, 244, 245, 0.8);
           --fg: #09090b;
           --fg-muted: #71717a;
           --border: #d4d4d8;
@@ -41,6 +45,8 @@
         --bg: #09090b;
         --bg-raised: #18181b;
         --bg-overlay: #27272a;
+        --overlay-bg: rgba(9, 9, 11, 0.85);
+        --badge-bg: rgba(9, 9, 11, 0.8);
         --fg: #f4f4f5;
         --fg-muted: #a1a1aa;
         --border: #3f3f46;
@@ -52,6 +58,8 @@
         --bg: #f4f4f5;
         --bg-raised: #ffffff;
         --bg-overlay: #e4e4e7;
+        --overlay-bg: rgba(244, 244, 245, 0.88);
+        --badge-bg: rgba(244, 244, 245, 0.8);
         --fg: #09090b;
         --fg-muted: #71717a;
         --border: #d4d4d8;
@@ -134,7 +142,7 @@
         <!-- Overlay -->
         <div
           id="overlay"
-          class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-zinc-950/85 backdrop-blur-sm fade-in"
+          class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-[var(--overlay-bg)] backdrop-blur-sm fade-in"
         >
           <div id="overlay-icon" class="text-4xl mb-3 select-none">🐍</div>
           <div id="overlay-title" class="text-xl font-bold mb-1">贪吃蛇</div>
@@ -155,7 +163,7 @@
         <!-- Pause badge -->
         <div
           id="pause-badge"
-          class="hidden absolute top-2 right-2 bg-zinc-900/80 backdrop-blur-sm border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--fg-muted)]"
+          class="hidden absolute top-2 right-2 bg-[var(--badge-bg)] backdrop-blur-sm border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--fg-muted)]"
         >
           已暂停
         </div>

@@ -22,6 +22,16 @@
         --lcd-light: #8bac0f;
         --phone-body: linear-gradient(170deg, #2c2c3a 0%, #1c1c26 50%, #222230 100%);
         --btn-bg: linear-gradient(180deg, #32323e 0%, #222230 100%);
+        --ok-bg: radial-gradient(circle at 38% 35%, #3a3a4e, #1e1e28);
+        --ok-bg-active: radial-gradient(circle at 38% 35%, #22222e, #101014);
+        --ok-shadow:
+          0 4px 10px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.07),
+          0 0 0 1px rgba(0, 0, 0, 0.6);
+        --ok-shadow-active:
+          0 1px 5px rgba(0, 0, 0, 0.7),
+          inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        --ok-text: #484860;
         --page-bg: radial-gradient(ellipse 80% 60% at 50% 0%, #1a1a2e 0%, #0a0a12 70%);
         --hint-color: #2e2e3e;
         --toggle-color: #38384a;
@@ -30,6 +40,16 @@
       html[data-theme='light'] {
         --phone-body: linear-gradient(170deg, #dddce6 0%, #d0cfda 50%, #d4d3de 100%);
         --btn-bg: linear-gradient(180deg, #cbcad4 0%, #bbbac6 100%);
+        --ok-bg: radial-gradient(circle at 38% 35%, #f2f1f7, #cfcdd8);
+        --ok-bg-active: radial-gradient(circle at 38% 35%, #e0dee8, #bab8c6);
+        --ok-shadow:
+          0 4px 10px rgba(31, 31, 46, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 0.7),
+          0 0 0 1px rgba(31, 31, 46, 0.25);
+        --ok-shadow-active:
+          0 1px 5px rgba(31, 31, 46, 0.25),
+          inset 0 2px 6px rgba(31, 31, 46, 0.2);
+        --ok-text: #6c6c7a;
         --page-bg: radial-gradient(ellipse 80% 60% at 50% 0%, #e4e2f0 0%, #f0eff8 70%);
         --hint-color: #888898;
         --toggle-color: #aaaabc;
@@ -38,6 +58,16 @@
       html[data-theme='dark'] {
         --phone-body: linear-gradient(170deg, #2c2c3a 0%, #1c1c26 50%, #222230 100%);
         --btn-bg: linear-gradient(180deg, #32323e 0%, #222230 100%);
+        --ok-bg: radial-gradient(circle at 38% 35%, #3a3a4e, #1e1e28);
+        --ok-bg-active: radial-gradient(circle at 38% 35%, #22222e, #101014);
+        --ok-shadow:
+          0 4px 10px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.07),
+          0 0 0 1px rgba(0, 0, 0, 0.6);
+        --ok-shadow-active:
+          0 1px 5px rgba(0, 0, 0, 0.7),
+          inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        --ok-text: #484860;
         --page-bg: radial-gradient(ellipse 80% 60% at 50% 0%, #1a1a2e 0%, #0a0a12 70%);
         --hint-color: #2e2e3e;
         --toggle-color: #38384a;
@@ -52,11 +82,11 @@
       .phone-shell {
         background: var(--phone-body);
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.08),
-          inset -1px 0 0 rgba(255, 255, 255, 0.02),
-          0 40px 100px rgba(0, 0, 0, 0.95),
-          0 0 0 1px rgba(255, 255, 255, 0.04),
-          0 0 80px rgba(155, 188, 15, 0.06);
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          inset -1px 0 0 rgba(255, 255, 255, 0.015),
+          0 18px 40px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(255, 255, 255, 0.03),
+          0 0 30px rgba(155, 188, 15, 0.04);
       }
 
       .screen-bezel {
@@ -90,11 +120,9 @@
       }
 
       .btn-round {
-        background: var(--btn-bg);
-        box-shadow:
-          0 4px 8px rgba(0, 0, 0, 0.7),
-          inset 0 1px 0 rgba(255, 255, 255, 0.06),
-          0 0 0 1px rgba(0, 0, 0, 0.6);
+        background: var(--ok-bg);
+        box-shadow: var(--ok-shadow);
+        color: var(--ok-text);
         transition:
           box-shadow 0.08s ease,
           transform 0.08s ease,
@@ -107,20 +135,14 @@
 
       .btn-round:active,
       .btn-round.pressed {
-        background: linear-gradient(180deg, #1a1a22 0%, #141418 100%);
-        box-shadow:
-          0 1px 4px rgba(0, 0, 0, 0.7),
-          inset 0 2px 6px rgba(0, 0, 0, 0.5),
-          0 0 0 1px rgba(0, 0, 0, 0.6);
+        background: var(--ok-bg-active);
+        box-shadow: var(--ok-shadow-active);
         transform: translateY(1px);
       }
 
       .btn-ok {
-        background: radial-gradient(circle at 38% 35%, #3a3a4e, #1e1e28);
-        box-shadow:
-          0 4px 10px rgba(0, 0, 0, 0.7),
-          inset 0 1px 0 rgba(255, 255, 255, 0.07),
-          0 0 0 1px rgba(0, 0, 0, 0.6);
+        background: var(--ok-bg);
+        box-shadow: var(--ok-shadow);
         transition:
           box-shadow 0.08s ease,
           transform 0.08s ease;
@@ -130,11 +152,9 @@
       }
 
       .btn-ok:active {
-        background: radial-gradient(circle at 38% 35%, #22222e, #101014);
+        background: var(--ok-bg-active);
         transform: translateY(1px) scale(0.96);
-        box-shadow:
-          0 1px 5px rgba(0, 0, 0, 0.7),
-          inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        box-shadow: var(--ok-shadow-active);
       }
 
       .btn-soft {
@@ -244,7 +264,7 @@
             class="btn-round rounded-full w-[54px] h-[54px] flex items-center justify-center"
             aria-label="向左"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#4a4a60">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
             </svg>
           </button>
@@ -255,7 +275,9 @@
             class="btn-ok rounded-full w-11 h-11 flex items-center justify-center"
             aria-label="开始"
           >
-            <span class="text-[10px] font-bold text-[#484860] tracking-wider select-none">OK</span>
+            <span class="text-[10px] font-bold text-[var(--ok-text)] tracking-wider select-none">
+              OK
+            </span>
           </button>
 
           <!-- Right -->
@@ -264,23 +286,9 @@
             class="btn-round rounded-full w-[54px] h-[54px] flex items-center justify-center"
             aria-label="向右"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#4a4a60">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
             </svg>
-          </button>
-        </div>
-
-        <!-- Soft keys row -->
-        <div class="flex gap-3 mt-4">
-          <button
-            class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
-          >
-            菜单
-          </button>
-          <button
-            class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
-          >
-            返回
           </button>
         </div>
 
