@@ -64,6 +64,7 @@
       }
       canvas {
         image-rendering: pixelated;
+        touch-action: none;
       }
       @keyframes pop {
         0% {
@@ -785,13 +786,22 @@
       canvas.addEventListener(
         'touchstart',
         e => {
+          e.preventDefault()
           touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }
         },
-        { passive: true },
+        { passive: false },
+      )
+      canvas.addEventListener(
+        'touchmove',
+        e => {
+          e.preventDefault()
+        },
+        { passive: false },
       )
       canvas.addEventListener(
         'touchend',
         e => {
+          e.preventDefault()
           if (!touchStart) return
           const dx = e.changedTouches[0].clientX - touchStart.x
           const dy = e.changedTouches[0].clientY - touchStart.y
@@ -802,7 +812,7 @@
           else move(dy > 0 ? 1 : -1, 0)
           touchStart = null
         },
-        { passive: true },
+        { passive: false },
       )
 
       document.getElementById('resetBtn').addEventListener('click', () => loadLevel(currentLevel))
