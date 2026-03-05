@@ -61,10 +61,12 @@
     <!-- 移动端：flex-col 整体居中；桌面端：display:contents 透明，子项回到 body flex-row -->
     <div class="flex flex-col gap-2 sm:contents">
 
+    <!-- 移动端悬浮主题切换 -->
+    <button id="theme-toggle-m" title="切换明暗主题"
+      class="sm:hidden fixed top-3 right-3 z-50 w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
+
     <!-- ── 移动端专属：顶部统计栏 ── -->
     <div class="sm:hidden w-full relative flex items-center justify-around bg-[var(--bg-raised)] border border-[var(--border)] rounded-md px-3 py-2">
-      <button id="theme-toggle-m" title="切换明暗主题"
-        class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
       <div class="text-center">
         <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">分数</p>
         <p id="scoreElM" class="text-base font-black text-[var(--accent)] leading-none mt-0.5">0</p>
@@ -157,13 +159,13 @@
           </div>
         </div>
 
-        <!-- Theme toggle -->
-        <button id="theme-toggle" title="切换明暗主题"
-          class="w-8 h-8 self-end flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
-
         <!-- Key hints: flex-1 to fill remaining height -->
         <div class="flex flex-col flex-1 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
-          <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)] mb-2">操作键</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">操作键</p>
+            <button id="theme-toggle" title="切换明暗主题"
+              class="w-5 h-5 flex items-center justify-center rounded text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors -mr-0.5 shrink-0"></button>
+          </div>
           <div class="space-y-1.5 text-[11px] text-[var(--fg-muted)]">
             <div class="flex items-center gap-1.5">
               <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">← →</span>

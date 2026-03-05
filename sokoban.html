@@ -227,6 +227,7 @@
       document.getElementById('theme-toggle').addEventListener('click', () => {
         _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
         _updateThemeIcon()
+        render()
       })
       function _updateThemeIcon() {
         const isDark = _html.dataset.theme === 'dark'
