@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>数独</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
   <style>
       html, body { touch-action: manipulation; }
     :root {
@@ -19,6 +20,17 @@
         --accent-mid: rgba(79,70,229,0.17);
         --accent-sel: rgba(79,70,229,0.26);
       }
+    }
+    /* Manual override via JS */
+    html[data-theme="dark"] {
+      --accent-dim: rgba(99,102,241,0.11);
+      --accent-mid: rgba(99,102,241,0.25);
+      --accent-sel: rgba(99,102,241,0.38);
+    }
+    html[data-theme="light"] {
+      --accent-dim: rgba(79,70,229,0.08);
+      --accent-mid: rgba(79,70,229,0.17);
+      --accent-sel: rgba(79,70,229,0.26);
     }
     body::before {
       content: '';
@@ -386,7 +398,7 @@
           <div class="text-xl font-bold tracking-tight">数独</div>
           <div class="text-xs text-zinc-500 mt-0.5">Sudoku</div>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
           <div class="text-center">
             <div id="timer-val" class="text-lg font-semibold tabular-nums">00:00</div>
             <div class="text-[10px] text-zinc-500 tracking-wider">用时</div>
@@ -396,6 +408,9 @@
             <div id="mistakes-val" class="text-lg font-semibold">0</div>
             <div class="text-[10px] text-zinc-500 tracking-wider">错误</div>
           </div>
+          <div class="w-px h-7 bg-zinc-200 dark:bg-zinc-700"></div>
+          <button id="theme-toggle" title="切换明暗主题"
+            class="w-7 h-7 flex items-center justify-center rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100 transition-colors"></button>
         </div>
       `
       app.appendChild(header)
@@ -540,6 +555,27 @@
 
     buildApp()
     startGame('medium')
+
+    // ─── Theme Toggle ────────────────────────────────────────────────────────
+    ;(() => {
+      const _html = document.documentElement
+      const _isDark = matchMedia('(prefers-color-scheme: dark)').matches
+      _isDark ? _html.classList.add('dark') : _html.classList.remove('dark')
+      _html.dataset.theme = _isDark ? 'dark' : 'light'
+      const _btn = document.getElementById('theme-toggle')
+      const _sunSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+      const _moonSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+      function _updateIcon() {
+        _btn.innerHTML = _html.classList.contains('dark') ? _sunSVG : _moonSVG
+      }
+      _btn.addEventListener('click', () => {
+        const nowDark = _html.classList.toggle('dark')
+        _html.dataset.theme = nowDark ? 'dark' : 'light'
+        _updateIcon()
+      })
+      _updateIcon()
+    })()
+    // ─────────────────────────────────────────────────────────────────────────
   </script>
 </body>
 </html>

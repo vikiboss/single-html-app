@@ -19,6 +19,7 @@
 | [Nokia 滚球](https://html.viki.moe/nokia-bounce.html) | 诺基亚经典滚球游戏 |
 | [俄罗斯方块](https://html.viki.moe/tetris.html)       | 经典俄罗斯方块游戏 |
 | [推箱子](https://html.viki.moe/sokoban.html)          | 经典推箱子游戏 |
+| [随机生成器](https://html.viki.moe/random.html)       | 整数、密码、UUID、颜色、姓名、日期、骰子等多场景随机生成 |
 
 ## 添加新应用
 

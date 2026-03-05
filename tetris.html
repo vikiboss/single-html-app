@@ -29,6 +29,14 @@
           --accent: #4f46e5;
         }
       }
+      html[data-theme="dark"] {
+        --bg: #09090b; --bg-raised: #18181b; --bg-overlay: #27272a;
+        --fg: #f4f4f5; --fg-muted: #a1a1aa; --border: #3f3f46; --accent: #6366f1;
+      }
+      html[data-theme="light"] {
+        --bg: #ffffff; --bg-raised: #f4f4f5; --bg-overlay: #e4e4e7;
+        --fg: #09090b; --fg-muted: #71717a; --border: #d4d4d8; --accent: #4f46e5;
+      }
       /* 移动端 canvas 按视口高度自适应，保持 1:2 宽高比 */
       @media (max-width: 639px) {
         #board {
@@ -55,6 +63,8 @@
 
     <!-- ── 移动端专属：顶部统计栏 ── -->
     <div class="sm:hidden w-full relative flex items-center justify-around bg-[var(--bg-raised)] border border-[var(--border)] rounded-md px-3 py-2">
+      <button id="theme-toggle-m" title="切换明暗主题"
+        class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
       <div class="text-center">
         <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">分数</p>
         <p id="scoreElM" class="text-base font-black text-[var(--accent)] leading-none mt-0.5">0</p>
@@ -147,6 +157,10 @@
           </div>
         </div>
 
+        <!-- Theme toggle -->
+        <button id="theme-toggle" title="切换明暗主题"
+          class="w-8 h-8 self-end flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
+
         <!-- Key hints: flex-1 to fill remaining height -->
         <div class="flex flex-col flex-1 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
           <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)] mb-2">操作键</p>
@@ -179,6 +193,28 @@
     </div><!-- end sm:contents wrapper -->
 
     <script type="module">
+      // ─── Theme Toggle ──────────────────────────────────────────────────────────
+      const _html = document.documentElement
+      _html.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      function _updateThemeIcon() {
+        const isDark = _html.dataset.theme === 'dark'
+        const svg = isDark
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+        document.getElementById('theme-toggle').innerHTML = svg
+        const m = document.getElementById('theme-toggle-m')
+        if (m) m.innerHTML = svg
+      }
+      function _toggleTheme() {
+        _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
+        _updateThemeIcon()
+      }
+      document.getElementById('theme-toggle').addEventListener('click', _toggleTheme)
+      const _tm = document.getElementById('theme-toggle-m')
+      if (_tm) _tm.addEventListener('click', _toggleTheme)
+      _updateThemeIcon()
+      // ──────────────────────────────────────────────────────────────────────────
+
       const COLS = 10, ROWS = 20, SZ = 30
       const bCvs = document.getElementById('board')
       const ctx = bCvs.getContext('2d')

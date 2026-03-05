@@ -32,6 +32,31 @@
           --food: #e11d48;
         }
       }
+
+      /* Manual theme overrides */
+      html[data-theme="dark"] {
+        --bg: #09090b;
+        --bg-raised: #18181b;
+        --bg-overlay: #27272a;
+        --fg: #f4f4f5;
+        --fg-muted: #a1a1aa;
+        --border: #3f3f46;
+        --accent: #22c55e;
+        --accent-dim: #16a34a;
+        --food: #f43f5e;
+      }
+      html[data-theme="light"] {
+        --bg: #f4f4f5;
+        --bg-raised: #ffffff;
+        --bg-overlay: #e4e4e7;
+        --fg: #09090b;
+        --fg-muted: #71717a;
+        --border: #d4d4d8;
+        --accent: #16a34a;
+        --accent-dim: #15803d;
+        --food: #e11d48;
+      }
+
       @keyframes pop {
         0% { transform: scale(1); }
         50% { transform: scale(1.08); }
@@ -51,8 +76,10 @@
   <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex items-center justify-center p-4">
     <div class="flex flex-col items-center gap-4 w-full max-w-md">
       <!-- Header -->
-      <div class="w-full flex items-center justify-center">
+      <div class="w-full flex items-center justify-between">
+        <div class="w-8"></div>
         <h1 class="text-base font-semibold tracking-tight">贪吃蛇</h1>
+        <button id="theme-toggle" title="切换明暗主题" class="w-8 h-8 flex items-center justify-center rounded-md bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"></button>
       </div>
 
       <!-- Stats -->
@@ -112,6 +139,21 @@
     </div>
 
     <script type="module">
+      // ─── Theme Toggle ─────────────────────────────────────────────────────────
+      const _html = document.documentElement
+      _html.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
+        _updateThemeIcon()
+      })
+      function _updateThemeIcon() {
+        const isDark = _html.dataset.theme === 'dark'
+        document.getElementById('theme-toggle').innerHTML = isDark
+          ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+          : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+      }
+      _updateThemeIcon()
+
       const COLS = 20
       const ROWS = 20
 

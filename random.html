@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>随机生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #09090b;
+        --bg-raised: #18181b;
+        --bg-overlay: #27272a;
+        --fg: #f4f4f5;
+        --fg-muted: #a1a1aa;
+        --border: #3f3f46;
+        --accent: #6366f1;
+      }
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          color-scheme: light;
+          --bg: #ffffff;
+          --bg-raised: #f4f4f5;
+          --bg-overlay: #e4e4e7;
+          --fg: #09090b;
+          --fg-muted: #71717a;
+          --border: #d4d4d8;
+          --accent: #4f46e5;
+        }
+      }
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #ffffff;
+        --bg-raised: #f4f4f5;
+        --bg-overlay: #e4e4e7;
+        --fg: #09090b;
+        --fg-muted: #71717a;
+        --border: #d4d4d8;
+        --accent: #4f46e5;
+      }
+      @keyframes pop {
+        from { transform: scale(0.94); opacity: 0; }
+        to   { transform: scale(1);    opacity: 1; }
+      }
+      .pop { animation: pop 0.18s ease-out both; }
+      .tabs-bar { scrollbar-width: none; }
+      .tabs-bar::-webkit-scrollbar { display: none; }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.025;
+        pointer-events: none;
+        z-index: 9999;
+      }
+    </style>
+  </head>
+  <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen">
+
+    <!-- Gradient mesh -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      <div class="absolute -top-40 -left-40 w-[560px] h-[560px] bg-indigo-600/10 rounded-full blur-[120px]"></div>
+      <div class="absolute top-1/2 -right-40 w-[440px] h-[440px] bg-violet-600/8 rounded-full blur-[100px]"></div>
+      <div class="absolute -bottom-40 left-1/3 w-[480px] h-[480px] bg-blue-600/8 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative flex flex-col min-h-screen">
+
+      <!-- Header -->
+      <header class="sticky top-0 z-20 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
+        <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+              </svg>
+            </div>
+            <span class="font-semibold tracking-tight text-sm">随机生成器</span>
+          </div>
+          <button id="theme-btn" class="w-8 h-8 rounded flex items-center justify-center text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-overlay)] transition-colors"></button>
+        </div>
+      </header>
+
+      <!-- Tab Nav -->
+      <nav class="sticky top-14 z-10 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
+        <div class="max-w-3xl mx-auto px-4">
+          <div id="tab-nav" class="tabs-bar flex overflow-x-auto gap-0.5 py-2"></div>
+        </div>
+      </nav>
+
+      <!-- Panels -->
+      <main class="flex-1 max-w-3xl mx-auto w-full px-4 py-6">
+        <div id="panels"></div>
+      </main>
+
+      <footer class="border-t border-[var(--border)] py-4 text-center text-xs text-[var(--fg-muted)]">
+        所有数据均在本地生成，不上传任何信息
+      </footer>
+    </div>
+
+    <script type="module">
+      // ── Icons ──────────────────────────────────────────────
+      const I_SUN     = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" d="M12 2v2m0 16v2M2 12h2m16 0h2m-3.22-6.78-1.42 1.42M6.64 17.36l-1.42 1.42m0-12.74 1.42 1.42M17.36 17.36l1.42 1.42"/></svg>`
+      const I_MOON    = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`
+      const I_COPY    = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`
+      const I_CHECK   = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`
+      const I_REFRESH = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`
+
+      // ── Theme ──────────────────────────────────────────────
+      const html = document.documentElement
+      const systemDark = () => matchMedia('(prefers-color-scheme: dark)').matches
+      const getTheme = () => html.dataset.theme ?? (systemDark() ? 'dark' : 'light')
+      const setTheme = t => {
+        html.dataset.theme = t
+        document.getElementById('theme-btn').innerHTML = t === 'dark' ? I_SUN : I_MOON
+      }
+      document.getElementById('theme-btn').addEventListener('click', () => {
+        setTheme(getTheme() === 'dark' ? 'light' : 'dark')
+      })
+      setTheme(getTheme())
+
+      // ── Helpers ────────────────────────────────────────────
+      const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a
+      const randFrom = arr => arr[Math.floor(Math.random() * arr.length)]
+      const shuffle = arr => [...arr].sort(() => Math.random() - 0.5)
+      const clamp = (v, a, b) => Math.min(Math.max(v, a), b)
+
+      function copyText(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = btn.innerHTML
+          btn.innerHTML = I_CHECK
+          setTimeout(() => { btn.innerHTML = orig }, 1500)
+        })
+      }
+
+      function mkCopyBtn(getText) {
+        const btn = document.createElement('button')
+        btn.className = 'shrink-0 w-7 h-7 rounded flex items-center justify-center text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-overlay)] transition-colors'
+        btn.innerHTML = I_COPY
+        btn.addEventListener('click', () => copyText(getText(), btn))
+        return btn
+      }
+
+      function mkRefreshBtn(onClick) {
+        const btn = document.createElement('button')
+        btn.className = 'shrink-0 w-7 h-7 rounded flex items-center justify-center text-[var(--fg-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-overlay)] transition-colors'
+        btn.innerHTML = I_REFRESH
+        btn.addEventListener('click', onClick)
+        return btn
+      }
+
+      function showSingle(el, value) {
+        el.innerHTML = ''
+        const row = document.createElement('div')
+        row.className = 'pop flex items-center gap-3'
+        const span = document.createElement('span')
+        span.className = 'flex-1 font-mono text-xl font-bold text-[var(--accent)] break-all'
+        span.textContent = value
+        row.appendChild(span)
+        row.appendChild(mkCopyBtn(() => value))
+        el.appendChild(row)
+      }
+
+      function showList(el, values) {
+        el.innerHTML = ''
+        values.forEach((v, i) => {
+          const row = document.createElement('div')
+          row.className = 'pop flex items-center gap-2.5 py-2 border-b border-[var(--border)] last:border-0'
+          row.style.animationDelay = `${i * 30}ms`
+          const num = document.createElement('span')
+          num.className = 'w-5 text-xs text-[var(--fg-muted)] shrink-0 text-right'
+          num.textContent = i + 1
+          const span = document.createElement('span')
+          span.className = 'flex-1 font-mono text-sm break-all'
+          span.textContent = v
+          row.appendChild(num)
+          row.appendChild(span)
+          row.appendChild(mkCopyBtn(() => v))
+          el.appendChild(row)
+        })
+      }
+
+      function showAuto(el, values) {
+        if (values.length === 1) showSingle(el, values[0])
+        else showList(el, values)
+      }
+
+      // common style strings
+      const S_INPUT = 'w-full bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-3 py-2 text-sm text-[var(--fg)] focus:outline-none focus:border-[var(--accent)] transition-colors'
+      const lbl = t => `<div class="text-xs text-[var(--fg-muted)] mb-1.5">${t}</div>`
+      const genBtn = t => `<button class="gen-btn mt-4 w-full py-2.5 bg-[var(--accent)] hover:opacity-90 active:opacity-75 text-white text-sm font-medium rounded transition-opacity">${t ?? '生成'}</button>`
+      const resultBox = () => `<div class="result mt-4 min-h-[52px] bg-[var(--bg-overlay)] rounded-md px-4 py-3 text-sm text-[var(--fg-muted)]">点击生成</div>`
+
+      // ── Tab definitions ────────────────────────────────────
+      const TABS = [
+        { id: 'integer',  label: '整数'   },
+        { id: 'float',    label: '小数'   },
+        { id: 'list',     label: '列表'   },
+        { id: 'password', label: '密码'   },
+        { id: 'uuid',     label: 'ID'     },
+        { id: 'color',    label: '颜色'   },
+        { id: 'name',     label: '姓名'   },
+        { id: 'date',     label: '日期'   },
+        { id: 'network',  label: '网络'   },
+        { id: 'dice',     label: '骰子'   },
+        { id: 'lottery',  label: '抽奖'   },
+      ]
+
+      // ── Panel HTML ─────────────────────────────────────────
+      const PANELS = {
+        integer: `
+          <h2 class="text-sm font-medium mb-4">指定范围随机整数</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <div>${lbl('最小值')}<input id="int-min" type="number" value="1" class="${S_INPUT}"></div>
+            <div>${lbl('最大值')}<input id="int-max" type="number" value="100" class="${S_INPUT}"></div>
+          </div>
+          <div class="mt-3">${lbl('生成数量')}<input id="int-count" type="number" value="1" min="1" max="100" class="${S_INPUT}"></div>
+          ${genBtn('生成随机整数')}
+          ${resultBox()}
+        `,
+        float: `
+          <h2 class="text-sm font-medium mb-4">指定范围随机小数</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <div>${lbl('最小值')}<input id="flt-min" type="number" value="0" step="any" class="${S_INPUT}"></div>
+            <div>${lbl('最大值')}<input id="flt-max" type="number" value="1" step="any" class="${S_INPUT}"></div>
+          </div>
+          <div class="mt-3">${lbl('小数位数')}<input id="flt-dec" type="number" value="6" min="0" max="15" class="${S_INPUT}"></div>
+          <div class="mt-3">${lbl('生成数量')}<input id="flt-count" type="number" value="1" min="1" max="100" class="${S_INPUT}"></div>
+          ${genBtn('生成随机小数')}
+          ${resultBox()}
+        `,
+        list: `
+          <h2 class="text-sm font-medium mb-4">从列表中随机抽取</h2>
+          ${lbl('候选项（每行一个）')}
+          <textarea id="list-ta" rows="6" class="${S_INPUT} resize-none leading-relaxed" placeholder="输入候选项，每行一个..."></textarea>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div>${lbl('抽取数量')}<input id="list-count" type="number" value="1" min="1" class="${S_INPUT}"></div>
+            <div class="flex items-end pb-2">
+              <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none">
+                <input id="list-norepeat" type="checkbox" class="accent-[var(--accent)]"> 不重复抽取
+              </label>
+            </div>
+          </div>
+          ${genBtn('随机抽取')}
+          ${resultBox()}
+        `,
+        password: `
+          <h2 class="text-sm font-medium mb-4">随机密码生成</h2>
+          ${lbl('密码长度')}
+          <div class="flex items-center gap-3">
+            <input id="pwd-len" type="range" min="4" max="64" value="16" class="flex-1 accent-[var(--accent)]">
+            <span id="pwd-len-val" class="font-mono text-sm w-8 text-right font-bold text-[var(--accent)]">16</span>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2.5">
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="pwd-upper" checked class="accent-[var(--accent)]"> 大写 A–Z</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="pwd-lower" checked class="accent-[var(--accent)]"> 小写 a–z</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="pwd-num" checked class="accent-[var(--accent)]"> 数字 0–9</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="pwd-sym" class="accent-[var(--accent)]"> 特殊符号 !@#…</label>
+          </div>
+          <div class="mt-3">${lbl('生成数量')}<input id="pwd-count" type="number" value="1" min="1" max="20" class="${S_INPUT}"></div>
+          ${genBtn('生成密码')}
+          ${resultBox()}
+        `,
+        uuid: `
+          <h2 class="text-sm font-medium mb-4">随机 ID 生成</h2>
+          <div id="uuid-rows"></div>
+          ${genBtn('全部重新生成')}
+        `,
+        color: `
+          <h2 class="text-sm font-medium mb-4">随机颜色生成</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="clr-mode" value="any" checked class="accent-[var(--accent)]"> 任意颜色</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="clr-mode" value="pastel" class="accent-[var(--accent)]"> 马卡龙</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="clr-mode" value="light" class="accent-[var(--accent)]"> 浅色系</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="clr-mode" value="dark" class="accent-[var(--accent)]"> 深色系</label>
+          </div>
+          <div>${lbl('生成数量')}<input id="clr-count" type="number" value="8" min="1" max="32" class="${S_INPUT}"></div>
+          ${genBtn('生成颜色')}
+          <div id="clr-grid" class="mt-4 grid grid-cols-4 sm:grid-cols-8 gap-2"></div>
+        `,
+        name: `
+          <h2 class="text-sm font-medium mb-4">随机姓名生成</h2>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="name-lang" value="zh" checked class="accent-[var(--accent)]"> 中文姓名</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="radio" name="name-lang" value="en" class="accent-[var(--accent)]"> 英文姓名</label>
+          </div>
+          <div>${lbl('生成数量')}<input id="name-count" type="number" value="5" min="1" max="50" class="${S_INPUT}"></div>
+          ${genBtn('生成姓名')}
+          ${resultBox()}
+        `,
+        date: `
+          <h2 class="text-sm font-medium mb-4">随机日期 / 时间</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <div>${lbl('开始日期')}<input id="dt-start" type="date" value="2000-01-01" class="${S_INPUT}"></div>
+            <div>${lbl('结束日期')}<input id="dt-end" type="date" class="${S_INPUT}"></div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-4">
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="dt-time" class="accent-[var(--accent)]"> 包含时间</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="dt-ts" class="accent-[var(--accent)]"> 包含时间戳</label>
+            <label class="flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer select-none"><input type="checkbox" id="dt-sort" checked class="accent-[var(--accent)]"> 按时间排序</label>
+          </div>
+          <div class="mt-3">${lbl('生成数量')}<input id="dt-count" type="number" value="5" min="1" max="20" class="${S_INPUT}"></div>
+          ${genBtn('生成日期')}
+          ${resultBox()}
+        `,
+        network: `
+          <h2 class="text-sm font-medium mb-4">随机网络地址</h2>
+          <div id="net-rows"></div>
+          ${genBtn('全部重新生成')}
+        `,
+        dice: `
+          <h2 class="text-sm font-medium mb-4">虚拟骰子</h2>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-4">
+            ${[4,6,8,10,12,20].map(n => `
+              <label class="flex items-center gap-1.5 text-xs text-[var(--fg-muted)] cursor-pointer select-none">
+                <input type="radio" name="dice-type" value="${n}" ${n===6?'checked':''} class="accent-[var(--accent)]">
+                <span class="font-mono font-medium">D${n}</span>
+              </label>
+            `).join('')}
+          </div>
+          <div>${lbl('骰子数量')}<input id="dice-count" type="number" value="2" min="1" max="20" class="${S_INPUT}"></div>
+          ${genBtn('掷骰子')}
+          ${resultBox()}
+        `,
+        lottery: `
+          <h2 class="text-sm font-medium mb-4">抽奖 / 随机排序</h2>
+          ${lbl('参与者（每行一个）')}
+          <textarea id="lotto-ta" rows="7" class="${S_INPUT} resize-none leading-relaxed" placeholder="输入参与者，每行一个..."></textarea>
+          <div class="mt-3">${lbl('中奖名额')}<input id="lotto-count" type="number" value="3" min="1" class="${S_INPUT}"></div>
+          ${genBtn('开始抽奖')}
+          ${resultBox()}
+        `,
+      }
+
+      // ── Render panels ──────────────────────────────────────
+      const panelsEl = document.getElementById('panels')
+      const tabNavEl = document.getElementById('tab-nav')
+
+      TABS.forEach(tab => {
+        const el = document.createElement('div')
+        el.id = `panel-${tab.id}`
+        el.className = 'hidden'
+        el.innerHTML = `<div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-5">${PANELS[tab.id]}</div>`
+        panelsEl.appendChild(el)
+      })
+
+      const p = id => document.querySelector(`#panel-${id}`)
+      const q = (id, sel) => p(id).querySelector(sel)
+      const result = id => p(id).querySelector('.result')
+
+      // ── Tab switching ──────────────────────────────────────
+      let activeTab = TABS[0].id
+
+      function switchTab(id) {
+        p(activeTab)?.classList.add('hidden')
+        p(id)?.classList.remove('hidden')
+        activeTab = id
+        tabNavEl.querySelectorAll('[data-tab]').forEach(btn => {
+          const on = btn.dataset.tab === id
+          btn.className = `shrink-0 px-3 py-1.5 text-sm rounded transition-colors whitespace-nowrap ${
+            on ? 'bg-[var(--accent)] text-white' : 'text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-overlay)]'
+          }`
+        })
+      }
+
+      TABS.forEach(tab => {
+        const btn = document.createElement('button')
+        btn.dataset.tab = tab.id
+        btn.textContent = tab.label
+        btn.addEventListener('click', () => switchTab(tab.id))
+        tabNavEl.appendChild(btn)
+      })
+
+      switchTab(activeTab)
+
+      // ── Integer ───────────────────────────────────────────
+      q('integer', '.gen-btn').addEventListener('click', () => {
+        const min   = parseInt(document.getElementById('int-min').value)
+        const max   = parseInt(document.getElementById('int-max').value)
+        const count = clamp(parseInt(document.getElementById('int-count').value) || 1, 1, 100)
+        if (min > max) return
+        showAuto(result('integer'), Array.from({ length: count }, () => String(rand(min, max))))
+      })
+
+      // ── Float ─────────────────────────────────────────────
+      q('float', '.gen-btn').addEventListener('click', () => {
+        const min   = parseFloat(document.getElementById('flt-min').value)
+        const max   = parseFloat(document.getElementById('flt-max').value)
+        const dec   = clamp(parseInt(document.getElementById('flt-dec').value) ?? 6, 0, 15)
+        const count = clamp(parseInt(document.getElementById('flt-count').value) || 1, 1, 100)
+        if (min > max) return
+        showAuto(result('float'), Array.from({ length: count },
+          () => (Math.random() * (max - min) + min).toFixed(dec)
+        ))
+      })
+
+      // ── List ──────────────────────────────────────────────
+      ;(() => {
+        document.getElementById('list-ta').value =
+          '苹果\n香蕉\n橙子\n西瓜\n葡萄\n草莓\n蓝莓\n芒果\n榴莲\n龙眼'
+        q('list', '.gen-btn').addEventListener('click', () => {
+          const items = document.getElementById('list-ta').value
+            .split('\n').map(s => s.trim()).filter(Boolean)
+          if (!items.length) return
+          const count    = Math.min(parseInt(document.getElementById('list-count').value) || 1, 200)
+          const noRepeat = document.getElementById('list-norepeat').checked
+          const result_  = noRepeat
+            ? shuffle(items).slice(0, Math.min(count, items.length))
+            : Array.from({ length: count }, () => randFrom(items))
+          showAuto(result('list'), result_)
+        })
+      })()
+
+      // ── Password ──────────────────────────────────────────
+      ;(() => {
+        const lenSlider = document.getElementById('pwd-len')
+        const lenLabel  = document.getElementById('pwd-len-val')
+        lenSlider.addEventListener('input', () => { lenLabel.textContent = lenSlider.value })
+
+        const genPwd = () => {
+          const len = parseInt(lenSlider.value)
+          let chars = ''
+          if (document.getElementById('pwd-upper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+          if (document.getElementById('pwd-lower').checked) chars += 'abcdefghijklmnopqrstuvwxyz'
+          if (document.getElementById('pwd-num').checked)   chars += '0123456789'
+          if (document.getElementById('pwd-sym').checked)   chars += '!@#$%^&*()-_=+[]{}|;:,.<>?'
+          if (!chars) return '请至少选择一类字符'
+          return Array.from({ length: len }, () => randFrom([...chars])).join('')
+        }
+
+        q('password', '.gen-btn').addEventListener('click', () => {
+          const count = clamp(parseInt(document.getElementById('pwd-count').value) || 1, 1, 20)
+          showAuto(result('password'), Array.from({ length: count }, genPwd))
+        })
+      })()
+
+      // ── ID ────────────────────────────────────────────────
+      ;(() => {
+        const uuid4 = () =>
+          'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+          })
+        const nanoid = (n = 21) => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
+          return Array.from({ length: n }, () => randFrom([...chars])).join('')
+        }
+        const shortId = (n = 8) => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+          return Array.from({ length: n }, () => randFrom([...chars])).join('')
+        }
+        const snowflake = () => String(Date.now()) + String(rand(1000, 9999))
+        const hexId = (n = 32) => Array.from({ length: n }, () => rand(0, 15).toString(16)).join('')
+        const ksuid = () => {
+          const ts = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0')
+          const pay = Array.from({ length: 16 }, () => rand(0, 255).toString(16).padStart(2, '0')).join('')
+          return (ts + pay).toUpperCase()
+        }
+        const cuid2 = () => {
+          const pre = 'c'
+          const ts = Date.now().toString(36)
+          const rnd = Array.from({ length: 20 }, () => rand(0, 35).toString(36)).join('')
+          return pre + ts + rnd
+        }
+
+        const GENS = [
+          { label: 'UUID v4',       fn: uuid4 },
+          { label: 'NanoID (21)',    fn: () => nanoid(21) },
+          { label: 'Short ID (8)',   fn: () => shortId(8) },
+          { label: 'Snowflake-like', fn: snowflake },
+          { label: 'Hex (32)',       fn: () => hexId(32) },
+          { label: 'KSUID',          fn: ksuid },
+          { label: 'CUID2',          fn: cuid2 },
+        ]
+
+        function renderIdRows() {
+          const container = document.getElementById('uuid-rows')
+          container.innerHTML = ''
+          GENS.forEach(({ label, fn }, i) => {
+            let val = fn()
+            const row = document.createElement('div')
+            row.className = 'flex items-center gap-2 py-2.5 border-b border-[var(--border)] last:border-0'
+            const labelEl = document.createElement('span')
+            labelEl.className = 'text-xs text-[var(--fg-muted)] w-32 shrink-0'
+            labelEl.textContent = label
+            const valEl = document.createElement('span')
+            valEl.className = 'flex-1 font-mono text-xs text-[var(--fg)] break-all'
+            valEl.textContent = val
+            row.appendChild(labelEl)
+            row.appendChild(valEl)
+            row.appendChild(mkRefreshBtn(() => { val = fn(); valEl.textContent = val }))
+            row.appendChild(mkCopyBtn(() => valEl.textContent))
+            container.appendChild(row)
+          })
+        }
+
+        renderIdRows()
+        q('uuid', '.gen-btn').addEventListener('click', renderIdRows)
+      })()
+
+      // ── Color ─────────────────────────────────────────────
+      ;(() => {
+        const hsl2rgb = (h, s, l) => {
+          s /= 100; l /= 100
+          const a = s * Math.min(l, 1 - l)
+          const f = n => {
+            const k = (n + h / 30) % 12
+            return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255)
+          }
+          return [f(0), f(8), f(4)]
+        }
+
+        const makeColor = mode => {
+          let r, g, b
+          if (mode === 'light') {
+            r = rand(190, 255); g = rand(190, 255); b = rand(190, 255)
+          } else if (mode === 'dark') {
+            r = rand(10, 75); g = rand(10, 75); b = rand(10, 75)
+          } else if (mode === 'pastel') {
+            const [rr, gg, bb] = hsl2rgb(rand(0, 359), rand(65, 85), rand(78, 88))
+            r = rr; g = gg; b = bb
+          } else {
+            r = rand(0, 255); g = rand(0, 255); b = rand(0, 255)
+          }
+          const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+          const lum = (r * 299 + g * 587 + b * 114) / 1000
+          return { hex, r, g, b, lum }
+        }
+
+        const toast = msg => {
+          const el = document.createElement('div')
+          el.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-3 py-1.5 text-xs font-mono z-50 shadow-xl pop'
+          el.innerHTML = msg
+          document.body.appendChild(el)
+          setTimeout(() => el.remove(), 2000)
+        }
+
+        const genColors = () => {
+          const mode  = document.querySelector('[name="clr-mode"]:checked')?.value ?? 'any'
+          const count = clamp(parseInt(document.getElementById('clr-count').value) || 8, 1, 32)
+          const grid  = document.getElementById('clr-grid')
+          grid.innerHTML = ''
+          Array.from({ length: count }, () => makeColor(mode)).forEach((c, i) => {
+            const cell = document.createElement('div')
+            cell.className = 'pop relative rounded overflow-hidden cursor-pointer group'
+            cell.style.cssText = `background:${c.hex};aspect-ratio:1`
+            cell.style.animationDelay = `${i * 25}ms`
+            const fg = c.lum > 140 ? '#000' : '#fff'
+            cell.innerHTML = `
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style="background:rgba(0,0,0,0.25)">
+                <span class="text-[9px] font-mono font-bold" style="color:${fg}">${c.hex.toUpperCase()}</span>
+              </div>
+            `
+            cell.addEventListener('click', () => {
+              navigator.clipboard?.writeText(c.hex.toUpperCase())
+              toast(`<span class="inline-block w-3 h-3 rounded-sm mr-1.5 align-middle" style="background:${c.hex}"></span>已复制 ${c.hex.toUpperCase()}`)
+            })
+            grid.appendChild(cell)
+          })
+        }
+
+        genColors()
+        q('color', '.gen-btn').addEventListener('click', genColors)
+      })()
+
+      // ── Name ──────────────────────────────────────────────
+      ;(() => {
+        const ZH_SUR  = '王李张刘陈杨黄赵吴周徐孙马朱胡郭何高林郑谢宋唐许韩冯邓曹彭曾肖田董袁潘于蒋蔡余杜叶程苏魏吕丁任沈姚卢姜崔钟谭陆汪范金廖贾夏韦付方白邹孟熊秦邱江尹薛闫段雷侯龙史陶黎贺顾毛郝龚邵万钱严覃洪武莫孔汤向常温乔文康'.split('')
+        const ZH_CHAR = '伟芳娜秀英敏静丽强磊军洋勇艳杰娟涛明超霞辉义兴善福来德全忠顺信世广志文武成海山仁雨晨宇浩然翔飞鑫旭阳博涵华颖婷璐彤虹雪梅倩萍慧莹欣彬峰康健帆轩逸'.split('')
+        const EN_FIRST = 'James,Mary,John,Patricia,Robert,Jennifer,Michael,Linda,William,Barbara,David,Susan,Richard,Jessica,Joseph,Sarah,Thomas,Karen,Charles,Lisa,Daniel,Betty,Matthew,Margaret,Anthony,Sandra,Mark,Ashley,Emily,Kimberly,Donna,Nancy,Amanda,Carol,Melissa,Stephanie,Dorothy,Sharon,Laura,Cynthia,Ryan,Ethan,Olivia,Sophia,Mason,Noah,Liam,Ava,Isabella,Mia'.split(',')
+        const EN_LAST  = 'Smith,Johnson,Williams,Brown,Jones,Garcia,Miller,Davis,Rodriguez,Martinez,Hernandez,Lopez,Gonzalez,Wilson,Anderson,Thomas,Taylor,Moore,Jackson,Martin,Lee,Perez,Thompson,White,Harris,Sanchez,Clark,Ramirez,Lewis,Robinson,Walker,Young,Allen,King,Wright,Scott,Torres,Nguyen,Hill,Flores,Green,Adams,Nelson,Baker,Hall,Rivera,Campbell,Mitchell,Carter,Roberts'.split(',')
+
+        q('name', '.gen-btn').addEventListener('click', () => {
+          const lang  = document.querySelector('[name="name-lang"]:checked')?.value ?? 'zh'
+          const count = clamp(parseInt(document.getElementById('name-count').value) || 5, 1, 50)
+          const names = lang === 'zh'
+            ? Array.from({ length: count }, () => {
+                const sur = randFrom(ZH_SUR)
+                const len = rand(1, 2)
+                return sur + Array.from({ length: len }, () => randFrom(ZH_CHAR)).join('')
+              })
+            : Array.from({ length: count }, () => `${randFrom(EN_FIRST)} ${randFrom(EN_LAST)}`)
+          showAuto(result('name'), names)
+        })
+      })()
+
+      // ── Date ──────────────────────────────────────────────
+      ;(() => {
+        document.getElementById('dt-end').value = new Date().toISOString().slice(0, 10)
+        q('date', '.gen-btn').addEventListener('click', () => {
+          const startTs = new Date(document.getElementById('dt-start').value).getTime()
+          const endTs   = new Date(document.getElementById('dt-end').value).getTime()
+          if (startTs > endTs) return
+          const withTime = document.getElementById('dt-time').checked
+          const withTs   = document.getElementById('dt-ts').checked
+          const sorted   = document.getElementById('dt-sort').checked
+          const count    = clamp(parseInt(document.getElementById('dt-count').value) || 5, 1, 20)
+          let vals = Array.from({ length: count }, () => {
+            const d    = new Date(rand(startTs, endTs))
+            const date = d.toISOString().slice(0, 10)
+            const time = d.toTimeString().slice(0, 8)
+            let s = withTime ? `${date} ${time}` : date
+            if (withTs) s += `  ·  ${d.getTime()}`
+            return s
+          })
+          if (sorted) vals = vals.toSorted()
+          showAuto(result('date'), vals)
+        })
+      })()
+
+      // ── Network ───────────────────────────────────────────
+      ;(() => {
+        const randIpv4 = () => [rand(1,254),rand(0,255),rand(0,255),rand(1,254)].join('.')
+        const randIpv6 = () => Array.from({ length: 8 }, () => rand(0,65535).toString(16).padStart(4,'0')).join(':')
+        const randMac  = () => Array.from({ length: 6 }, () => rand(0,255).toString(16).padStart(2,'0')).join(':').toUpperCase()
+        const randPort = () => String(rand(1024, 65535))
+        const randCidr = () => `${randIpv4()}/${rand(8, 30)}`
+        const randSubnet = () => {
+          const prefixes = [8,16,24,25,26,27,28,29,30]
+          const pref = randFrom(prefixes)
+          const mask = (~0 << (32 - pref)) >>> 0
+          return [24,16,8,0].map(s => (mask >> s) & 0xff).join('.')
+        }
+        const randUA = () => randFrom([
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 Version/17.2 Mobile/15E148 Safari/604.1',
+          'Mozilla/5.0 (Android 14; Mobile) AppleWebKit/537.36 Chrome/120.0.6099.144 Mobile Safari/537.36',
+          'Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        ])
+
+        const GENS = [
+          { label: 'IPv4',        fn: randIpv4  },
+          { label: 'IPv6',        fn: randIpv6  },
+          { label: 'MAC 地址',    fn: randMac   },
+          { label: '端口号',      fn: randPort  },
+          { label: 'CIDR',        fn: randCidr  },
+          { label: '子网掩码',    fn: randSubnet },
+          { label: 'User-Agent',  fn: randUA    },
+        ]
+
+        function renderNetRows() {
+          const container = document.getElementById('net-rows')
+          container.innerHTML = ''
+          GENS.forEach(({ label, fn }, i) => {
+            let val = fn()
+            const row = document.createElement('div')
+            row.className = 'flex items-center gap-2 py-2.5 border-b border-[var(--border)] last:border-0'
+            const labelEl = document.createElement('span')
+            labelEl.className = 'text-xs text-[var(--fg-muted)] w-24 shrink-0'
+            labelEl.textContent = label
+            const valEl = document.createElement('span')
+            valEl.className = 'flex-1 font-mono text-xs text-[var(--fg)] break-all'
+            valEl.textContent = val
+            row.appendChild(labelEl)
+            row.appendChild(valEl)
+            row.appendChild(mkRefreshBtn(() => { val = fn(); valEl.textContent = val }))
+            row.appendChild(mkCopyBtn(() => valEl.textContent))
+            container.appendChild(row)
+          })
+        }
+
+        renderNetRows()
+        q('network', '.gen-btn').addEventListener('click', renderNetRows)
+      })()
+
+      // ── Dice ──────────────────────────────────────────────
+      q('dice', '.gen-btn').addEventListener('click', () => {
+        const sides = parseInt(document.querySelector('[name="dice-type"]:checked')?.value ?? 6)
+        const count = clamp(parseInt(document.getElementById('dice-count').value) || 2, 1, 20)
+        const rolls = Array.from({ length: count }, () => rand(1, sides))
+        const total = rolls.reduce((a, b) => a + b, 0)
+        const box   = result('dice')
+        box.innerHTML = ''
+        const wrap = document.createElement('div')
+        wrap.className = 'pop space-y-3'
+        const diceRow = document.createElement('div')
+        diceRow.className = 'flex flex-wrap gap-2'
+        rolls.forEach((v, i) => {
+          const d = document.createElement('div')
+          d.className = 'pop w-10 h-10 bg-[var(--bg)] border-2 border-[var(--accent)] rounded flex items-center justify-center font-mono font-bold text-[var(--accent)] text-sm'
+          d.style.animationDelay = `${i * 50}ms`
+          d.textContent = v
+          diceRow.appendChild(d)
+        })
+        const meta = document.createElement('div')
+        meta.className = 'flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--fg-muted)]'
+        meta.innerHTML = `
+          <span>${count} × D${sides}</span>
+          <span>·</span>
+          <span>总计 <strong class="font-mono text-[var(--fg)]">${total}</strong></span>
+          <span>·</span>
+          <span>平均 <strong class="font-mono text-[var(--fg)]">${(total / count).toFixed(2)}</strong></span>
+          <span>·</span>
+          <span>最大 <strong class="font-mono text-[var(--fg)]">${Math.max(...rolls)}</strong></span>
+          <span>·</span>
+          <span>最小 <strong class="font-mono text-[var(--fg)]">${Math.min(...rolls)}</strong></span>
+        `
+        meta.appendChild(mkCopyBtn(() => rolls.join(', ')))
+        wrap.appendChild(diceRow)
+        wrap.appendChild(meta)
+        box.appendChild(wrap)
+      })
+
+      // ── Lottery ───────────────────────────────────────────
+      ;(() => {
+        document.getElementById('lotto-ta').value =
+          'Alice\nBob\nCharlie\nDave\nEve\nFrank\nGrace\nHank\nIvy\nJack\nKate\nLeo\nMia\nNate'
+        q('lottery', '.gen-btn').addEventListener('click', () => {
+          const items = document.getElementById('lotto-ta').value
+            .split('\n').map(s => s.trim()).filter(Boolean)
+          if (!items.length) return
+          const count   = clamp(parseInt(document.getElementById('lotto-count').value) || 1, 1, items.length)
+          const winners = shuffle(items).slice(0, count)
+          const box     = result('lottery')
+          box.innerHTML = ''
+          const wrap = document.createElement('div')
+          wrap.className = 'pop space-y-3'
+          const info = document.createElement('div')
+          info.className = 'text-xs text-[var(--fg-muted)]'
+          info.textContent = `从 ${items.length} 名参与者中抽取 ${count} 名`
+          const chips = document.createElement('div')
+          chips.className = 'flex flex-wrap gap-2'
+          winners.forEach((w, i) => {
+            const chip = document.createElement('div')
+            chip.className = 'pop flex items-center gap-1.5 bg-[var(--bg)] border border-[var(--accent)]/50 rounded px-2.5 py-1.5'
+            chip.style.animationDelay = `${i * 80}ms`
+            chip.innerHTML = `<span class="text-xs font-mono font-bold text-[var(--accent)]">No.${i + 1}</span><span class="text-sm font-medium">${w}</span>`
+            chips.appendChild(chip)
+          })
+          wrap.appendChild(info)
+          wrap.appendChild(chips)
+          box.appendChild(wrap)
+        })
+      })()
+    </script>
+  </body>
+</html>

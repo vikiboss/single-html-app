@@ -61,6 +61,58 @@
       #search-input::-webkit-search-decoration {
         display: none;
       }
+
+      /* ── Dark mode overrides ─────────────────────────────────────────── */
+      html[data-theme="dark"] {
+        --grain-opacity: 0.022;
+      }
+      html[data-theme="dark"] body {
+        color: #f4f4f5;
+        background: linear-gradient(135deg, #09090b 0%, #111115 50%, #0e0c14 100%) !important;
+      }
+      html[data-theme="dark"] .card-hover {
+        background-color: #18181b !important;
+        border-color: #3f3f46 !important;
+        color: #f4f4f5;
+      }
+      html[data-theme="dark"] .card-hover:hover {
+        border-color: rgba(255,255,255,0.12) !important;
+        background-color: #27272a !important;
+      }
+      html[data-theme="dark"] .text-zinc-900 { color: #f4f4f5 !important; }
+      html[data-theme="dark"] .text-zinc-700 { color: #d4d4d8 !important; }
+      html[data-theme="dark"] .text-zinc-500 { color: #a1a1aa !important; }
+      html[data-theme="dark"] .text-zinc-400 { color: #71717a !important; }
+      html[data-theme="dark"] .text-zinc-300 { color: #52525b !important; }
+      html[data-theme="dark"] .bg-white { background-color: #18181b !important; }
+      html[data-theme="dark"] .border-zinc-200 { border-color: #3f3f46 !important; }
+      html[data-theme="dark"] .border-zinc-200\/60 { border-color: rgba(63,63,70,0.6) !important; }
+      html[data-theme="dark"] .bg-zinc-100 { background-color: #27272a !important; color: #a1a1aa; }
+      html[data-theme="dark"] .bg-zinc-800 { background-color: #f4f4f5 !important; color: #09090b !important; }
+      html[data-theme="dark"] .text-white { color: #09090b !important; }
+      html[data-theme="dark"] .bg-zinc-900 { background-color: #f4f4f5 !important; }
+      html[data-theme="dark"] .hover\:bg-zinc-200:hover { background-color: #3f3f46 !important; }
+      html[data-theme="dark"] .hover\:text-zinc-700:hover { color: #f4f4f5 !important; }
+      html[data-theme="dark"] .hover\:text-zinc-600:hover { color: #d4d4d8 !important; }
+      html[data-theme="dark"] .group:hover .group-hover\:text-zinc-700 { color: #a1a1aa !important; }
+      html[data-theme="dark"] #search-input {
+        background-color: #18181b !important;
+        border-color: #3f3f46 !important;
+        color: #f4f4f5 !important;
+      }
+      html[data-theme="dark"] #search-input::placeholder { color: #52525b; }
+      html[data-theme="dark"] #search-input:focus {
+        border-color: rgba(255,255,255,0.2) !important;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.04) !important;
+      }
+      html[data-theme="dark"] code.bg-zinc-100 {
+        background-color: #27272a !important;
+        color: #a1a1aa !important;
+      }
+      html[data-theme="dark"] a.text-zinc-500 { color: #a1a1aa !important; }
+      html[data-theme="dark"] a.hover\:text-zinc-700:hover { color: #f4f4f5 !important; }
+      html[data-theme="dark"] #theme-toggle { color: #71717a; }
+      html[data-theme="dark"] #theme-toggle:hover { color: #f4f4f5; }
     </style>
   </head>
   <body
@@ -135,6 +187,13 @@
           description: '经典推箱子游戏',
           href: 'sokoban.html',
           tags: ['游戏'],
+          date: '2026-03-05',
+        },
+        {
+          title: '随机生成器',
+          description: '整数、密码、UUID、颜色、姓名、日期、骰子等多场景随机生成',
+          href: 'random.html',
+          tags: ['工具'],
           date: '2026-03-05',
         },
       ].toReversed() // 最新的应用放在最前面
@@ -332,11 +391,15 @@
                 </div>
                 <span id="app-count" class="text-xs text-zinc-400 font-medium">${count} 个应用</span>
               </div>
-              <a href="${ME.github}" target="_blank" rel="noopener noreferrer"
-                class="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-700 transition-colors duration-150 no-underline">
-                ${iconGitHub()}
-                <span>GitHub</span>
-              </a>
+              <div class="flex items-center gap-2">
+                <a href="${ME.github}" target="_blank" rel="noopener noreferrer"
+                  class="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-700 transition-colors duration-150 no-underline">
+                  ${iconGitHub()}
+                  <span>GitHub</span>
+                </a>
+                <button id="theme-toggle" title="切换明暗主题"
+                  class="w-6 h-6 flex items-center justify-center rounded text-zinc-400 hover:text-zinc-700 transition-colors duration-150"></button>
+              </div>
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-zinc-900 mb-1">${ME.name}</h1>
             <p class="text-sm text-zinc-500">${ME.subtitle}</p>
@@ -398,6 +461,26 @@
       }
 
       render()
+
+      // ─── Theme Toggle ────────────────────────────────────────────────────────
+      ;(() => {
+        const _html = document.documentElement
+        _html.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        const _sunSVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+        const _moonSVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+        function _updateIcon() {
+          const btn = document.getElementById('theme-toggle')
+          if (btn) btn.innerHTML = _html.dataset.theme === 'dark' ? _sunSVG : _moonSVG
+        }
+        document.addEventListener('click', e => {
+          if (e.target.closest('#theme-toggle')) {
+            _html.dataset.theme = _html.dataset.theme === 'dark' ? 'light' : 'dark'
+            _updateIcon()
+          }
+        })
+        _updateIcon()
+      })()
+      // ─────────────────────────────────────────────────────────────────────────
     </script>
   </body>
 </html>
