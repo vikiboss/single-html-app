@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>俄罗斯方块</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --bg: #09090b;
+        --bg-raised: #18181b;
+        --bg-overlay: #27272a;
+        --fg: #f4f4f5;
+        --fg-muted: #a1a1aa;
+        --border: #3f3f46;
+        --accent: #6366f1;
+        --radius: 6px;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #ffffff;
+          --bg-raised: #f4f4f5;
+          --bg-overlay: #e4e4e7;
+          --fg: #09090b;
+          --fg-muted: #71717a;
+          --border: #d4d4d8;
+          --accent: #4f46e5;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex items-center justify-center p-4 select-none overflow-hidden">
+
+    <!-- Ambient glow -->
+    <div class="fixed inset-0 pointer-events-none" aria-hidden="true">
+      <div class="absolute top-1/4 -left-20 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative flex gap-3 items-start">
+
+      <!-- Game board -->
+      <div class="relative shrink-0">
+        <canvas id="board" width="300" height="600" class="rounded-md border border-[var(--border)] block"></canvas>
+
+        <!-- Overlay: start / pause / game over -->
+        <div id="overlay" class="absolute inset-0 rounded-md backdrop-blur-[2px] bg-[var(--bg)]/80 flex flex-col items-center justify-center gap-4">
+          <div class="text-center px-6">
+            <div class="text-5xl font-black tracking-tighter mb-2 bg-gradient-to-br from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              TETRIS
+            </div>
+            <p id="oMsg" class="text-sm text-[var(--fg-muted)]">经典俄罗斯方块</p>
+            <p id="oScore" class="text-2xl font-bold mt-1 text-[var(--accent)]"></p>
+          </div>
+          <button id="startBtn" class="bg-[var(--accent)] hover:opacity-90 active:scale-95 text-white font-semibold text-sm px-8 py-2.5 rounded-md transition-all">
+            开始游戏
+          </button>
+          <p class="text-[11px] text-[var(--fg-muted)]">或按 Space 键</p>
+        </div>
+      </div>
+
+      <!-- Side panel -->
+      <div class="flex flex-col gap-3 w-[130px]">
+
+        <!-- Next piece -->
+        <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)] mb-2">下一个</p>
+          <canvas id="preview" width="104" height="80" class="w-full"></canvas>
+        </div>
+
+        <!-- Stats -->
+        <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3 space-y-3">
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">分数</p>
+            <p id="scoreEl" class="text-2xl font-black text-[var(--accent)] leading-tight">0</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">最高分</p>
+            <p id="bestEl" class="text-lg font-bold text-[var(--fg-muted)] leading-tight">0</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">等级</p>
+            <p id="levelEl" class="text-2xl font-black leading-tight">1</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">消行</p>
+            <p id="linesEl" class="text-2xl font-black leading-tight">0</p>
+          </div>
+        </div>
+
+        <!-- Key hints -->
+        <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)] mb-2">操作键</p>
+          <div class="space-y-1.5 text-[11px] text-[var(--fg-muted)]">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">← →</span>
+              <span>移动</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">↑ / Z</span>
+              <span>旋转</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">↓</span>
+              <span>加速</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">␣</span>
+              <span>瞬降</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono bg-[var(--bg-overlay)] border border-[var(--border)] rounded px-1 py-0.5 text-[10px] text-[var(--fg)] shrink-0">P</span>
+              <span>暂停</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile touch controls -->
+    <div class="sm:hidden fixed bottom-4 inset-x-0 flex items-center justify-center gap-2 z-20 px-4">
+      <button data-tc="left"   class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
+      </button>
+      <button data-tc="rotate" class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+      </button>
+      <button data-tc="right"  class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
+      </button>
+      <button data-tc="down"   class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </button>
+      <button data-tc="drop"   class="bg-[var(--accent)]/20 border border-[var(--accent)]/40 rounded-md w-12 h-12 flex items-center justify-center text-[var(--accent)] active:bg-[var(--accent)]/40">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293 4.293a1 1 0 011.414 0L10 16.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM10 3a1 1 0 011 1v9a1 1 0 11-2 0V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+
+    <script type="module">
+      const COLS = 10, ROWS = 20, SZ = 30
+      const bCvs = document.getElementById('board')
+      const ctx = bCvs.getContext('2d')
+      const pCvs = document.getElementById('preview')
+      const pctx = pCvs.getContext('2d')
+      const overlay  = document.getElementById('overlay')
+      const oMsg     = document.getElementById('oMsg')
+      const oScore   = document.getElementById('oScore')
+      const startBtn = document.getElementById('startBtn')
+      const scoreEl  = document.getElementById('scoreEl')
+      const bestEl   = document.getElementById('bestEl')
+      const levelEl  = document.getElementById('levelEl')
+      const linesEl  = document.getElementById('linesEl')
+
+      const PIECES = [
+        { color: '#22d3ee', m: [[1,1,1,1]] },
+        { color: '#facc15', m: [[1,1],[1,1]] },
+        { color: '#c084fc', m: [[0,1,0],[1,1,1]] },
+        { color: '#4ade80', m: [[0,1,1],[1,1,0]] },
+        { color: '#f87171', m: [[1,1,0],[0,1,1]] },
+        { color: '#60a5fa', m: [[1,0,0],[1,1,1]] },
+        { color: '#fb923c', m: [[0,0,1],[1,1,1]] },
+      ]
+
+      const SCORE_TABLE = [0, 100, 300, 500, 800]
+
+      let best = +localStorage.getItem('tetris_best') || 0
+      bestEl.textContent = best
+
+      let board, cur, nxt, score, lvl, totalLines, state, dropAcc, lastTs, rafId
+
+      const rot90 = m => m[0].map((_, c) => m.map(r => r[c]).reverse())
+      const mkBoard = () => Array.from({ length: ROWS }, () => Array(COLS).fill(0))
+      const randPiece = () => {
+        const p = PIECES[Math.floor(Math.random() * PIECES.length)]
+        return { m: p.m.map(r => [...r]), color: p.color }
+      }
+
+      function valid(m, x, y) {
+        for (let r = 0; r < m.length; r++)
+          for (let c = 0; c < m[r].length; c++) {
+            if (!m[r][c]) continue
+            const nr = y + r, nc = x + c
+            if (nc < 0 || nc >= COLS || nr >= ROWS) return false
+            if (nr >= 0 && board[nr][nc]) return false
+          }
+        return true
+      }
+
+      function ghostY() {
+        let gy = cur.y
+        while (valid(cur.m, cur.x, gy + 1)) gy++
+        return gy
+      }
+
+      const dropInterval = () => Math.max(80, 800 - (lvl - 1) * 72)
+
+      function spawn() {
+        cur = { ...nxt, x: Math.floor((COLS - nxt.m[0].length) / 2), y: 0 }
+        nxt = randPiece()
+        if (!valid(cur.m, cur.x, cur.y)) endGame()
+      }
+
+      function lock() {
+        cur.m.forEach((row, r) => row.forEach((v, c) => {
+          if (v && cur.y + r >= 0) board[cur.y + r][cur.x + c] = cur.color
+        }))
+        let cleared = 0
+        let r = ROWS - 1
+        while (r >= 0) {
+          if (board[r].every(Boolean)) {
+            board.splice(r, 1)
+            board.unshift(Array(COLS).fill(0))
+            cleared++
+          } else {
+            r--
+          }
+        }
+        if (cleared) {
+          score += SCORE_TABLE[cleared] * lvl
+          totalLines += cleared
+          lvl = Math.floor(totalLines / 10) + 1
+          scoreEl.textContent = score
+          levelEl.textContent = lvl
+          linesEl.textContent = totalLines
+        }
+        if (state !== 'gameover') spawn()
+      }
+
+      function endGame() {
+        state = 'gameover'
+        if (score > best) {
+          best = score
+          localStorage.setItem('tetris_best', best)
+          bestEl.textContent = best
+          oMsg.textContent = '新纪录！'
+        } else {
+          oMsg.textContent = '游戏结束'
+        }
+        oScore.textContent = `得分 ${score}`
+        startBtn.textContent = '再来一局'
+        overlay.classList.remove('hidden')
+      }
+
+      function startGame() {
+        board = mkBoard()
+        score = 0; lvl = 1; totalLines = 0; dropAcc = 0; lastTs = null
+        scoreEl.textContent = '0'
+        levelEl.textContent = '1'
+        linesEl.textContent = '0'
+        state = 'playing'
+        nxt = randPiece()
+        spawn()
+        overlay.classList.add('hidden')
+        if (!rafId) rafId = requestAnimationFrame(loop)
+      }
+
+      function drawCell(cx, px, py, color, sz, alpha = 1) {
+        cx.save()
+        cx.globalAlpha = alpha
+        cx.fillStyle = color
+        cx.beginPath()
+        cx.roundRect(px + 1, py + 1, sz - 2, sz - 2, 2)
+        cx.fill()
+        cx.fillStyle = 'rgba(255,255,255,0.22)'
+        cx.fillRect(px + 2, py + 2, sz - 4, 2)
+        cx.fillRect(px + 2, py + 2, 2, sz - 5)
+        cx.fillStyle = 'rgba(0,0,0,0.28)'
+        cx.fillRect(px + 2, py + sz - 4, sz - 4, 2)
+        cx.fillRect(px + sz - 4, py + 2, 2, sz - 5)
+        cx.restore()
+      }
+
+      function draw() {
+        ctx.fillStyle = '#07070a'
+        ctx.fillRect(0, 0, COLS * SZ, ROWS * SZ)
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.03)'
+        ctx.lineWidth = 1
+        for (let c = 0; c <= COLS; c++) {
+          ctx.beginPath(); ctx.moveTo(c * SZ + 0.5, 0); ctx.lineTo(c * SZ + 0.5, ROWS * SZ); ctx.stroke()
+        }
+        for (let r = 0; r <= ROWS; r++) {
+          ctx.beginPath(); ctx.moveTo(0, r * SZ + 0.5); ctx.lineTo(COLS * SZ, r * SZ + 0.5); ctx.stroke()
+        }
+
+        board.forEach((row, r) => row.forEach((v, c) => {
+          if (v) drawCell(ctx, c * SZ, r * SZ, v, SZ)
+        }))
+
+        if (cur) {
+          const gy = ghostY()
+          if (gy > cur.y) {
+            cur.m.forEach((row, r) => row.forEach((v, c) => {
+              if (v) drawCell(ctx, (cur.x + c) * SZ, (gy + r) * SZ, cur.color, SZ, 0.15)
+            }))
+          }
+          cur.m.forEach((row, r) => row.forEach((v, c) => {
+            if (v) drawCell(ctx, (cur.x + c) * SZ, (cur.y + r) * SZ, cur.color, SZ)
+          }))
+        }
+
+        pctx.fillStyle = '#07070a'
+        pctx.fillRect(0, 0, pCvs.width, pCvs.height)
+        if (nxt) {
+          const psz = 22
+          const ox = (pCvs.width  - nxt.m[0].length * psz) / 2
+          const oy = (pCvs.height - nxt.m.length   * psz) / 2
+          nxt.m.forEach((row, r) => row.forEach((v, c) => {
+            if (v) drawCell(pctx, ox + c * psz, oy + r * psz, nxt.color, psz)
+          }))
+        }
+      }
+
+      function loop(ts) {
+        rafId = requestAnimationFrame(loop)
+        if (state !== 'playing') { lastTs = null; draw(); return }
+        if (!lastTs) { lastTs = ts; return }
+        const dt = Math.min(ts - lastTs, 100)
+        lastTs = ts
+        dropAcc += dt
+        if (dropAcc >= dropInterval()) {
+          dropAcc -= dropInterval()
+          if (valid(cur.m, cur.x, cur.y + 1)) cur.y++
+          else lock()
+        }
+        draw()
+      }
+
+      function tryRotate() {
+        const rot = rot90(cur.m)
+        for (const k of [0, -1, 1, -2, 2])
+          if (valid(rot, cur.x + k, cur.y)) { cur.m = rot; cur.x += k; return }
+      }
+
+      function doHardDrop() {
+        const gy = ghostY()
+        score += 2 * (gy - cur.y)
+        cur.y = gy
+        lock()
+        dropAcc = 0
+        scoreEl.textContent = score
+      }
+
+      // Keyboard controls
+      document.addEventListener('keydown', e => {
+        if (state === 'gameover' || state === 'start') {
+          if (e.code === 'Space') { e.preventDefault(); startGame() }
+          return
+        }
+        if (state === 'paused') {
+          if (e.code === 'KeyP' || e.code === 'Escape') {
+            state = 'playing'
+            overlay.classList.add('hidden')
+          }
+          return
+        }
+        switch (e.code) {
+          case 'ArrowLeft':
+            if (valid(cur.m, cur.x - 1, cur.y)) cur.x--
+            e.preventDefault(); break
+          case 'ArrowRight':
+            if (valid(cur.m, cur.x + 1, cur.y)) cur.x++
+            e.preventDefault(); break
+          case 'ArrowDown':
+            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; scoreEl.textContent = score }
+            dropAcc = 0; e.preventDefault(); break
+          case 'ArrowUp': case 'KeyZ':
+            tryRotate(); e.preventDefault(); break
+          case 'Space':
+            doHardDrop(); e.preventDefault(); break
+          case 'KeyP': case 'Escape':
+            state = 'paused'
+            oMsg.textContent = '游戏暂停'
+            oScore.textContent = ''
+            startBtn.textContent = '继续游戏'
+            overlay.classList.remove('hidden')
+            break
+        }
+      })
+
+      startBtn.addEventListener('click', () => {
+        if (state === 'paused') { state = 'playing'; overlay.classList.add('hidden') }
+        else startGame()
+      })
+
+      // Touch controls
+      document.querySelectorAll('[data-tc]').forEach(btn => {
+        let timer
+        const act = () => {
+          if (state !== 'playing') return
+          const a = btn.dataset.tc
+          if (a === 'left'   && valid(cur.m, cur.x - 1, cur.y)) cur.x--
+          if (a === 'right'  && valid(cur.m, cur.x + 1, cur.y)) cur.x++
+          if (a === 'down') {
+            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; scoreEl.textContent = score }
+            dropAcc = 0
+          }
+          if (a === 'rotate') tryRotate()
+          if (a === 'drop')   doHardDrop()
+        }
+        btn.addEventListener('touchstart', e => {
+          e.preventDefault()
+          act()
+          if (['left', 'right', 'down'].includes(btn.dataset.tc))
+            timer = setInterval(act, 140)
+        }, { passive: false })
+        btn.addEventListener('touchend',   () => clearInterval(timer))
+        btn.addEventListener('touchcancel', () => clearInterval(timer))
+      })
+
+      // Init
+      state = 'start'
+      board = mkBoard()
+      nxt = randPiece()
+      draw()
+      rafId = requestAnimationFrame(loop)
+    </script>
+  </body>
+</html>
