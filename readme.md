@@ -18,6 +18,7 @@
 | [贪吃蛇](https://html.viki.moe/snake.html)            | 经典贪吃蛇游戏     |
 | [Nokia 滚球](https://html.viki.moe/nokia-bounce.html) | 诺基亚经典滚球游戏 |
 | [俄罗斯方块](https://html.viki.moe/tetris.html)       | 经典俄罗斯方块游戏 |
+| [推箱子](https://html.viki.moe/sokoban.html)          | 经典推箱子游戏 |
 
 ## 添加新应用
 

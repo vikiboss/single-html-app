@@ -28,9 +28,20 @@
           --accent: #4f46e5;
         }
       }
+      /* 移动端 canvas 按视口高度自适应，保持 1:2 宽高比 */
+      @media (max-width: 639px) {
+        #board {
+          height: min(600px, calc(100svh - 130px));
+          aspect-ratio: 1 / 2;
+          width: auto !important;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+      }
     </style>
   </head>
-  <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex items-center justify-center p-4 select-none overflow-hidden">
+  <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex flex-col items-center justify-center sm:flex-row sm:items-center sm:justify-center p-2 sm:p-4 select-none overflow-x-hidden">
 
     <!-- Ambient glow -->
     <div class="fixed inset-0 pointer-events-none" aria-hidden="true">
@@ -38,11 +49,38 @@
       <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl"></div>
     </div>
 
-    <div class="relative flex gap-3 items-start">
+    <!-- 移动端：flex-col 整体居中；桌面端：display:contents 透明，子项回到 body flex-row -->
+    <div class="flex flex-col gap-2 sm:contents">
+
+    <!-- ── 移动端专属：顶部统计栏 ── -->
+    <div class="sm:hidden w-full relative flex items-center justify-around bg-[var(--bg-raised)] border border-[var(--border)] rounded-md px-3 py-2">
+      <div class="text-center">
+        <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">分数</p>
+        <p id="scoreElM" class="text-base font-black text-[var(--accent)] leading-none mt-0.5">0</p>
+      </div>
+      <div class="w-px h-7 bg-[var(--border)]"></div>
+      <div class="text-center">
+        <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">最高</p>
+        <p id="bestElM" class="text-base font-bold text-[var(--fg-muted)] leading-none mt-0.5">0</p>
+      </div>
+      <div class="w-px h-7 bg-[var(--border)]"></div>
+      <div class="text-center">
+        <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">等级</p>
+        <p id="levelElM" class="text-base font-black leading-none mt-0.5">1</p>
+      </div>
+      <div class="w-px h-7 bg-[var(--border)]"></div>
+      <div class="text-center">
+        <p class="text-[9px] font-semibold uppercase tracking-widest text-[var(--fg-muted)]">消行</p>
+        <p id="linesElM" class="text-base font-black leading-none mt-0.5">0</p>
+      </div>
+    </div>
+
+    <!-- ── 游戏主区域：桌面端左右排列，移动端只有画布 ── -->
+    <div class="relative flex gap-3 items-stretch">
 
       <!-- Game board -->
-      <div class="relative shrink-0">
-        <canvas id="board" width="300" height="600" class="rounded-md border border-[var(--border)] block"></canvas>
+      <div class="relative sm:shrink-0">
+        <canvas id="board" width="300" height="600" class="rounded-md border border-[var(--border)] block sm:w-[300px] sm:h-[600px]"></canvas>
 
         <!-- Overlay: start / pause / game over -->
         <div id="overlay" class="absolute inset-0 rounded-md backdrop-blur-[2px] bg-[var(--bg)]/80 flex flex-col items-center justify-center gap-4">
@@ -56,12 +94,31 @@
           <button id="startBtn" class="bg-[var(--accent)] hover:opacity-90 active:scale-95 text-white font-semibold text-sm px-8 py-2.5 rounded-md transition-all">
             开始游戏
           </button>
-          <p class="text-[11px] text-[var(--fg-muted)]">或按 Space 键</p>
+          <p class="text-[11px] text-[var(--fg-muted)] sm:block hidden">或按 Space 键</p>
+        </div>
+
+        <!-- ── 移动端触控操作区：在 canvas 容器内，宽度自动与画布对齐 ── -->
+        <div class="sm:hidden flex gap-2 mt-2">
+          <button data-tc="left"   class="flex-1 h-12 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
+          </button>
+          <button data-tc="rotate" class="flex-1 h-12 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+          </button>
+          <button data-tc="right"  class="flex-1 h-12 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
+          </button>
+          <button data-tc="down"   class="flex-1 h-12 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          </button>
+          <button data-tc="drop"   class="flex-1 h-12 bg-[var(--accent)]/20 border border-[var(--accent)]/40 rounded-md flex items-center justify-center text-[var(--accent)] active:bg-[var(--accent)]/40">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293 4.293a1 1 0 011.414 0L10 16.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM10 3a1 1 0 011 1v9a1 1 0 11-2 0V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+          </button>
         </div>
       </div>
 
-      <!-- Side panel -->
-      <div class="flex flex-col gap-3 w-[130px]">
+      <!-- ── 桌面端专属：右侧面板 ── -->
+      <div class="hidden sm:flex flex-col gap-3 w-[130px]">
 
         <!-- Next piece -->
         <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
@@ -89,8 +146,8 @@
           </div>
         </div>
 
-        <!-- Key hints -->
-        <div class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
+        <!-- Key hints: flex-1 to fill remaining height -->
+        <div class="flex flex-col flex-1 bg-[var(--bg-raised)] border border-[var(--border)] rounded-md p-3">
           <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--fg-muted)] mb-2">操作键</p>
           <div class="space-y-1.5 text-[11px] text-[var(--fg-muted)]">
             <div class="flex items-center gap-1.5">
@@ -118,24 +175,7 @@
       </div>
     </div>
 
-    <!-- Mobile touch controls -->
-    <div class="sm:hidden fixed bottom-4 inset-x-0 flex items-center justify-center gap-2 z-20 px-4">
-      <button data-tc="left"   class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
-      </button>
-      <button data-tc="rotate" class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
-      </button>
-      <button data-tc="right"  class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
-      </button>
-      <button data-tc="down"   class="bg-[var(--bg-raised)] border border-[var(--border)] rounded-md w-12 h-12 flex items-center justify-center text-[var(--fg)] active:bg-[var(--bg-overlay)]">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-      </button>
-      <button data-tc="drop"   class="bg-[var(--accent)]/20 border border-[var(--accent)]/40 rounded-md w-12 h-12 flex items-center justify-center text-[var(--accent)] active:bg-[var(--accent)]/40">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293 4.293a1 1 0 011.414 0L10 16.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM10 3a1 1 0 011 1v9a1 1 0 11-2 0V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-      </button>
-    </div>
+    </div><!-- end sm:contents wrapper -->
 
     <script type="module">
       const COLS = 10, ROWS = 20, SZ = 30
@@ -147,10 +187,22 @@
       const oMsg     = document.getElementById('oMsg')
       const oScore   = document.getElementById('oScore')
       const startBtn = document.getElementById('startBtn')
+      // 桌面端统计元素
       const scoreEl  = document.getElementById('scoreEl')
       const bestEl   = document.getElementById('bestEl')
       const levelEl  = document.getElementById('levelEl')
       const linesEl  = document.getElementById('linesEl')
+      // 移动端统计元素
+      const scoreElM = document.getElementById('scoreElM')
+      const bestElM  = document.getElementById('bestElM')
+      const levelElM = document.getElementById('levelElM')
+      const linesElM = document.getElementById('linesElM')
+
+      // 同步更新所有统计显示
+      const setScore = v => { scoreEl.textContent = scoreElM.textContent = v }
+      const setBest  = v => { bestEl.textContent  = bestElM.textContent  = v }
+      const setLevel = v => { levelEl.textContent = levelElM.textContent = v }
+      const setLines = v => { linesEl.textContent = linesElM.textContent = v }
 
       const PIECES = [
         { color: '#22d3ee', m: [[1,1,1,1]] },
@@ -165,7 +217,7 @@
       const SCORE_TABLE = [0, 100, 300, 500, 800]
 
       let best = +localStorage.getItem('tetris_best') || 0
-      bestEl.textContent = best
+      setBest(best)
 
       let board, cur, nxt, score, lvl, totalLines, state, dropAcc, lastTs, rafId
 
@@ -220,9 +272,9 @@
           score += SCORE_TABLE[cleared] * lvl
           totalLines += cleared
           lvl = Math.floor(totalLines / 10) + 1
-          scoreEl.textContent = score
-          levelEl.textContent = lvl
-          linesEl.textContent = totalLines
+          setScore(score)
+          setLevel(lvl)
+          setLines(totalLines)
         }
         if (state !== 'gameover') spawn()
       }
@@ -232,7 +284,7 @@
         if (score > best) {
           best = score
           localStorage.setItem('tetris_best', best)
-          bestEl.textContent = best
+          setBest(best)
           oMsg.textContent = '新纪录！'
         } else {
           oMsg.textContent = '游戏结束'
@@ -245,9 +297,7 @@
       function startGame() {
         board = mkBoard()
         score = 0; lvl = 1; totalLines = 0; dropAcc = 0; lastTs = null
-        scoreEl.textContent = '0'
-        levelEl.textContent = '1'
-        linesEl.textContent = '0'
+        setScore(0); setLevel(1); setLines(0)
         state = 'playing'
         nxt = randPiece()
         spawn()
@@ -339,7 +389,7 @@
         cur.y = gy
         lock()
         dropAcc = 0
-        scoreEl.textContent = score
+        setScore(score)
       }
 
       // Keyboard controls
@@ -363,7 +413,7 @@
             if (valid(cur.m, cur.x + 1, cur.y)) cur.x++
             e.preventDefault(); break
           case 'ArrowDown':
-            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; scoreEl.textContent = score }
+            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; setScore(score) }
             dropAcc = 0; e.preventDefault(); break
           case 'ArrowUp': case 'KeyZ':
             tryRotate(); e.preventDefault(); break
@@ -393,7 +443,7 @@
           if (a === 'left'   && valid(cur.m, cur.x - 1, cur.y)) cur.x--
           if (a === 'right'  && valid(cur.m, cur.x + 1, cur.y)) cur.x++
           if (a === 'down') {
-            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; scoreEl.textContent = score }
+            if (valid(cur.m, cur.x, cur.y + 1)) { cur.y++; score++; setScore(score) }
             dropAcc = 0
           }
           if (a === 'rotate') tryRotate()

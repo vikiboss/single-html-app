@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>推箱子</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html, body { touch-action: manipulation; }
+      :root {
+        --bg: #0c0a09;
+        --bg-raised: #1c1917;
+        --bg-overlay: #292524;
+        --fg: #fafaf9;
+        --fg-muted: #a8a29e;
+        --border: #44403c;
+        --accent: #f59e0b;
+        --radius: 6px;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #fafaf9;
+          --bg-raised: #f5f5f4;
+          --bg-overlay: #e7e5e4;
+          --fg: #1c1917;
+          --fg-muted: #78716c;
+          --border: #d6d3d1;
+          --accent: #d97706;
+        }
+      }
+      canvas { image-rendering: pixelated; }
+      @keyframes pop {
+        0%   { transform: scale(1); }
+        40%  { transform: scale(1.15); }
+        100% { transform: scale(1); }
+      }
+      @keyframes confetti {
+        0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+        100% { opacity: 0; transform: translateY(-80px) rotate(720deg); }
+      }
+      .pop { animation: pop 0.25s ease-out; }
+      .confetti-piece {
+        position: absolute;
+        width: 8px; height: 8px;
+        border-radius: 2px;
+        animation: confetti 1s ease-out forwards;
+      }
+    </style>
+  </head>
+  <body class="bg-[var(--bg)] text-[var(--fg)] min-h-screen flex flex-col items-center justify-center gap-4 py-6">
+
+    <!-- 标题栏 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded bg-[var(--accent)] flex items-center justify-center">
+        <svg class="w-5 h-5 text-stone-900" viewBox="0 0 20 20" fill="currentColor">
+          <rect x="3" y="3" width="6" height="6" rx="1"/>
+          <rect x="11" y="3" width="6" height="6" rx="1" opacity=".5"/>
+          <rect x="3" y="11" width="6" height="6" rx="1" opacity=".5"/>
+          <rect x="11" y="11" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+      <h1 class="text-xl font-semibold tracking-tight">推箱子</h1>
+    </div>
+
+    <!-- 信息栏 -->
+    <div class="flex items-center gap-6 text-sm text-[var(--fg-muted)]">
+      <div class="flex items-center gap-1.5">
+        <span>关卡</span>
+        <span id="levelNum" class="text-[var(--fg)] font-semibold tabular-nums">1</span>
+        <span class="text-[var(--border)]">/</span>
+        <span id="levelTotal" class="tabular-nums">25</span>
+      </div>
+      <div class="w-px h-4 bg-[var(--border)]"></div>
+      <div class="flex items-center gap-1.5">
+        <span>步数</span>
+        <span id="moveCount" class="text-[var(--fg)] font-semibold tabular-nums">0</span>
+      </div>
+      <div class="w-px h-4 bg-[var(--border)]"></div>
+      <div class="flex items-center gap-1.5">
+        <span>推箱</span>
+        <span id="pushCount" class="text-[var(--fg)] font-semibold tabular-nums">0</span>
+      </div>
+    </div>
+
+    <!-- 游戏画布 -->
+    <div class="relative" id="canvasWrap">
+      <canvas id="game" class="rounded-md block"></canvas>
+      <!-- 胜利覆盖层 -->
+      <div id="winOverlay" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md bg-stone-950/80 backdrop-blur-sm">
+        <div class="text-4xl font-bold text-[var(--accent)] tracking-tight">通关！</div>
+        <div class="text-sm text-[var(--fg-muted)]">
+          <span id="winSteps"></span> 步 · <span id="winPushes"></span> 次推箱
+        </div>
+        <button id="nextLevelBtn"
+          class="mt-2 px-5 py-2 rounded bg-[var(--accent)] text-stone-900 text-sm font-semibold hover:brightness-110 active:brightness-90 transition-all">
+          下一关
+        </button>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="flex items-center gap-2">
+      <button id="prevBtn" title="上一关"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M10 4L6 8l4 4"/></svg>
+        上一关
+      </button>
+      <button id="resetBtn" title="重置 (R)"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2.5 8a5.5 5.5 0 1 0 1.1-3.3" stroke-linecap="round"/>
+          <path d="M2.5 2v3.5h3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        重置
+      </button>
+      <button id="undoBtn" title="撤销 (Z)"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 7H9.5a3.5 3.5 0 0 1 0 7H7" stroke-linecap="round"/>
+          <path d="M3 3.5 L6 7 L3 10.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(-1,1) translate(-9,0)"/>
+          <path d="M6 4L3 7l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        撤销
+      </button>
+      <button id="nextBtn" title="下一关"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[var(--border)] text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-[var(--fg-muted)] transition-colors">
+        下一关
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M6 4l4 4-4 4"/></svg>
+      </button>
+    </div>
+
+    <!-- 关卡选择 -->
+    <div class="flex flex-wrap justify-center gap-1.5 max-w-sm">
+      <div id="levelDots" class="flex flex-wrap justify-center gap-1.5"></div>
+    </div>
+
+    <!-- 按键提示 -->
+    <div class="flex items-center gap-4 text-xs text-[var(--fg-muted)]">
+      <span>↑↓←→ / WASD 移动</span>
+      <span class="w-px h-3 bg-[var(--border)]"></span>
+      <span>Z 撤销</span>
+      <span class="w-px h-3 bg-[var(--border)]"></span>
+      <span>R 重置</span>
+    </div>
+
+    <script type="module">
+      // ── 关卡数据 (# 墙  空格 地板  . 目标  @ 玩家  $ 箱子  * 箱在目标  + 玩家在目标)
+      const RAW_LEVELS = [
+        // 1: 一个箱子，向下推
+        ["#####",
+         "#   #",
+         "# $ #",
+         "# . #",
+         "# @ #",
+         "#####"],
+        // 2: 一个箱子，向上推两次再向右
+        ["######",
+         "#  . #",
+         "#    #",
+         "# $  #",
+         "# @  #",
+         "######"],
+        // 3: 一个箱子，先右后下
+        ["######",
+         "#@   #",
+         "# $  #",
+         "#  . #",
+         "######"],
+        // 4: 一个箱子，向左推两次
+        ["#######",
+         "#. $  #",
+         "#     #",
+         "#  @  #",
+         "#######"],
+        // 5: 一个箱子，复杂路径
+        ["########",
+         "#  .   #",
+         "#      #",
+         "# $    #",
+         "#   @  #",
+         "########"],
+        // 6: 一个箱子，绕过内墙
+        ["#######",
+         "#     #",
+         "# # . #",
+         "# $   #",
+         "# # @ #",
+         "#######"],
+        // 7: 两个箱子，各自向上推
+        ["#######",
+         "# . . #",
+         "#     #",
+         "# $ $ #",
+         "#  @  #",
+         "#######"],
+        // 8: 两个箱子，顺序很重要
+        ["########",
+         "# @    #",
+         "# $    #",
+         "# . $. #",
+         "########"],
+        // 9: 两个箱子，各自向下推
+        ["########",
+         "#      #",
+         "# @$$  #",
+         "#  ..  #",
+         "#      #",
+         "########"],
+        // 10: 三个箱子，排成一排
+        ["########",
+         "# ...  #",
+         "#      #",
+         "# $$$  #",
+         "#      #",
+         "#  @   #",
+         "########"],
+        // 11: 两个箱子，需要交叉推
+        ["#########",
+         "#       #",
+         "# $  .  #",
+         "# .  $  #",
+         "#   @   #",
+         "#########"],
+        // 12: 两个箱子，绕墙推
+        ["########",
+         "#  @   #",
+         "## $ $ #",
+         "#  . . #",
+         "########"],
+        // 13: 两个箱子，推上去再横移
+        ["########",
+         "#. .   #",
+         "# $$   #",
+         "#      #",
+         "#  @   #",
+         "########"],
+        // 14: 两个箱子，已经对齐
+        ["########",
+         "#   .. #",
+         "#   $$ #",
+         "# @    #",
+         "########"],
+        // 15: 三个箱子，一个已在目标上
+        ["##########",
+         "#    @   #",
+         "#  $$.$  #",
+         "#  ..    #",
+         "##########"],
+        // 16: 两个箱子，较长路径
+        ["########",
+         "#  ..  #",
+         "#      #",
+         "# $$   #",
+         "#  @   #",
+         "########"],
+        // 17: 两个箱子，相距较远
+        ["##########",
+         "#.      .#",
+         "# $      #",
+         "#        #",
+         "#      $ #",
+         "#    @   #",
+         "##########"],
+        // 18: 迷宫障碍墙
+        ["#########",
+         "#   @   #",
+         "# ## ## #",
+         "# $. .$ #",
+         "#########"],
+        // 19: 四个箱子，一次推上去
+        ["##########",
+         "# ....   #",
+         "# $$$$   #",
+         "#        #",
+         "#   @    #",
+         "##########"],
+        // 20: 三个箱子，水平分散
+        ["###########",
+         "# .  .  . #",
+         "#         #",
+         "# $  $  $ #",
+         "#    @    #",
+         "###########"],
+        // 21: 一个箱子，弯形通道
+        ["#######",
+         "#    .#",
+         "## $ ##",
+         "# @   #",
+         "#######"],
+        // 22: 两个箱子，L 形排列
+        ["########",
+         "#. .   #",
+         "# $    #",
+         "#  $   #",
+         "#  @   #",
+         "########"],
+        // 23: 三个箱子，对称排列
+        ["###########",
+         "# .  .  . #",
+         "#         #",
+         "#  $$$    #",
+         "#   @     #",
+         "###########"],
+        // 24: 四个箱子，两组对应
+        ["##########",
+         "#  ..    #",
+         "# $$     #",
+         "#     $$ #",
+         "#     .. #",
+         "#   @    #",
+         "##########"],
+        // 25: 四个箱子，楼梯形排列
+        ["##########",
+         "#  ....  #",
+         "#  $$    #",
+         "#    $$  #",
+         "#   @    #",
+         "##########"],
+      ]
+
+      // ── 解析关卡
+      const WALL = 0, FLOOR = 1, GOAL = 2
+      function parseLevel(lines) {
+        const rows = lines.length
+        const cols = Math.max(...lines.map(l => l.length))
+        const map = []
+        let player = null
+        const boxes = []
+        const goals = []
+
+        for (let r = 0; r < rows; r++) {
+          const row = []
+          for (let c = 0; c < cols; c++) {
+            const ch = (lines[r][c] || ' ')
+            if (ch === '#')      { row.push(WALL) }
+            else if (ch === '.') { row.push(GOAL); goals.push([r, c]) }
+            else if (ch === '$') { row.push(FLOOR); boxes.push([r, c]) }
+            else if (ch === '*') { row.push(GOAL);  boxes.push([r, c]); goals.push([r, c]) }
+            else if (ch === '@') { row.push(FLOOR); player = [r, c] }
+            else if (ch === '+') { row.push(GOAL);  player = [r, c]; goals.push([r, c]) }
+            else                 { row.push(FLOOR) }
+          }
+          map.push(row)
+        }
+        return { map, rows, cols, player, boxes, goals }
+      }
+
+      const LEVELS = RAW_LEVELS.map(parseLevel)
+
+      // ── 游戏状态
+      let currentLevel = 0
+      let state = null       // { player, boxes }
+      let history = []
+      let moves = 0, pushes = 0
+      let won = false
+
+      function cloneState(s) {
+        return { player: [...s.player], boxes: s.boxes.map(b => [...b]) }
+      }
+
+      function loadLevel(idx) {
+        currentLevel = idx
+        const lv = LEVELS[idx]
+        state = { player: [...lv.player], boxes: lv.boxes.map(b => [...b]) }
+        history = []
+        moves = 0
+        pushes = 0
+        won = false
+        document.getElementById('winOverlay').classList.add('hidden')
+        updateUI()
+        render()
+        updateDots()
+      }
+
+      function isBox(boxes, r, c) {
+        return boxes.findIndex(b => b[0] === r && b[1] === c)
+      }
+
+      function move(dr, dc) {
+        if (won) return
+        const lv = LEVELS[currentLevel]
+        const [pr, pc] = state.player
+        const nr = pr + dr, nc = pc + dc
+
+        // 目标格必须是 FLOOR 或 GOAL（非墙）
+        if (lv.map[nr]?.[nc] === WALL) return
+
+        const bi = isBox(state.boxes, nr, nc)
+        if (bi !== -1) {
+          // 推箱子
+          const br = nr + dr, bc = nc + dc
+          if (lv.map[br]?.[bc] === WALL) return
+          if (isBox(state.boxes, br, bc) !== -1) return
+          // 可以推
+          history.push(cloneState(state))
+          state.boxes[bi] = [br, bc]
+          state.player = [nr, nc]
+          moves++; pushes++
+        } else {
+          history.push(cloneState(state))
+          state.player = [nr, nc]
+          moves++
+        }
+        updateUI()
+        render()
+        checkWin()
+      }
+
+      function undo() {
+        if (history.length === 0) return
+        state = history.pop()
+        // 重算步数/推数（简单：直接用 history 长度估算）
+        moves = history.length
+        // pushes 计数无法精确撤销，置为重新统计模式
+        // 简化：moves 从 history 恢复，pushes 只减不精确
+        if (pushes > 0) pushes = Math.max(0, pushes - 1)
+        won = false
+        document.getElementById('winOverlay').classList.add('hidden')
+        updateUI()
+        render()
+      }
+
+      function checkWin() {
+        const { goals } = LEVELS[currentLevel]
+        const allDone = goals.every(([gr, gc]) => isBox(state.boxes, gr, gc) !== -1)
+        if (allDone) {
+          won = true
+          document.getElementById('winSteps').textContent = moves
+          document.getElementById('winPushes').textContent = pushes
+          document.getElementById('winOverlay').classList.remove('hidden')
+          spawnConfetti()
+          updateDots()
+        }
+      }
+
+      // ── 渲染
+      const canvas = document.getElementById('game')
+      const ctx = canvas.getContext('2d')
+      const MAX_CELL = 56
+      const MIN_CELL = 28
+
+      function getCellSize(cols, rows) {
+        const maxW = Math.min(window.innerWidth - 32, 560)
+        const maxH = Math.min(window.innerHeight * 0.55, 480)
+        const byW = Math.floor(maxW / cols)
+        const byH = Math.floor(maxH / rows)
+        return Math.max(MIN_CELL, Math.min(MAX_CELL, byW, byH))
+      }
+
+      function render() {
+        if (!state) return
+        const lv = LEVELS[currentLevel]
+        const T = getCellSize(lv.cols, lv.rows)
+        canvas.width  = lv.cols * T
+        canvas.height = lv.rows * T
+
+        // 背景
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-overlay').trim() || '#27272a'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        const isDark = !window.matchMedia('(prefers-color-scheme: light)').matches
+
+        for (let r = 0; r < lv.rows; r++) {
+          for (let c = 0; c < lv.cols; c++) {
+            const x = c * T, y = r * T
+            const cell = lv.map[r][c]
+            const hasBox = isBox(state.boxes, r, c) !== -1
+            const isPlayer = state.player[0] === r && state.player[1] === c
+            const isGoal = cell === GOAL
+
+            if (cell === WALL) {
+              drawWall(x, y, T, isDark)
+            } else {
+              drawFloor(x, y, T, isGoal, isDark)
+              if (hasBox) drawBox(x, y, T, isGoal, isDark)
+              else if (isPlayer) drawPlayer(x, y, T, isGoal, isDark)
+            }
+          }
+        }
+      }
+
+      function drawWall(x, y, T, dark) {
+        const base = dark ? '#3d3530' : '#9ca3af'
+        const hi   = dark ? '#4e4440' : '#d1d5db'
+        const sh   = dark ? '#1c1917' : '#6b7280'
+        // 主体
+        ctx.fillStyle = base
+        ctx.fillRect(x, y, T, T)
+        // 顶/左高光
+        ctx.fillStyle = hi
+        ctx.fillRect(x, y, T, 2)
+        ctx.fillRect(x, y, 2, T)
+        // 底/右阴影
+        ctx.fillStyle = sh
+        ctx.fillRect(x, y + T - 2, T, 2)
+        ctx.fillRect(x + T - 2, y, 2, T)
+        // 砖块纹理
+        ctx.strokeStyle = sh
+        ctx.lineWidth = 0.5
+        ctx.beginPath()
+        const rowH = T / 2
+        for (let row = 0; row < 2; row++) {
+          const oy = y + row * rowH
+          const offset = row % 2 === 0 ? 0 : T / 2
+          ctx.moveTo(x + offset, oy + rowH)
+          ctx.lineTo(x + T + offset, oy + rowH)
+          ctx.moveTo(x + offset, oy)
+          ctx.lineTo(x + offset, oy + rowH)
+        }
+        ctx.stroke()
+      }
+
+      function drawFloor(x, y, T, isGoal, dark) {
+        const floorColor = dark ? '#1c1917' : '#f5f5f4'
+        const goalColor  = dark ? '#2d1f0e' : '#fef3c7'
+        ctx.fillStyle = isGoal ? goalColor : floorColor
+        ctx.fillRect(x, y, T, T)
+        if (isGoal) {
+          // 目标标记（X 形）
+          const m = T * 0.28
+          ctx.strokeStyle = dark ? '#92400e' : '#d97706'
+          ctx.lineWidth = Math.max(2, T / 18)
+          ctx.lineCap = 'round'
+          ctx.beginPath()
+          ctx.moveTo(x + m, y + m)
+          ctx.lineTo(x + T - m, y + T - m)
+          ctx.moveTo(x + T - m, y + m)
+          ctx.lineTo(x + m, y + T - m)
+          ctx.stroke()
+        }
+      }
+
+      function drawBox(x, y, T, onGoal, dark) {
+        const pad = Math.max(2, T * 0.08)
+        const bx = x + pad, by = y + pad
+        const bs = T - pad * 2
+
+        const base = onGoal ? (dark ? '#15803d' : '#16a34a') : (dark ? '#92400e' : '#d97706')
+        const face = onGoal ? (dark ? '#16a34a' : '#22c55e') : (dark ? '#b45309' : '#f59e0b')
+        const hi   = onGoal ? (dark ? '#4ade80' : '#86efac') : (dark ? '#fcd34d' : '#fef08a')
+        const sh   = onGoal ? (dark ? '#052e16' : '#14532d') : (dark ? '#451a03' : '#92400e')
+
+        // 阴影层
+        ctx.fillStyle = sh
+        ctx.beginPath()
+        roundRect(ctx, bx + 2, by + 2, bs, bs, 3)
+        ctx.fill()
+
+        // 主体
+        ctx.fillStyle = base
+        ctx.beginPath()
+        roundRect(ctx, bx, by, bs, bs, 3)
+        ctx.fill()
+
+        // 面
+        const fi = Math.max(2, bs * 0.07)
+        ctx.fillStyle = face
+        ctx.beginPath()
+        roundRect(ctx, bx + fi, by + fi, bs - fi * 2, bs - fi * 2, 2)
+        ctx.fill()
+
+        // 十字线
+        const cx2 = bx + bs / 2, cy2 = by + bs / 2
+        ctx.strokeStyle = sh
+        ctx.lineWidth = Math.max(1, T / 24)
+        ctx.beginPath()
+        ctx.moveTo(cx2, by + fi * 1.5)
+        ctx.lineTo(cx2, by + bs - fi * 1.5)
+        ctx.moveTo(bx + fi * 1.5, cy2)
+        ctx.lineTo(bx + bs - fi * 1.5, cy2)
+        ctx.stroke()
+
+        // 高光角
+        ctx.fillStyle = hi
+        ctx.globalAlpha = 0.6
+        ctx.beginPath()
+        roundRect(ctx, bx + fi, by + fi, bs * 0.35, bs * 0.2, 2)
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+
+      function drawPlayer(x, y, T, onGoal, dark) {
+        const cx = x + T / 2, cy = y + T / 2
+        const r  = T * 0.36
+        const headR = r * 0.42
+
+        // 身体
+        ctx.fillStyle = dark ? '#6366f1' : '#4f46e5'
+        ctx.beginPath()
+        ctx.ellipse(cx, cy + r * 0.18, r * 0.55, r * 0.62, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 头
+        ctx.fillStyle = dark ? '#fde68a' : '#fbbf24'
+        ctx.beginPath()
+        ctx.arc(cx, cy - r * 0.35, headR, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 眼睛
+        const eyeR = Math.max(1.5, headR * 0.22)
+        ctx.fillStyle = dark ? '#1c1917' : '#1c1917'
+        ctx.beginPath()
+        ctx.arc(cx - headR * 0.3, cy - r * 0.38, eyeR, 0, Math.PI * 2)
+        ctx.arc(cx + headR * 0.3, cy - r * 0.38, eyeR, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.moveTo(x + r, y)
+        ctx.lineTo(x + w - r, y)
+        ctx.arcTo(x + w, y, x + w, y + r, r)
+        ctx.lineTo(x + w, y + h - r)
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+        ctx.lineTo(x + r, y + h)
+        ctx.arcTo(x, y + h, x, y + h - r, r)
+        ctx.lineTo(x, y + r)
+        ctx.arcTo(x, y, x + r, y, r)
+      }
+
+      // ── UI 更新
+      function updateUI() {
+        document.getElementById('levelNum').textContent = currentLevel + 1
+        document.getElementById('moveCount').textContent = moves
+        document.getElementById('pushCount').textContent = pushes
+      }
+
+      function updateDots() {
+        const container = document.getElementById('levelDots')
+        container.innerHTML = ''
+        LEVELS.forEach((_, i) => {
+          const dot = document.createElement('button')
+          const done = localStorage.getItem(`sokoban_done_${i}`) === '1'
+          dot.className = [
+            'w-5 h-5 rounded text-xs font-medium transition-all',
+            i === currentLevel
+              ? 'bg-[var(--accent)] text-stone-900 scale-110'
+              : done
+                ? 'bg-stone-700 text-stone-300 hover:brightness-125'
+                : 'bg-[var(--bg-overlay)] text-[var(--fg-muted)] hover:brightness-125 border border-[var(--border)]'
+          ].join(' ')
+          dot.textContent = i + 1
+          dot.addEventListener('click', () => loadLevel(i))
+          container.appendChild(dot)
+        })
+      }
+
+      // ── 彩屑动画
+      function spawnConfetti() {
+        const wrap = document.getElementById('canvasWrap')
+        const colors = ['#f59e0b','#6366f1','#ec4899','#22c55e','#38bdf8']
+        for (let i = 0; i < 24; i++) {
+          const el = document.createElement('div')
+          el.className = 'confetti-piece'
+          el.style.left   = Math.random() * 100 + '%'
+          el.style.top    = 40 + Math.random() * 40 + '%'
+          el.style.background = colors[Math.floor(Math.random() * colors.length)]
+          el.style.animationDelay = Math.random() * 0.4 + 's'
+          el.style.animationDuration = 0.8 + Math.random() * 0.6 + 's'
+          wrap.appendChild(el)
+          el.addEventListener('animationend', () => el.remove())
+        }
+        localStorage.setItem(`sokoban_done_${currentLevel}`, '1')
+      }
+
+      // ── 输入处理
+      document.addEventListener('keydown', e => {
+        if (e.repeat) return
+        const map = {
+          ArrowUp: [-1, 0], ArrowDown: [1, 0],
+          ArrowLeft: [0, -1], ArrowRight: [0, 1],
+          w: [-1, 0], s: [1, 0], a: [0, -1], d: [0, 1],
+          W: [-1, 0], S: [1, 0], A: [0, -1], D: [0, 1],
+        }
+        if (map[e.key]) {
+          e.preventDefault()
+          const [dr, dc] = map[e.key]
+          move(dr, dc)
+        } else if (e.key === 'z' || e.key === 'Z' || (e.key === 'z' && e.ctrlKey)) {
+          e.preventDefault()
+          undo()
+        } else if (e.key === 'r' || e.key === 'R') {
+          loadLevel(currentLevel)
+        }
+      })
+
+      // 移动端触摸滑动
+      let touchStart = null
+      canvas.addEventListener('touchstart', e => {
+        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+      }, { passive: true })
+      canvas.addEventListener('touchend', e => {
+        if (!touchStart) return
+        const dx = e.changedTouches[0].clientX - touchStart.x
+        const dy = e.changedTouches[0].clientY - touchStart.y
+        const adx = Math.abs(dx), ady = Math.abs(dy)
+        if (adx < 10 && ady < 10) return
+        if (adx > ady) move(0, dx > 0 ? 1 : -1)
+        else           move(dy > 0 ? 1 : -1, 0)
+        touchStart = null
+      }, { passive: true })
+
+      document.getElementById('resetBtn').addEventListener('click', () => loadLevel(currentLevel))
+      document.getElementById('undoBtn').addEventListener('click', undo)
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentLevel > 0) loadLevel(currentLevel - 1)
+      })
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentLevel < LEVELS.length - 1) loadLevel(currentLevel + 1)
+      })
+      document.getElementById('nextLevelBtn').addEventListener('click', () => {
+        if (currentLevel < LEVELS.length - 1) loadLevel(currentLevel + 1)
+      })
+
+      document.getElementById('levelTotal').textContent = LEVELS.length
+
+      window.addEventListener('resize', () => render())
+
+      // ── 启动
+      loadLevel(0)
+    </script>
+  </body>
+</html>

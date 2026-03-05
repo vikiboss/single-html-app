@@ -3,10 +3,11 @@
 <head>
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>扫雷</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+      html, body { touch-action: manipulation; }
     :root {
       --cell-size: 32px;
       --accent: #f59e0b;

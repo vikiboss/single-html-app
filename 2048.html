@@ -3,7 +3,7 @@
 <head>
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>2048</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -47,7 +47,7 @@
     .t-super { background: #3c3a32; color: #f9f6f2; font-size: 0.85rem; }
 
     /* 禁止横向侧滑触发浏览器返回/前进手势 */
-    html, body { overscroll-behavior-x: none; }
+    html, body { overscroll-behavior-x: none; touch-action: manipulation; }
 
     @keyframes pop-in {
       0%   { transform: scale(0); opacity: 0; }
