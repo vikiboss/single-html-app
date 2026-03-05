@@ -283,16 +283,18 @@
       // ── Game constants ──────────────────────────────────────────────────
       const BALL_R      = 9
       const PLAT_H      = 7
+      const PLAT_W      = 80   // 所有平台统一宽度
       const GRAVITY     = 0.42
-      const MAX_VX      = 5.5
-      const GND_ACCEL   = 1.5
-      const AIR_ACCEL   = 0.7
-      const FRICTION_G  = 0.75
-      const FRICTION_A  = 0.95
-      const TERM_VY     = 13
-      const INIT_SCROLL = 1.25
-      const PLAT_GAP_Y  = 112  // vertical spacing between platforms
-      const REACH       = 75   // max horizontal distance between adjacent platforms
+      // 基础球速参数 —— 随 scrollSpeed 动态放大
+      const BASE_MAX_VX = 5.5
+      const BASE_ACCEL  = 1.5
+      const FRICTION_G  = 0.62   // 地面：快速制动
+      const FRICTION_A  = 0.78   // 空中：松手约 15 帧内停止，不过度漂移
+      const TERM_VY     = 14
+      const INIT_SCROLL = 1.3
+      const MAX_SCROLL  = 7.0   // 速度上限
+      const PLAT_GAP_Y  = 108  // 平台垂直间距
+      const REACH       = 95   // 相邻平台左边缘最大水平偏移
 
       // Fixed-timestep loop: 60 physics ticks / second
       const TICK_MS = 1000 / 60
@@ -306,9 +308,11 @@
       let blinkTick = 0       // used for blinking text
       let deadTicks = 0
 
-      let platforms = []
-      let ball      = null
-      let particles = []
+      let platforms    = []
+      let ball         = null
+      let particles    = []
+      let platCount    = 0     // 已生成平台总数，用于荆棘概率斜坡
+      let lastWasThorn = false // 禁止连续荆棘
 
       // ── Input state ─────────────────────────────────────────────────────
       const keys = { left: false, right: false }
@@ -371,19 +375,26 @@
 
       // ── Platform helpers ─────────────────────────────────────────────────
       function makePlatform(y, prev, isFirst) {
-        const minW = isFirst ? 120 : 58
-        const maxW = isFirst ? 150 : 152
-        const w = minW + Math.random() * (maxW - minW)
+        const w = PLAT_W
         let x
         if (isFirst || !prev) {
-          x = (W - w) / 2
+          x = (W - w) / 2  // 起始平台居中
         } else {
-          // Constrain so ball can reach it (±REACH from prev edges)
-          const lo = Math.max(8,      prev.x - REACH)
-          const hi = Math.min(W - w - 8, prev.x + prev.w + REACH - w)
+          const lo = Math.max(8,         prev.x - REACH)
+          const hi = Math.min(W - w - 8, prev.x + REACH)
           x = lo + Math.random() * Math.max(0, hi - lo)
         }
-        return { x, y, w }
+
+        // 荆棘概率：前 4 块永远安全，之后随分数线性增加，最高 40%，不允许连续出现
+        platCount++
+        let thorn = false
+        if (!isFirst && platCount > 4) {
+          const chance = Math.min(0.40, (score - 800) / 16000)
+          if (!lastWasThorn && chance > 0 && Math.random() < chance) thorn = true
+        }
+        lastWasThorn = thorn
+
+        return { x, y, w, thorn }
       }
 
       function ensurePlatforms() {
@@ -415,15 +426,17 @@
 
       // ── Game init ─────────────────────────────────────────────────────────
       function startGame() {
-        gameState   = 'playing'
-        score       = 0
-        scrollSpeed = INIT_SCROLL
-        tick        = 0
-        blinkTick   = 0
-        particles   = []
-        keys.left   = keys.right = false
+        gameState    = 'playing'
+        score        = 0
+        scrollSpeed  = INIT_SCROLL
+        tick         = 0
+        blinkTick    = 0
+        particles    = []
+        platCount    = 1
+        lastWasThorn = false
+        keys.left    = keys.right = false
 
-        const sp = { x: (W - 130) / 2, y: 285, w: 130 }
+        const sp = { x: (W - PLAT_W) / 2, y: 285, w: PLAT_W, thorn: false }
         platforms = [sp]
         ensurePlatforms()
 
@@ -443,7 +456,13 @@
         tick++
         score++
         blinkTick++
-        scrollSpeed = INIT_SCROLL + score * 0.00085
+        // 速度曲线：前 30s 快速加速，之后趋于平缓，上限 MAX_SCROLL
+        scrollSpeed = Math.min(MAX_SCROLL, INIT_SCROLL + score * 0.0012)
+
+        // 球的动态参数：随速度增长同步提升，保持游戏手感
+        const speedT  = Math.min(1, (scrollSpeed - INIT_SCROLL) / (MAX_SCROLL - INIT_SCROLL))
+        const dynMaxVX = BASE_MAX_VX + speedT * 3.5   // 5.5 → 9.0
+        const dynAccel = BASE_ACCEL  + speedT * 1.2   // 1.5 → 2.7
 
         // Scroll platforms upward
         for (const p of platforms) p.y -= scrollSpeed
@@ -461,13 +480,12 @@
         ensurePlatforms()
 
         // ── Horizontal input ──
-        const accel = ball.onGround ? GND_ACCEL : AIR_ACCEL
-        const fric  = ball.onGround ? FRICTION_G : FRICTION_A
+        const fric = ball.onGround ? FRICTION_G : FRICTION_A
 
         if (keys.left && !keys.right) {
-          ball.vx = Math.max(ball.vx - accel, -MAX_VX)
+          ball.vx = Math.max(ball.vx - dynAccel, -dynMaxVX)
         } else if (keys.right && !keys.left) {
-          ball.vx = Math.min(ball.vx + accel,  MAX_VX)
+          ball.vx = Math.min(ball.vx + dynAccel,  dynMaxVX)
         } else {
           ball.vx *= fric
           if (Math.abs(ball.vx) < 0.04) ball.vx = 0
@@ -512,6 +530,20 @@
               if (prevBot <= prevPlatTop + 2 && currBot >= p.y) {
                 if (ball.x >= p.x - 1 && ball.x <= p.x + p.w + 1) {
                   ball.y = p.y - BALL_R
+                  if (p.thorn) {
+                    // 踩到荆棘 → 直接死亡
+                    spawnDust(ball.x, p.y)
+                    spawnDust(ball.x, p.y)
+                    if (score > best) {
+                      best = score
+                      localStorage.setItem('nokia_bounce_best', best)
+                    }
+                    gameState = 'dead'
+                    deadTicks = 200
+                    shell.classList.add('shake')
+                    setTimeout(() => shell.classList.remove('shake'), 500)
+                    return
+                  }
                   if (Math.abs(ball.vy) > 2.5) spawnDust(ball.x, p.y)
                   ball.vy       = 0
                   ball.onGround = true
@@ -570,9 +602,9 @@
 
         // ── HUD ──
         const pts = Math.floor(score / 30)
-        const lv  = Math.floor(score / 600) + 1
+        const lv  = Math.ceil(scrollSpeed)   // 等级直接反映速度
         txt(`${pts}`, 8, 22, 14, C.dark)
-        txt(`LV.${lv}`, W / 2, 22, 11, C.mid, 'center')
+        txt(`SPD.${lv}`, W / 2, 22, 11, C.mid, 'center')
         txt(`BEST ${Math.floor(best / 30)}`, W - 8, 22, 10, C.mid, 'right')
         ctx.fillStyle = C.mid
         ctx.fillRect(0, 28, W, 1)
@@ -591,19 +623,41 @@
           if (p.y + PLAT_H < 28 || p.y > H) continue
           const px = Math.round(p.x), py = Math.round(p.y), pw = Math.round(p.w)
 
-          // Warn: platform about to leave top
           const fading = py < 60
           ctx.globalAlpha = fading ? Math.max(0.2, py / 60) : 1
 
-          // Body
-          ctx.fillStyle = C.dark
-          ctx.fillRect(px, py, pw, PLAT_H)
-          // Top sheen
-          ctx.fillStyle = C.mid
-          ctx.fillRect(px + 2, py + 1, pw - 4, 2)
-          // End caps
-          ctx.fillRect(px, py + 2, 2, PLAT_H - 2)
-          ctx.fillRect(px + pw - 2, py + 2, 2, PLAT_H - 2)
+          if (p.thorn) {
+            // ── 荆棘平台 ──
+            // 平台体（用 mid 色，视觉上与安全平台区分）
+            ctx.fillStyle = C.mid
+            ctx.fillRect(px, py, pw, PLAT_H)
+            // 平台顶部暗边
+            ctx.fillStyle = C.dark
+            ctx.fillRect(px, py, pw, 2)
+
+            // 荆棘三角形（5 根刺，指向上方）
+            ctx.fillStyle = C.dark
+            const spikeCount = 5
+            const gap = pw / spikeCount
+            for (let i = 0; i < spikeCount; i++) {
+              const sx = px + i * gap
+              const sw = gap
+              ctx.beginPath()
+              ctx.moveTo(sx + 1,      py)
+              ctx.lineTo(sx + sw / 2, py - 8)
+              ctx.lineTo(sx + sw - 1, py)
+              ctx.closePath()
+              ctx.fill()
+            }
+          } else {
+            // ── 安全平台 ──
+            ctx.fillStyle = C.dark
+            ctx.fillRect(px, py, pw, PLAT_H)
+            ctx.fillStyle = C.mid
+            ctx.fillRect(px + 2, py + 1, pw - 4, 2)
+            ctx.fillRect(px, py + 2, 2, PLAT_H - 2)
+            ctx.fillRect(px + pw - 2, py + 2, 2, PLAT_H - 2)
+          }
 
           ctx.globalAlpha = 1
         }
@@ -684,23 +738,48 @@
         ctx.font      = 'bold 11px "Courier New", monospace'
         ctx.fillText('Nokia Classic', W / 2, 153)
 
-        // Mini preview
+        // Mini preview — 安全平台 + 小球
+        const prevX = W / 2 - 40
         ctx.fillStyle = C.dark
-        ctx.fillRect(W / 2 - 55, 200, 110, PLAT_H)
+        ctx.fillRect(prevX, 200, PLAT_W, PLAT_H)
+        ctx.fillStyle = C.mid
+        ctx.fillRect(prevX + 2, 201, PLAT_W - 4, 2)
+        ctx.fillStyle = C.dark
         ctx.beginPath()
         ctx.arc(W / 2, 200 - BALL_R, BALL_R, 0, Math.PI * 2)
         ctx.fill()
-        // shine
         ctx.fillStyle = C.light
         ctx.beginPath()
         ctx.arc(W / 2 - 3, 200 - BALL_R - 3, 3, 0, Math.PI * 2)
         ctx.fill()
 
+        // 荆棘平台预览（右侧）
+        const thornX = W / 2 + 52
+        ctx.fillStyle = C.mid
+        ctx.fillRect(thornX, 200, PLAT_W, PLAT_H)
+        ctx.fillStyle = C.dark
+        ctx.fillRect(thornX, 200, PLAT_W, 2)
+        for (let i = 0; i < 5; i++) {
+          const gap = PLAT_W / 5
+          ctx.beginPath()
+          ctx.moveTo(thornX + i * gap + 1, 200)
+          ctx.lineTo(thornX + i * gap + gap / 2, 192)
+          ctx.lineTo(thornX + i * gap + gap - 1, 200)
+          ctx.closePath()
+          ctx.fill()
+        }
+        // 标注
+        ctx.fillStyle = C.mid
+        ctx.font = '9px "Courier New", monospace'
+        ctx.textAlign = 'left'
+        ctx.fillText('× 危险', thornX + 2, 218)
+
         // Instructions
         ctx.fillStyle = C.dark
         ctx.font      = '11px "Courier New", monospace'
-        ctx.fillText('← →  控制小球左右', W / 2, 244)
-        ctx.fillText('落在平台上  不要掉落！', W / 2, 262)
+        ctx.textAlign = 'center'
+        ctx.fillText('← →  控制小球左右', W / 2, 250)
+        ctx.fillText('带刺平台碰不得！', W / 2, 266)
 
         // Blink start prompt
         if (Math.floor(blinkTick / 28) % 2 === 0) {
