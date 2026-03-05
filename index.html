@@ -4,7 +4,7 @@
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Viki 的单 HTML 应用</title>
+    <title>我的应用</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
@@ -67,11 +67,11 @@
       // =====================================================
       const APPS = [
         {
-          title: '扫雷',
-          description: '经典扫雷游戏',
-          href: 'minesweeper.html',
+          title: '数独',
+          description: '经典数独游戏',
+          href: 'sudoku.html',
           tags: ['游戏'],
-          date: '2026-03-04',
+          date: '2026-03-05',
         },
         {
           title: '盘古之白',
@@ -80,7 +80,18 @@
           tags: ['工具'],
           date: '2026-03-04',
         },
-      ]
+        {
+          title: '扫雷',
+          description: '经典扫雷游戏',
+          href: 'minesweeper.html',
+          tags: ['游戏'],
+          date: '2026-03-04',
+        },
+      ].toSorted((a, b) => {
+          const dateA = new Date(a.date || '1970-01-01')
+          const dateB = new Date(b.date || '1970-01-01')
+          return dateB - dateA
+      })
 
       // =====================================================
       // 以下无需修改

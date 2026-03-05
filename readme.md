@@ -12,10 +12,11 @@
 |------|------|
 | [扫雷](https://html.viki.moe/minesweeper.html) | 经典扫雷游戏 |
 | [盘古之白](https://html.viki.moe/pangu.html) | 中英文排版格式化/差异对比工具 |
+| [数独](https://html.viki.moe/sudoku.html) | 经典数独游戏，支持简单 / 中等 / 困难三种难度 |
 
 ## 添加新应用
 
-编辑 `index.html` 中的 `APPS` 数组：
+编辑 `index.html` 中的 `APPS` 数组，往最前面追加：
 
 ```js
 const APPS = [
