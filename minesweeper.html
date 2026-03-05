@@ -12,6 +12,52 @@
       --accent: #f59e0b;
       --danger: #ef4444;
       --safe: #10b981;
+      --danger-rgb: 239, 68, 68;
+      --accent-rgb: 245, 158, 11;
+      --safe-rgb: 16, 185, 129;
+      --bg: #0f0f0f;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --muted-strong: #94a3b8;
+      --panel: rgba(0,0,0,0.5);
+      --panel-border: rgba(255,255,255,0.08);
+      --divider: rgba(255,255,255,0.1);
+      --overlay-bg: rgba(0,0,0,0.75);
+      --cell-hidden: rgba(255,255,255,0.07);
+      --cell-hidden-hover: rgba(255,255,255,0.13);
+      --cell-hidden-active: rgba(255,255,255,0.04);
+      --cell-revealed: rgba(255,255,255,0.03);
+      --cell-border: rgba(255,255,255,0.06);
+      --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.4);
+      --cell-revealed-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+      --noise-opacity: 0.04;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --accent: #d97706;
+        --danger: #dc2626;
+        --safe: #059669;
+        --danger-rgb: 220, 38, 38;
+        --accent-rgb: 217, 119, 6;
+        --safe-rgb: 5, 150, 105;
+        --bg: #f4f5f7;
+        --text: #111827;
+        --muted: #6b7280;
+        --muted-strong: #64748b;
+        --panel: rgba(255,255,255,0.8);
+        --panel-border: rgba(17,24,39,0.12);
+        --divider: rgba(17,24,39,0.12);
+        --overlay-bg: rgba(255,255,255,0.82);
+        --cell-hidden: rgba(17,24,39,0.06);
+        --cell-hidden-hover: rgba(17,24,39,0.1);
+        --cell-hidden-active: rgba(17,24,39,0.04);
+        --cell-revealed: rgba(17,24,39,0.02);
+        --cell-border: rgba(17,24,39,0.08);
+        --cell-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.08);
+        --cell-revealed-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+        --noise-opacity: 0.025;
+      }
     }
 
     * {
@@ -22,10 +68,11 @@
     }
 
     body {
-      background: #0f0f0f;
+      background: var(--bg);
+      color: var(--text);
       background-image:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(245,158,11,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(16,185,129,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(var(--accent-rgb),0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(var(--safe-rgb),0.05) 0%, transparent 60%),
         url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
       min-height: 100vh;
     }
@@ -44,43 +91,43 @@
       border-radius: 4px;
       transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
       position: relative;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid var(--cell-border);
       touch-action: manipulation;
     }
 
     .cell-hidden {
-      background: rgba(255,255,255,0.07);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.4);
+      background: var(--cell-hidden);
+      box-shadow: var(--cell-shadow);
     }
 
     .cell-hidden:hover {
-      background: rgba(255,255,255,0.13);
+      background: var(--cell-hidden-hover);
       transform: scale(1.05);
       z-index: 1;
     }
 
     .cell-hidden:active {
       transform: scale(0.95);
-      background: rgba(255,255,255,0.04);
+      background: var(--cell-hidden-active);
     }
 
     .cell-revealed {
-      background: rgba(255,255,255,0.03);
+      background: var(--cell-revealed);
       cursor: default;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+      box-shadow: var(--cell-revealed-shadow);
     }
 
     .cell-mine-hit {
-      background: rgba(239,68,68,0.3) !important;
+      background: rgba(var(--danger-rgb),0.3) !important;
       animation: shakeCell 0.3s ease;
     }
 
     .cell-mine-show {
-      background: rgba(239,68,68,0.12);
+      background: rgba(var(--danger-rgb),0.12);
     }
 
     .cell-flagged {
-      background: rgba(245,158,11,0.12);
+      background: rgba(var(--accent-rgb),0.12);
     }
 
     .cell-safe-reveal {
@@ -122,8 +169,8 @@
       font-family: 'SF Mono', 'Fira Code', monospace;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.05em;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
       border-radius: 6px;
       padding: 4px 10px;
       color: var(--accent);
@@ -131,6 +178,36 @@
       font-weight: 700;
       min-width: 52px;
       text-align: center;
+    }
+
+    .text-muted {
+      color: var(--muted);
+    }
+
+    .text-muted-strong {
+      color: var(--muted-strong);
+    }
+
+    .text-accent {
+      color: var(--accent);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: var(--divider);
+    }
+
+    .icon-mine {
+      color: var(--danger);
+    }
+
+    .icon-flag {
+      color: var(--accent);
     }
 
     #timer {
@@ -153,6 +230,16 @@
       background-position: right 10px center;
       padding-right: 30px !important;
     }
+
+    .control-surface {
+      background: var(--cell-hidden);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+    }
+
+    .control-surface:focus {
+      border-color: rgba(var(--accent-rgb),0.5);
+    }
   </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -161,22 +248,22 @@
     <!-- Header -->
     <div class="flex flex-col items-center gap-1">
       <div class="flex items-center gap-2">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8">
+        <svg class="text-accent" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <circle cx="12" cy="12" r="5"/>
           <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
           <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
         </svg>
-        <h1 class="text-xl font-bold tracking-widest text-white uppercase" style="letter-spacing: 0.25em">扫雷</h1>
+        <h1 class="text-xl font-bold tracking-widest uppercase" style="letter-spacing: 0.25em">扫雷</h1>
       </div>
-      <p class="text-xs text-zinc-500">翻开安全格，数字代表周围八格的雷数，标记可疑位置</p>
+      <p class="text-xs text-muted">翻开安全格，数字代表周围八格的雷数，标记可疑位置</p>
     </div>
 
     <!-- Control bar -->
     <div class="flex items-center gap-3 flex-wrap justify-center">
       <select id="difficulty"
-        class="text-sm px-3 py-1.5 rounded bg-white/5 border border-white/10 text-zinc-300 focus:outline-none focus:border-amber-500/50 transition-colors cursor-pointer">
+        class="control-surface text-sm px-3 py-1.5 rounded focus:outline-none transition-colors cursor-pointer">
         <option value="easy">简单  9×9  10 雷</option>
         <option value="medium">中等  16×16  40 雷</option>
         <option value="hard">困难  30×16  99 雷</option>
@@ -196,30 +283,30 @@
     <!-- Stats bar -->
     <div class="flex items-center gap-4">
       <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="0">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="#ef4444" stroke-width="2"/>
-          <line x1="12" y1="19" x2="12" y2="22" stroke="#ef4444" stroke-width="2"/>
-          <line x1="2" y1="12" x2="5" y2="12" stroke="#ef4444" stroke-width="2"/>
-          <line x1="19" y1="12" x2="22" y2="12" stroke="#ef4444" stroke-width="2"/>
-          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="#ef4444" stroke-width="2"/>
-          <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="#ef4444" stroke-width="2"/>
-          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="#ef4444" stroke-width="2"/>
-          <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="#ef4444" stroke-width="2"/>
+        <svg class="icon-mine" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2"/>
+          <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>
+          <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="currentColor" stroke-width="2"/>
+          <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/>
+          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="currentColor" stroke-width="2"/>
+          <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="currentColor" stroke-width="2"/>
         </svg>
-        <span id="mineCount" style="min-width: 2ch; text-align: center;">00</span>
-        <span class="text-zinc-500 text-xs">/</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="0">
+        <span id="mineCount" class="text-danger" style="min-width: 2ch; text-align: center;">00</span>
+        <span class="text-muted text-xs">/</span>
+        <svg class="icon-flag" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
           <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
         </svg>
-        <span id="flagCount" style="min-width: 2ch; text-align: center; color: #f59e0b;">00</span>
+        <span id="flagCount" class="text-accent" style="min-width: 2ch; text-align: center;">00</span>
       </div>
-      <div class="w-px h-6 bg-white/10"></div>
+      <div class="divider"></div>
       <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+        <svg class="text-muted-strong" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
-        <span id="timer" style="color: #94a3b8; text-align: center;">00:00:00</span>
+        <span id="timer" class="text-muted-strong" style="text-align: center;">00:00:00</span>
       </div>
     </div>
 
@@ -228,10 +315,10 @@
       <div id="board" class="game-board"></div>
       <!-- Result overlay -->
       <div id="resultOverlay" class="hidden result-overlay absolute inset-0 flex flex-col items-center justify-center rounded"
-           style="background: rgba(0,0,0,0.75); backdrop-filter: blur(4px)">
+           style="background: var(--overlay-bg); backdrop-filter: blur(4px)">
         <div id="resultIcon" class="mb-2"></div>
-        <div id="resultText" class="text-lg font-bold text-white mb-1"></div>
-        <div id="resultSub" class="text-xs text-zinc-400 mb-4"></div>
+        <div id="resultText" class="text-lg font-bold mb-1"></div>
+        <div id="resultSub" class="text-xs text-muted mb-4"></div>
         <button id="resultBtn"
           class="px-5 py-1.5 rounded text-sm font-medium bg-amber-500/20 border border-amber-500/40 text-amber-400
                  hover:bg-amber-500/30 transition-all active:scale-95">
@@ -240,7 +327,7 @@
       </div>
     </div>
 
-    <p class="text-xs text-zinc-600">双击数字可快速展开・右键可标记（移动端长按）</p>
+    <p class="text-xs text-muted">双击数字可快速展开・右键可标记（移动端长按）</p>
   </div>
 
   <script type="module">
@@ -477,21 +564,34 @@
       setTimeout(() => {
         overlay.classList.remove('hidden')
         if (won) {
-          resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+          resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
           </svg>`
+          resultIcon.style.color = 'var(--safe)'
           resultText.textContent = '恭喜，全部扫清！'
-          resultText.style.color = '#10b981'
+          resultText.style.color = 'var(--safe)'
           resultSub.textContent = `用时 ${formatTime(state.elapsed)}`
         } else {
-          resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="0">
-            <path d="M12 2C8 2 4 6 4 12s8 14 8 14 8-8 8-14S16 2 12 2z"/>
-          </svg>`
+          resultIcon.innerHTML = mineSvg(40)
+          resultIcon.style.color = 'var(--danger)'
           resultText.textContent = '踩雷了！'
-          resultText.style.color = '#ef4444'
+          resultText.style.color = 'var(--danger)'
           resultSub.textContent = `坚持了 ${formatTime(state.elapsed)}`
         }
       }, won ? 200 : 400)
+    }
+
+    function mineSvg(size) {
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2"/>
+        <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>
+        <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2"/>
+        <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+        <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="currentColor" stroke-width="2"/>
+        <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/>
+        <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="currentColor" stroke-width="2"/>
+        <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="currentColor" stroke-width="2"/>
+      </svg>`
     }
 
     function updateCounts() {
@@ -501,22 +601,15 @@
 
     function cellContent(cell, idx) {
       if (cell.isFlagged && !cell.isRevealed) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="0">
-          <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
-        </svg>`
+        return `<span class="icon-flag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
+            <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
+          </svg>
+        </span>`
       }
       if (!cell.isRevealed) return ''
       if (cell.isMine) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="0">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="#ef4444" stroke-width="2"/>
-          <line x1="12" y1="19" x2="12" y2="22" stroke="#ef4444" stroke-width="2"/>
-          <line x1="2" y1="12" x2="5" y2="12" stroke="#ef4444" stroke-width="2"/>
-          <line x1="19" y1="12" x2="22" y2="12" stroke="#ef4444" stroke-width="2"/>
-          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="#ef4444" stroke-width="2"/>
-          <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="#ef4444" stroke-width="2"/>
-          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="#ef4444" stroke-width="2"/>
-          <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="#ef4444" stroke-width="2"/>
-        </svg>`
+        return `<span class="icon-mine">${mineSvg(14)}</span>`
       }
       if (cell.neighbors === 0) return ''
       return `<span class="${NUM_COLORS[cell.neighbors]}">${cell.neighbors}</span>`
@@ -553,6 +646,9 @@
     }
 
     let longPressTimer = null
+    let touchStartIdx = null
+    let longPressFired = false
+    let touchMoved = false
     let eventsAttached = false
 
     function attachEvents() {
@@ -584,19 +680,41 @@
       boardEl.addEventListener('touchstart', e => {
         const el = e.target.closest('[data-idx]')
         if (!el) return
+        e.preventDefault()
+        touchStartIdx = +el.dataset.idx
+        touchMoved = false
+        longPressFired = false
         longPressTimer = setTimeout(() => {
-          toggleFlag(+el.dataset.idx)
+          longPressFired = true
+          toggleFlag(touchStartIdx)
           longPressTimer = null
         }, 500)
-      }, { passive: true })
+      }, { passive: false })
 
-      boardEl.addEventListener('touchend', () => {
+      boardEl.addEventListener('touchend', e => {
+        if (touchStartIdx === null) return
+        e.preventDefault()
         if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-      }, { passive: true })
+        if (!longPressFired && !touchMoved) {
+          const idx = touchStartIdx
+          const cell = state.cells[idx]
+          if (cell.isRevealed) {
+            chord(idx)
+          } else {
+            reveal(idx)
+            if (!cell.isMine) {
+              const el = boardEl.children[idx]
+              if (el) el.classList.add('cell-safe-reveal')
+            }
+          }
+        }
+        touchStartIdx = null
+      }, { passive: false })
 
       boardEl.addEventListener('touchmove', () => {
+        touchMoved = true
         if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-      }, { passive: true })
+      }, { passive: false })
     }
 
     diffSelect.value = pickDefaultLevel()
