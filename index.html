@@ -39,6 +39,20 @@
         letter-spacing: 0.02em;
         line-height: 1.6;
       }
+      #search-input {
+        font-size: 16px; /* 防止 iOS 自动缩放 */
+      }
+      #search-input:focus {
+        outline: none;
+        border-color: rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+      }
+      #search-input::placeholder {
+        color: rgb(161, 161, 170);
+      }
+      #search-input::-webkit-search-decoration {
+        display: none;
+      }
     </style>
   </head>
   <body
@@ -73,10 +87,38 @@
       // =====================================================
 
       const ME = {
-        name: 'Viki 的单 HTML 应用',
-        subtitle: '单页应用工具与实验合集。',
+        name: '我的应用',
+        subtitle: '单页 HTML 应用工具、游戏与实验项目合集。',
         github: 'https://github.com/vikiboss/single-html-app',
         author: { name: 'Viki', handle: 'vikiboss', email: 'hi@viki.moe' },
+      }
+
+      // ── 状态 ──────────────────────────────────────────────
+      const state = { query: '', activeTag: null }
+
+      function getAllTags() {
+        return [...new Set(APPS.flatMap(a => a.tags || []))]
+      }
+
+      function getFilteredApps() {
+        const { query, activeTag } = state
+        const q = query.trim().toLowerCase()
+        return APPS.filter(app => {
+          const matchesQuery =
+            !q ||
+            app.title.toLowerCase().includes(q) ||
+            (app.description || '').toLowerCase().includes(q)
+          const matchesTag = !activeTag || (app.tags || []).includes(activeTag)
+          return matchesQuery && matchesTag
+        })
+      }
+
+      // ── 图标 ──────────────────────────────────────────────
+      function iconSearch() {
+        return `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M8.5 8.5 12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>`
       }
 
       function iconArrow() {
@@ -100,18 +142,7 @@
       </svg>`
       }
 
-      function renderEmpty() {
-        return `
-        <div class="flex flex-col items-center justify-center py-24 text-center">
-          <div class="w-12 h-12 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-4 text-zinc-400">
-            ${iconGrid()}
-          </div>
-          <p class="text-sm text-zinc-500 mb-1">暂无应用</p>
-          <p class="text-xs text-zinc-400">在 <code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-500">index.html</code> 的 <code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-500">APPS</code> 数组中添加你的应用。</p>
-        </div>
-      `
-      }
-
+      // ── 渲染函数 ──────────────────────────────────────────
       function renderCard(app) {
         const tags = (app.tags || [])
           .map(t => `<span class="tag bg-zinc-100 text-zinc-500">${t}</span>`)
@@ -146,9 +177,93 @@
       `
       }
 
+      function renderTagPills() {
+        const allTags = getAllTags()
+        return [null, ...allTags]
+          .map(tag => {
+            const label = tag || '全部'
+            const isActive = state.activeTag === tag
+            const cls = isActive
+              ? 'bg-zinc-800 text-white'
+              : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700'
+            return `<button
+              class="tag ${cls} border-0 cursor-pointer transition-colors duration-150"
+              onclick="window.__setTag(${tag ? `'${tag}'` : 'null'})"
+            >${label}</button>`
+          })
+          .join('')
+      }
+
+      function renderEmpty() {
+        return `
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-12 h-12 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-4 text-zinc-400">
+            ${iconGrid()}
+          </div>
+          <p class="text-sm text-zinc-500 mb-1">暂无应用</p>
+          <p class="text-xs text-zinc-400">在 <code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-500">index.html</code> 的 <code class="bg-zinc-100 px-1 py-0.5 rounded text-zinc-500">APPS</code> 数组中添加你的应用。</p>
+        </div>
+      `
+      }
+
+      function renderNoResults() {
+        return `
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="w-12 h-12 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-4 text-zinc-400">
+            ${iconSearch()}
+          </div>
+          <p class="text-sm text-zinc-500 mb-1">没有找到匹配的应用</p>
+          <p class="text-xs text-zinc-400">换个关键词或分类试试？</p>
+        </div>
+      `
+      }
+
+      // ── 局部更新（不重绘整页，保留搜索框焦点） ────────────
+      function updateResults() {
+        const el = document.getElementById('results')
+        if (!el) return
+        const filtered = getFilteredApps()
+        el.innerHTML =
+          filtered.length === 0
+            ? renderNoResults()
+            : `<div class="grid gap-3 sm:grid-cols-2">${filtered.map(renderCard).join('')}</div>`
+      }
+
+      function updateTagPills() {
+        const el = document.getElementById('tag-pills')
+        if (el) el.innerHTML = renderTagPills()
+      }
+
+      function updateCount() {
+        const el = document.getElementById('app-count')
+        if (!el) return
+        const filtered = getFilteredApps()
+        const isFiltered = state.query.trim() || state.activeTag
+        el.textContent = isFiltered
+          ? `${filtered.length} / ${APPS.length} 个应用`
+          : `${APPS.length} 个应用`
+      }
+
+      // ── 全局事件处理器 ────────────────────────────────────
+      window.__handleSearch = function (value) {
+        state.query = value
+        updateResults()
+        updateTagPills()
+        updateCount()
+      }
+
+      window.__setTag = function (tag) {
+        state.activeTag = tag
+        updateResults()
+        updateTagPills()
+        updateCount()
+      }
+
+      // ── 首次完整渲染 ──────────────────────────────────────
       function render() {
         const root = document.getElementById('root')
         const count = APPS.length
+        const allTags = getAllTags()
 
         root.innerHTML = `
         <div class="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -158,7 +273,7 @@
                 <div class="w-5 h-5 rounded bg-zinc-900 flex items-center justify-center text-white">
                   ${iconGrid()}
                 </div>
-                <span class="text-xs text-zinc-400 font-medium">${count} 个应用</span>
+                <span id="app-count" class="text-xs text-zinc-400 font-medium">${count} 个应用</span>
               </div>
               <a href="${ME.github}" target="_blank" rel="noopener noreferrer"
                 class="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-700 transition-colors duration-150 no-underline">
@@ -174,7 +289,30 @@
             ${
               count === 0
                 ? renderEmpty()
-                : `<div class="grid gap-3 sm:grid-cols-2">${APPS.map(renderCard).join('')}</div>`
+                : `
+              <div class="mb-6">
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+                    ${iconSearch()}
+                  </span>
+                  <input
+                    id="search-input"
+                    type="search"
+                    placeholder="搜索应用名称或描述…"
+                    oninput="window.__handleSearch(this.value)"
+                    class="w-full bg-white border border-zinc-200 rounded-md pl-8 pr-4 py-2 text-zinc-700 transition-shadow duration-150"
+                  />
+                </div>
+                ${
+                  allTags.length > 0
+                    ? `<div id="tag-pills" class="flex items-center gap-1.5 flex-wrap mt-2.5">${renderTagPills()}</div>`
+                    : ''
+                }
+              </div>
+              <div id="results">
+                <div class="grid gap-3 sm:grid-cols-2">${APPS.map(renderCard).join('')}</div>
+              </div>
+            `
             }
           </main>
 
@@ -194,7 +332,7 @@
             <span class="text-xs text-zinc-400">
               <a href="https://vercel.com/" target="_blank" rel="noopener noreferrer"
                 class="text-zinc-400 hover:text-zinc-700 underline underline-offset-2 transition-colors duration-150">
-                Deploy on Vercel
+                Deployed on Vercel
               </a>
             </span>
           </footer>
