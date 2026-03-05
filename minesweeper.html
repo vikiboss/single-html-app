@@ -14,6 +14,13 @@
       --safe: #10b981;
     }
 
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     body {
       background: #0f0f0f;
       background-image:
@@ -38,6 +45,7 @@
       transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
       position: relative;
       border: 1px solid rgba(255,255,255,0.06);
+      touch-action: manipulation;
     }
 
     .cell-hidden {
@@ -103,6 +111,7 @@
     .game-board {
       display: grid;
       gap: 2px;
+      touch-action: manipulation;
     }
 
     .result-overlay {
@@ -122,6 +131,10 @@
       font-weight: 700;
       min-width: 52px;
       text-align: center;
+    }
+
+    #timer {
+      min-width: 96px;
     }
 
     .n1 { color: #60a5fa; }
@@ -157,7 +170,7 @@
         </svg>
         <h1 class="text-xl font-bold tracking-widest text-white uppercase" style="letter-spacing: 0.25em">扫雷</h1>
       </div>
-      <p class="text-xs text-zinc-500">左键揭开，右键标记</p>
+      <p class="text-xs text-zinc-500">翻开安全格，数字代表周围八格的雷数，标记可疑位置</p>
     </div>
 
     <!-- Control bar -->
@@ -165,7 +178,7 @@
       <select id="difficulty"
         class="text-sm px-3 py-1.5 rounded bg-white/5 border border-white/10 text-zinc-300 focus:outline-none focus:border-amber-500/50 transition-colors cursor-pointer">
         <option value="easy">简单  9×9  10 雷</option>
-        <option value="medium" selected>中等  16×16  40 雷</option>
+        <option value="medium">中等  16×16  40 雷</option>
         <option value="hard">困难  30×16  99 雷</option>
       </select>
       <button id="newGameBtn"
@@ -182,19 +195,31 @@
 
     <!-- Stats bar -->
     <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
+      <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="0">
-          <path d="M12 2C8 2 4 6 4 12s8 14 8 14 8-8 8-14S16 2 12 2z"/>
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="5" stroke="#ef4444" stroke-width="2"/>
+          <line x1="12" y1="19" x2="12" y2="22" stroke="#ef4444" stroke-width="2"/>
+          <line x1="2" y1="12" x2="5" y2="12" stroke="#ef4444" stroke-width="2"/>
+          <line x1="19" y1="12" x2="22" y2="12" stroke="#ef4444" stroke-width="2"/>
+          <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="#ef4444" stroke-width="2"/>
+          <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="#ef4444" stroke-width="2"/>
+          <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="#ef4444" stroke-width="2"/>
+          <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="#ef4444" stroke-width="2"/>
         </svg>
-        <span class="digit-display" id="mineCount">040</span>
+        <span id="mineCount" style="min-width: 2ch; text-align: center;">00</span>
+        <span class="text-zinc-500 text-xs">/</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="0">
+          <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
+        </svg>
+        <span id="flagCount" style="min-width: 2ch; text-align: center; color: #f59e0b;">00</span>
       </div>
       <div class="w-px h-6 bg-white/10"></div>
-      <div class="flex items-center gap-2">
+      <div class="digit-display flex items-center gap-2" style="padding: 4px 8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
-        <span class="digit-display" id="timer" style="color: #94a3b8">000</span>
+        <span id="timer" style="color: #94a3b8; text-align: center;">00:00:00</span>
       </div>
     </div>
 
@@ -215,7 +240,7 @@
       </div>
     </div>
 
-    <p class="text-xs text-zinc-600">双击空白区域可快速展开 · 长按可标记（移动端）</p>
+    <p class="text-xs text-zinc-600">双击数字可快速展开・右键可标记（移动端长按）</p>
   </div>
 
   <script type="module">
@@ -232,6 +257,7 @@
 
     const boardEl    = document.getElementById('board')
     const mineCountEl = document.getElementById('mineCount')
+    const flagCountEl = document.getElementById('flagCount')
     const timerEl    = document.getElementById('timer')
     const overlay    = document.getElementById('resultOverlay')
     const resultText = document.getElementById('resultText')
@@ -241,10 +267,38 @@
     const newGameBtn = document.getElementById('newGameBtn')
     const resultBtn  = document.getElementById('resultBtn')
 
-    function pad(n, len = 3) { return String(Math.min(n, 999)).padStart(len, '0') }
+    function formatCount(n) {
+      const sign = n < 0 ? '-' : ''
+      const v = Math.min(Math.abs(n), 99)
+      return sign + String(v).padStart(2, '0')
+    }
+
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600)
+      const mins = Math.floor((seconds % 3600) / 60)
+      const secs = seconds % 60
+      return [hrs, mins, secs].map(v => String(v).padStart(2, '0')).join(':')
+    }
+
+    function estimateBoardWidth(cols) {
+      const cellSize = cols > 20 ? 28 : 32
+      const gap = 2
+      return cols * cellSize + (cols - 1) * gap
+    }
+
+    function pickDefaultLevel() {
+      const viewport = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth)
+      const available = Math.max(240, viewport - 32)
+      const order = ['hard', 'medium', 'easy']
+      for (const key of order) {
+        if (estimateBoardWidth(LEVELS[key].cols) <= available) return key
+      }
+      return 'easy'
+    }
 
     function initGame() {
       clearInterval(timerInterval)
+      timerInterval = null
       overlay.classList.add('hidden')
 
       const level = LEVELS[diffSelect.value]
@@ -261,10 +315,21 @@
         isMine: false, isRevealed: false, isFlagged: false, neighbors: 0
       }))
 
-      state = { rows, cols, mines, cells, flags: 0, revealed: 0, status: 'idle', startTime: 0, elapsed: 0 }
+      state = {
+        rows,
+        cols,
+        mines,
+        cells,
+        flags: 0,
+        revealed: 0,
+        status: 'idle',
+        startTime: 0,
+        elapsed: 0,
+        minesPlaced: false
+      }
 
-      timerEl.textContent = pad(0)
-      mineCountEl.textContent = pad(mines)
+      timerEl.textContent = formatTime(0)
+      updateCounts()
 
       renderBoard()
     }
@@ -303,10 +368,11 @@
     }
 
     function startTimer() {
+      if (timerInterval) return
       state.startTime = Date.now() - state.elapsed * 1000
       timerInterval = setInterval(() => {
         state.elapsed = Math.floor((Date.now() - state.startTime) / 1000)
-        timerEl.textContent = pad(state.elapsed)
+        timerEl.textContent = formatTime(state.elapsed)
       }, 500)
     }
 
@@ -315,11 +381,12 @@
       const cell = cells[idx]
       if (cell.isRevealed || cell.isFlagged) return
 
-      if (state.status === 'idle') {
-        state.status = 'playing'
+      if (!state.minesPlaced) {
         placeMines(idx)
-        startTimer()
+        state.minesPlaced = true
       }
+      if (state.status === 'idle') state.status = 'playing'
+      startTimer()
 
       if (cell.isMine) {
         cell.isRevealed = true
@@ -378,7 +445,7 @@
         cell.isFlagged = true
         state.flags++
       }
-      mineCountEl.textContent = pad(state.mines - state.flags)
+      updateCounts()
       renderCell(idx)
     }
 
@@ -391,6 +458,7 @@
 
     function endGame(won, hitIdx = -1) {
       clearInterval(timerInterval)
+      timerInterval = null
       state.status = won ? 'won' : 'lost'
       const { cells, rows, cols } = state
 
@@ -400,9 +468,10 @@
         })
       } else {
         cells.forEach(c => { if (c.isMine) c.isFlagged = true })
-        mineCountEl.textContent = pad(0)
+        state.flags = state.mines
       }
 
+      updateCounts()
       renderBoard()
 
       setTimeout(() => {
@@ -413,22 +482,27 @@
           </svg>`
           resultText.textContent = '恭喜，全部扫清！'
           resultText.style.color = '#10b981'
-          resultSub.textContent = `用时 ${state.elapsed} 秒`
+          resultSub.textContent = `用时 ${formatTime(state.elapsed)}`
         } else {
           resultIcon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="0">
             <path d="M12 2C8 2 4 6 4 12s8 14 8 14 8-8 8-14S16 2 12 2z"/>
           </svg>`
           resultText.textContent = '踩雷了！'
           resultText.style.color = '#ef4444'
-          resultSub.textContent = `坚持了 ${state.elapsed} 秒`
+          resultSub.textContent = `坚持了 ${formatTime(state.elapsed)}`
         }
       }, won ? 200 : 400)
+    }
+
+    function updateCounts() {
+      mineCountEl.textContent = formatCount(state.mines - state.flags)
+      flagCountEl.textContent = formatCount(state.flags)
     }
 
     function cellContent(cell, idx) {
       if (cell.isFlagged && !cell.isRevealed) {
         return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="0">
-          <path d="M4 21V3l14 7z"/>
+          <path d="M5.2 3h1.6v18H5.2zM6.8 4h11l-2.2 4 2.2 4H6.8z"/>
         </svg>`
       }
       if (!cell.isRevealed) return ''
@@ -479,8 +553,11 @@
     }
 
     let longPressTimer = null
+    let eventsAttached = false
 
     function attachEvents() {
+      if (eventsAttached) return
+      eventsAttached = true
       boardEl.addEventListener('click', e => {
         if (state.status === 'won' || state.status === 'lost') return
         const el = e.target.closest('[data-idx]')
@@ -522,6 +599,7 @@
       }, { passive: true })
     }
 
+    diffSelect.value = pickDefaultLevel()
     newGameBtn.addEventListener('click', initGame)
     resultBtn.addEventListener('click', initGame)
     diffSelect.addEventListener('change', initGame)
