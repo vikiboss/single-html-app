@@ -120,7 +120,7 @@
       <h1 class="text-[22px] font-bold tracking-tight" style="color:var(--fg);">盘古之白</h1>
     </div>
     <p class="text-[13px] leading-relaxed" style="color:var(--fg-muted);">
-      在中文与英文、数字之间自动插入空格，让混排文字更规范易读
+      在合适位置自动插入空格，让混排文字更规范易读
     </p>
   </header>
 
@@ -130,9 +130,9 @@
       <span class="text-[10px] font-bold tracking-[.08em] uppercase" style="color:var(--fg-subtle);">输入文字</span>
       <span id="char-count" class="text-[11px]" style="color:var(--fg-subtle);">0 字符</span>
     </div>
-    <textarea id="input" rows="6"
+    <textarea id="input" rows="5"
       class="block w-full px-4 py-3.5 text-sm leading-[1.8] rounded-md outline-none resize-y transition-all duration-150"
-      style="background:var(--bg-raised); border:1px solid var(--border); color:var(--fg); min-height:128px; font-family:inherit;"
+      style="background:var(--bg-raised); border:1px solid var(--border); color:var(--fg); min-height:80px; font-family:inherit;"
       placeholder="粘贴或输入文字…"
       onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accent-glow)'"
       onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
@@ -146,33 +146,33 @@
   <!-- ── Example chips ─────────────────────────────────────── -->
   <div class="mb-4">
     <p class="text-[11px] mb-2" style="color:var(--fg-subtle);">试试这些类型的文本：</p>
-    <div class="flex flex-wrap gap-1.5">
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+    <div class="flex flex-wrap gap-2">
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="iPhone是苹果公司于2007年推出的智能手机，搭载iOS系统，售价从999美元起，年销量超过2亿台。">产品介绍</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="2024年GDP同比增长5%，CPI上涨0.3%，PMI为50.1，全年进出口总额达43.85万亿元，创历史新高。">经济数据</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="React18配合TypeScript5和Vite4开发体验极佳，配合Tailwind CSS可快速构建响应式UI，部署到Vercel只需一键。">前端技术</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="# 使用Python3读取CSV文件
 import pandas as pd
 # 读取data.csv并打印前5行
 df = pd.read_csv('data.csv')
 print(df.head())  # output前5条记录">代码注释</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="今天在GitHub上发现了一个star数超过10k的开源项目，基于MIT license，README写得非常清晰，issue回复也很及时，已经fork下来研究了。">开发日志</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="The quick brown fox jumps over the lazy dog.这是一段纯英文后面跟着中文的测试，English and中文交替出现，看看效果如何。">中英交替</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="用户在App Store搜索「photo editor」时，排名前10的app平均评分为4.6，其中有3款支持AI功能，订阅价格从$2.99/月到$9.99/月不等。">应用商店</button>
-      <button class="chip inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
+      <button class="chip inline-flex items-center px-3 py-0.5 rounded-full text-[12px] transition-all duration-150 cursor-pointer select-none"
               style="background:var(--bg-overlay); border:1px solid var(--border-sub); color:var(--fg-muted);"
               data-example="服务器CPU使用率达到80%，建议升级到8core/16GB配置；数据库查询P99延迟为120ms，需要对user_id字段加索引。">运维报告</button>
     </div>
@@ -279,10 +279,9 @@ import pangu from 'pangu'
 // ── Config ────────────────────────────────────────────────────────────────────
 const cfg = { mergeSpaces: true, autoFormat: true }
 
-function applyConfig(text) {
-  let out = pangu.spacing(text)
-  if (cfg.mergeSpaces) out = out.replace(/[ \t]{2,}/g, ' ')
-  return out
+function normalizeBase(text) {
+  // 先归一化多余空格，再跑 pangu，保证 diff 算法「只新增空格」的前提成立
+  return cfg.mergeSpaces ? text.replace(/[ \t]{2,}/g, ' ') : text
 }
 
 function initToggle(id, key) {
@@ -379,8 +378,9 @@ function runFormat() {
   }
 
   const commit = () => {
-    formatted = applyConfig(text)
-    const segs  = diffSegments(text, formatted)
+    const base  = normalizeBase(text)   // mergeSpaces 已应用
+    formatted   = pangu.spacing(base)   // pangu 在归一化文本上运行
+    const segs  = diffSegments(base, formatted)   // diff 假设成立：只新增空格
     const added = segs.reduce((n, s) => s.a ? n + s.t.length : n, 0)
 
     origBody.textContent = text
