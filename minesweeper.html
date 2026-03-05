@@ -324,7 +324,7 @@
       </div>
     </div>
 
-    <p class="text-xs text-muted">双击数字快速展开・右键标记（移动端双击）</p>
+    <p class="text-xs text-muted">双击数字快速展开・右键标记（移动端长按）</p>
   </div>
 
   <script type="module">
@@ -643,9 +643,9 @@
     }
 
     let lastTouchTime = 0
-    let lastTapTime = 0
-    let lastTapIdx = null
-    let singleTapTimer = null
+    let longPressTimer = null
+    let isLongPress = false
+    let touchStartIdx = null
     let eventsAttached = false
 
     function attachEvents() {
@@ -674,44 +674,47 @@
         toggleFlag(+el.dataset.idx)
       })
 
-      // Mobile double tap for flag
-      boardEl.addEventListener('touchend', e => {
+      // Mobile: long press to flag, tap to reveal (no delay)
+      boardEl.addEventListener('touchstart', e => {
         const el = e.target.closest('[data-idx]')
         if (!el) return
-        lastTouchTime = Date.now()
-        const idx = +el.dataset.idx
-        const now = Date.now()
-        const isDoubleTap = lastTapIdx === idx && (now - lastTapTime) < 300
-        lastTapTime = now
-        lastTapIdx = idx
-
-        if (isDoubleTap) {
-          if (singleTapTimer) { clearTimeout(singleTapTimer); singleTapTimer = null }
-          const cell = state.cells[idx]
-          if (!cell.isRevealed) toggleFlag(idx)
-          return
-        }
-
-        if (singleTapTimer) clearTimeout(singleTapTimer)
-        singleTapTimer = setTimeout(() => {
-          const cell = state.cells[idx]
-          if (cell.isRevealed) {
-            chord(idx)
-          } else {
-            reveal(idx)
-            if (!cell.isMine) {
-              const cellEl = boardEl.children[idx]
-              if (cellEl) cellEl.classList.add('cell-safe-reveal')
-            }
+        touchStartIdx = +el.dataset.idx
+        isLongPress = false
+        longPressTimer = setTimeout(() => {
+          isLongPress = true
+          if (state.status === 'won' || state.status === 'lost') return
+          const cell = state.cells[touchStartIdx]
+          if (!cell.isRevealed) {
+            toggleFlag(touchStartIdx)
+            if (navigator.vibrate) navigator.vibrate(50)
           }
-          singleTapTimer = null
-        }, 260)
+        }, 400)
+      }, { passive: true })
+
+      boardEl.addEventListener('touchend', e => {
+        lastTouchTime = Date.now()
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+        if (isLongPress) return
+        const el = e.target.closest('[data-idx]')
+        if (!el) return
+        const idx = +el.dataset.idx
+        if (idx !== touchStartIdx) return
+        if (state.status === 'won' || state.status === 'lost') return
+        const cell = state.cells[idx]
+        if (cell.isRevealed) {
+          chord(idx)
+        } else {
+          reveal(idx)
+          if (!cell.isMine) {
+            const cellEl = boardEl.children[idx]
+            if (cellEl) cellEl.classList.add('cell-safe-reveal')
+          }
+        }
       }, { passive: true })
 
       boardEl.addEventListener('touchmove', () => {
-        if (singleTapTimer) { clearTimeout(singleTapTimer); singleTapTimer = null }
-        lastTapTime = 0
-        lastTapIdx = null
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+        touchStartIdx = null
       }, { passive: true })
     }
 
