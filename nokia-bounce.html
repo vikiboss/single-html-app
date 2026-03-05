@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -158,7 +158,6 @@
 
       canvas {
         display: block;
-        image-rendering: pixelated;
         image-rendering: crisp-edges;
       }
     </style>
@@ -168,7 +167,7 @@
       <!-- Nokia Phone Shell -->
       <div
         id="phoneShell"
-        class="phone-shell rounded-[38px] flex flex-col items-center pt-5 pb-7 px-6 w-[310px] sm:w-[324px]"
+        class="phone-shell rounded-[38px] flex flex-col items-center pt-5 pb-7 px-3 w-[310px]"
       >
         <!-- Top decorations -->
         <div class="flex items-center justify-between w-full mb-4 px-1">
@@ -176,9 +175,11 @@
             <div class="w-1.5 h-1.5 rounded-full bg-[#252532]"></div>
             <div class="w-1.5 h-1.5 rounded-full bg-[#252532]"></div>
           </div>
-          <span class="text-[11px] font-bold tracking-[0.32em] text-[#38384a] uppercase select-none"
-            >Nokia</span
+          <span
+            class="text-[11px] font-bold tracking-[0.32em] text-[#38384a] uppercase select-none"
           >
+            Nokia
+          </span>
           <!-- Camera / sensor -->
           <div
             class="w-3.5 h-3.5 rounded-full border border-[#282832] flex items-center justify-center bg-[#18181e]"
@@ -188,7 +189,7 @@
         </div>
 
         <!-- Screen -->
-        <div class="screen-bezel rounded-md w-full p-2">
+        <div class="screen-bezel rounded-md w-full p-1.5">
           <div class="lcd-wrap rounded-sm">
             <canvas id="gameCanvas" width="274" height="352"></canvas>
             <div class="lcd-scanlines absolute inset-0 rounded-sm"></div>
@@ -226,9 +227,7 @@
             class="btn-ok rounded-full w-11 h-11 flex items-center justify-center"
             aria-label="开始"
           >
-            <span class="text-[10px] font-bold text-[#484860] tracking-wider select-none"
-              >OK</span
-            >
+            <span class="text-[10px] font-bold text-[#484860] tracking-wider select-none">OK</span>
           </button>
 
           <!-- Right -->
@@ -245,12 +244,16 @@
 
         <!-- Soft keys row -->
         <div class="flex gap-3 mt-4">
-          <button class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
-            >菜单</button
+          <button
+            class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
           >
-          <button class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
-            >返回</button
+            菜单
+          </button>
+          <button
+            class="btn-soft rounded-lg px-5 py-2 text-[10px] text-[#34344a] font-medium tracking-wider select-none"
           >
+            返回
+          </button>
         </div>
 
         <!-- Carrier text -->
@@ -268,50 +271,50 @@
     <script type="module">
       const canvas = document.getElementById('gameCanvas')
       const ctx = canvas.getContext('2d')
-      const W = canvas.width   // 274
-      const H = canvas.height  // 352
+      const W = canvas.width // 274
+      const H = canvas.height // 352
       const shell = document.getElementById('phoneShell')
 
       // ── Nokia LCD palette ───────────────────────────────────────────────
       const C = {
-        bg:    '#9bbc0f',
-        dark:  '#0f380f',
-        mid:   '#306230',
+        bg: '#9bbc0f',
+        dark: '#0f380f',
+        mid: '#306230',
         light: '#8bac0f',
       }
 
       // ── Game constants ──────────────────────────────────────────────────
-      const BALL_R      = 9
-      const PLAT_H      = 7
-      const PLAT_W      = 80   // 所有平台统一宽度
-      const GRAVITY     = 0.42
+      const BALL_R = 9
+      const PLAT_H = 7
+      const PLAT_W = 80 // 所有平台统一宽度
+      const GRAVITY = 0.42
       // 基础球速参数 —— 随 scrollSpeed 动态放大
       const BASE_MAX_VX = 5.5
-      const BASE_ACCEL  = 1.5
-      const FRICTION_G  = 0.62   // 地面：快速制动
-      const FRICTION_A  = 0.78   // 空中：松手约 15 帧内停止，不过度漂移
-      const TERM_VY     = 14
+      const BASE_ACCEL = 1.5
+      const FRICTION_G = 0.62 // 地面：快速制动
+      const FRICTION_A = 0.78 // 空中：松手约 15 帧内停止，不过度漂移
+      const TERM_VY = 14
       const INIT_SCROLL = 1.3
-      const MAX_SCROLL  = 7.0   // 速度上限
-      const PLAT_GAP_Y  = 108  // 平台垂直间距
-      const REACH       = 95   // 相邻平台左边缘最大水平偏移
+      const MAX_SCROLL = 7.0 // 速度上限
+      const PLAT_GAP_Y = 108 // 平台垂直间距
+      const REACH = 95 // 相邻平台左边缘最大水平偏移
 
       // Fixed-timestep loop: 60 physics ticks / second
       const TICK_MS = 1000 / 60
 
       // ── State ───────────────────────────────────────────────────────────
-      let gameState = 'menu'  // 'menu' | 'playing' | 'dead'
-      let score     = 0
-      let best      = parseInt(localStorage.getItem('nokia_bounce_best') || '0')
+      let gameState = 'menu' // 'menu' | 'playing' | 'dead'
+      let score = 0
+      let best = parseInt(localStorage.getItem('nokia_bounce_best') || '0')
       let scrollSpeed = INIT_SCROLL
-      let tick      = 0       // physics tick count
-      let blinkTick = 0       // used for blinking text
+      let tick = 0 // physics tick count
+      let blinkTick = 0 // used for blinking text
       let deadTicks = 0
 
-      let platforms    = []
-      let ball         = null
-      let particles    = []
-      let platCount    = 0     // 已生成平台总数，用于荆棘概率斜坡
+      let platforms = []
+      let ball = null
+      let particles = []
+      let platCount = 0 // 已生成平台总数，用于荆棘概率斜坡
       let lastWasThorn = false // 禁止连续荆棘
 
       // ── Input state ─────────────────────────────────────────────────────
@@ -319,7 +322,7 @@
 
       // Keyboard
       document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') keys.left  = true
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true
         if ((e.key === 'Enter' || e.key === ' ') && gameState !== 'playing') {
           e.preventDefault()
@@ -327,7 +330,7 @@
         }
       })
       document.addEventListener('keyup', e => {
-        if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') keys.left  = false
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false
       })
 
@@ -338,12 +341,15 @@
           keys[key] = true
           btn.classList.add('pressed')
         })
-        const release = () => { keys[key] = false; btn.classList.remove('pressed') }
-        btn.addEventListener('pointerup',    release)
+        const release = () => {
+          keys[key] = false
+          btn.classList.remove('pressed')
+        }
+        btn.addEventListener('pointerup', release)
         btn.addEventListener('pointerleave', release)
-        btn.addEventListener('pointercancel',release)
+        btn.addEventListener('pointercancel', release)
       }
-      bindBtn(document.getElementById('leftBtn'),  'left')
+      bindBtn(document.getElementById('leftBtn'), 'left')
       bindBtn(document.getElementById('rightBtn'), 'right')
 
       document.getElementById('startBtn').addEventListener('click', () => {
@@ -355,32 +361,47 @@
         const r = canvas.getBoundingClientRect()
         return (touch.clientX - r.left) * (W / r.width)
       }
-      canvas.addEventListener('touchstart', e => {
-        e.preventDefault()
-        if (gameState !== 'playing') { startGame(); return }
-        const x = getCanvasX(e.touches[0])
-        keys.left  = x < W / 2
-        keys.right = x >= W / 2
-      }, { passive: false })
-      canvas.addEventListener('touchmove', e => {
-        e.preventDefault()
-        const x = getCanvasX(e.touches[0])
-        keys.left  = x < W / 2
-        keys.right = x >= W / 2
-      }, { passive: false })
-      canvas.addEventListener('touchend', e => {
-        e.preventDefault()
-        keys.left = keys.right = false
-      }, { passive: false })
+      canvas.addEventListener(
+        'touchstart',
+        e => {
+          e.preventDefault()
+          if (gameState !== 'playing') {
+            startGame()
+            return
+          }
+          const x = getCanvasX(e.touches[0])
+          keys.left = x < W / 2
+          keys.right = x >= W / 2
+        },
+        { passive: false },
+      )
+      canvas.addEventListener(
+        'touchmove',
+        e => {
+          e.preventDefault()
+          const x = getCanvasX(e.touches[0])
+          keys.left = x < W / 2
+          keys.right = x >= W / 2
+        },
+        { passive: false },
+      )
+      canvas.addEventListener(
+        'touchend',
+        e => {
+          e.preventDefault()
+          keys.left = keys.right = false
+        },
+        { passive: false },
+      )
 
       // ── Platform helpers ─────────────────────────────────────────────────
       function makePlatform(y, prev, isFirst) {
         const w = PLAT_W
         let x
         if (isFirst || !prev) {
-          x = (W - w) / 2  // 起始平台居中
+          x = (W - w) / 2 // 起始平台居中
         } else {
-          const lo = Math.max(8,         prev.x - REACH)
+          const lo = Math.max(8, prev.x - REACH)
           const hi = Math.min(W - w - 8, prev.x + REACH)
           x = lo + Math.random() * Math.max(0, hi - lo)
         }
@@ -389,7 +410,7 @@
         platCount++
         let thorn = false
         if (!isFirst && platCount > 4) {
-          const chance = Math.min(0.40, (score - 800) / 16000)
+          const chance = Math.min(0.4, (score - 800) / 16000)
           if (!lastWasThorn && chance > 0 && Math.random() < chance) thorn = true
         }
         lastWasThorn = thorn
@@ -399,11 +420,8 @@
 
       function ensurePlatforms() {
         // Keep filling platforms below the screen
-        while (
-          platforms.length === 0 ||
-          platforms[platforms.length - 1].y < H + PLAT_GAP_Y
-        ) {
-          const prev  = platforms.length > 0 ? platforms[platforms.length - 1] : null
+        while (platforms.length === 0 || platforms[platforms.length - 1].y < H + PLAT_GAP_Y) {
+          const prev = platforms.length > 0 ? platforms[platforms.length - 1] : null
           const baseY = prev ? prev.y : H
           const jitter = Math.random() * 24 - 12
           platforms.push(makePlatform(baseY + PLAT_GAP_Y + jitter, prev, false))
@@ -426,15 +444,15 @@
 
       // ── Game init ─────────────────────────────────────────────────────────
       function startGame() {
-        gameState    = 'playing'
-        score        = 0
-        scrollSpeed  = INIT_SCROLL
-        tick         = 0
-        blinkTick    = 0
-        particles    = []
-        platCount    = 1
+        gameState = 'playing'
+        score = 0
+        scrollSpeed = INIT_SCROLL
+        tick = 0
+        blinkTick = 0
+        particles = []
+        platCount = 1
         lastWasThorn = false
-        keys.left    = keys.right = false
+        keys.left = keys.right = false
 
         const sp = { x: (W - PLAT_W) / 2, y: 285, w: PLAT_W, thorn: false }
         platforms = [sp]
@@ -460,9 +478,9 @@
         scrollSpeed = Math.min(MAX_SCROLL, INIT_SCROLL + score * 0.0012)
 
         // 球的动态参数：随速度增长同步提升，保持游戏手感
-        const speedT  = Math.min(1, (scrollSpeed - INIT_SCROLL) / (MAX_SCROLL - INIT_SCROLL))
-        const dynMaxVX = BASE_MAX_VX + speedT * 3.5   // 5.5 → 9.0
-        const dynAccel = BASE_ACCEL  + speedT * 1.2   // 1.5 → 2.7
+        const speedT = Math.min(1, (scrollSpeed - INIT_SCROLL) / (MAX_SCROLL - INIT_SCROLL))
+        const dynMaxVX = BASE_MAX_VX + speedT * 3.5 // 5.5 → 9.0
+        const dynAccel = BASE_ACCEL + speedT * 1.2 // 1.5 → 2.7
 
         // Scroll platforms upward
         for (const p of platforms) p.y -= scrollSpeed
@@ -473,7 +491,7 @@
         // Detach ball if its platform was culled
         if (ball.onGround && ball.plat && !platforms.includes(ball.plat)) {
           ball.onGround = false
-          ball.plat     = null
+          ball.plat = null
         }
 
         // Generate new platforms at the bottom
@@ -485,7 +503,7 @@
         if (keys.left && !keys.right) {
           ball.vx = Math.max(ball.vx - dynAccel, -dynMaxVX)
         } else if (keys.right && !keys.left) {
-          ball.vx = Math.min(ball.vx + dynAccel,  dynMaxVX)
+          ball.vx = Math.min(ball.vx + dynAccel, dynMaxVX)
         } else {
           ball.vx *= fric
           if (Math.abs(ball.vx) < 0.04) ball.vx = 0
@@ -495,11 +513,11 @@
 
         // Wall bounce
         if (ball.x - BALL_R < 0) {
-          ball.x  = BALL_R
+          ball.x = BALL_R
           ball.vx = Math.abs(ball.vx) * 0.4
         }
         if (ball.x + BALL_R > W) {
-          ball.x  = W - BALL_R
+          ball.x = W - BALL_R
           ball.vx = -Math.abs(ball.vx) * 0.4
         }
 
@@ -512,8 +530,8 @@
           // Roll off edge?
           if (ball.x < ball.plat.x || ball.x > ball.plat.x + ball.plat.w) {
             ball.onGround = false
-            ball.plat     = null
-            ball.vy       = -0.3  // tiny pop
+            ball.plat = null
+            ball.vy = -0.3 // tiny pop
           }
         } else {
           // Gravity
@@ -523,7 +541,7 @@
           // Platform landing (only while falling)
           if (ball.vy > 0) {
             const prevBot = ball.prevY + BALL_R
-            const currBot = ball.y     + BALL_R
+            const currBot = ball.y + BALL_R
             for (const p of platforms) {
               // Account for platform also moving up this tick
               const prevPlatTop = p.y + scrollSpeed
@@ -545,9 +563,9 @@
                     return
                   }
                   if (Math.abs(ball.vy) > 2.5) spawnDust(ball.x, p.y)
-                  ball.vy       = 0
+                  ball.vy = 0
                   ball.onGround = true
-                  ball.plat     = p
+                  ball.plat = p
                   break
                 }
               }
@@ -558,14 +576,15 @@
         // ── Particles ──
         for (const p of particles) {
           p.vy += 0.14
-          p.x  += p.vx
-          p.y  += p.vy
+          p.x += p.vx
+          p.y += p.vy
           p.life -= 0.038
         }
         particles = particles.filter(p => p.life > 0)
 
         // ── Game over ──
-        if (ball.y - BALL_R > H + 40) {
+        // 从顶部滚出（被平台带走）或从底部掉落均判定死亡
+        if (ball.y + BALL_R < -10 || ball.y - BALL_R > H + 40) {
           if (score > best) {
             best = score
             localStorage.setItem('nokia_bounce_best', best)
@@ -579,7 +598,7 @@
 
       // ── Draw helpers ─────────────────────────────────────────────────────
       function txt(s, x, y, size, color, align = 'left') {
-        ctx.font      = `bold ${size}px "Courier New", monospace`
+        ctx.font = `bold ${size}px "Courier New", monospace`
         ctx.fillStyle = color
         ctx.textAlign = align
         ctx.fillText(s, x, y)
@@ -596,13 +615,12 @@
         ctx.fillStyle = C.mid
         ctx.globalAlpha = 0.08
         for (let gx = 4; gx < W; gx += 8)
-          for (let gy = 32; gy < H; gy += 8)
-            ctx.fillRect(gx, gy, 1, 1)
+          for (let gy = 32; gy < H; gy += 8) ctx.fillRect(gx, gy, 1, 1)
         ctx.globalAlpha = 1
 
         // ── HUD ──
         const pts = Math.floor(score / 30)
-        const lv  = Math.ceil(scrollSpeed)   // 等级直接反映速度
+        const lv = Math.ceil(scrollSpeed) // 等级直接反映速度
         txt(`${pts}`, 8, 22, 14, C.dark)
         txt(`SPD.${lv}`, W / 2, 22, 11, C.mid, 'center')
         txt(`BEST ${Math.floor(best / 30)}`, W - 8, 22, 10, C.mid, 'right')
@@ -613,7 +631,7 @@
         if (ball && ball.y > H * 0.68) {
           const t = Math.min((ball.y - H * 0.68) / (H * 0.32), 1)
           ctx.globalAlpha = t * 0.18 * (0.6 + 0.4 * Math.sin(tick * 0.22))
-          ctx.fillStyle   = C.dark
+          ctx.fillStyle = C.dark
           ctx.fillRect(0, H * 0.68, W, H * 0.32)
           ctx.globalAlpha = 1
         }
@@ -621,7 +639,9 @@
         // ── Platforms ──
         for (const p of platforms) {
           if (p.y + PLAT_H < 28 || p.y > H) continue
-          const px = Math.round(p.x), py = Math.round(p.y), pw = Math.round(p.w)
+          const px = Math.round(p.x),
+            py = Math.round(p.y),
+            pw = Math.round(p.w)
 
           const fading = py < 60
           ctx.globalAlpha = fading ? Math.max(0.2, py / 60) : 1
@@ -643,7 +663,7 @@
               const sx = px + i * gap
               const sw = gap
               ctx.beginPath()
-              ctx.moveTo(sx + 1,      py)
+              ctx.moveTo(sx + 1, py)
               ctx.lineTo(sx + sw / 2, py - 8)
               ctx.lineTo(sx + sw - 1, py)
               ctx.closePath()
@@ -665,7 +685,7 @@
         // ── Particles ──
         for (const p of particles) {
           ctx.globalAlpha = Math.max(0, p.life)
-          ctx.fillStyle   = C.mid
+          ctx.fillStyle = C.mid
           ctx.fillRect(Math.round(p.x), Math.round(p.y), Math.ceil(p.size), Math.ceil(p.size))
         }
         ctx.globalAlpha = 1
@@ -678,7 +698,7 @@
           // Ground shadow
           if (ball.onGround) {
             ctx.globalAlpha = 0.35
-            ctx.fillStyle   = C.mid
+            ctx.fillStyle = C.mid
             ctx.fillRect(bx - BALL_R + 1, by + BALL_R - 2, (BALL_R - 1) * 2, 3)
             ctx.globalAlpha = 1
           }
@@ -697,7 +717,7 @@
 
           // Stripe (Nokia ball style)
           ctx.strokeStyle = C.mid
-          ctx.lineWidth   = 1.5
+          ctx.lineWidth = 1.5
           ctx.globalAlpha = 0.45
           ctx.beginPath()
           ctx.moveTo(bx - BALL_R + 3, by + 2)
@@ -713,16 +733,16 @@
 
         // Decorative zigzag lines
         ctx.strokeStyle = C.mid
-        ctx.lineWidth   = 2
+        ctx.lineWidth = 2
         ctx.globalAlpha = 0.5
         for (let i = 0; i < 5; i++) {
           ctx.beginPath()
-          ctx.moveTo(i * 56,     72)
+          ctx.moveTo(i * 56, 72)
           ctx.lineTo(i * 56 + 28, 80)
           ctx.lineTo(i * 56 + 56, 72)
           ctx.stroke()
           ctx.beginPath()
-          ctx.moveTo(i * 56,      H - 72)
+          ctx.moveTo(i * 56, H - 72)
           ctx.lineTo(i * 56 + 28, H - 64)
           ctx.lineTo(i * 56 + 56, H - 72)
           ctx.stroke()
@@ -731,66 +751,72 @@
 
         // Title
         ctx.fillStyle = C.dark
-        ctx.font      = 'bold 30px "Courier New", monospace'
+        ctx.font = 'bold 30px "Courier New", monospace'
         ctx.textAlign = 'center'
         ctx.fillText('BOUNCE', W / 2, 132)
         ctx.fillStyle = C.mid
-        ctx.font      = 'bold 11px "Courier New", monospace'
+        ctx.font = 'bold 11px "Courier New", monospace'
         ctx.fillText('Nokia Classic', W / 2, 153)
 
-        // Mini preview — 安全平台 + 小球
-        const prevX = W / 2 - 40
+        // 安全平台（左侧）+ 小球
+        const safeX = 18
         ctx.fillStyle = C.dark
-        ctx.fillRect(prevX, 200, PLAT_W, PLAT_H)
+        ctx.fillRect(safeX, 208, PLAT_W, PLAT_H)
         ctx.fillStyle = C.mid
-        ctx.fillRect(prevX + 2, 201, PLAT_W - 4, 2)
+        ctx.fillRect(safeX + 2, 209, PLAT_W - 4, 2)
+        ctx.fillRect(safeX, 211, 2, PLAT_H - 2)
+        ctx.fillRect(safeX + PLAT_W - 2, 211, 2, PLAT_H - 2)
+        // 球
         ctx.fillStyle = C.dark
         ctx.beginPath()
-        ctx.arc(W / 2, 200 - BALL_R, BALL_R, 0, Math.PI * 2)
+        ctx.arc(safeX + PLAT_W / 2, 208 - BALL_R, BALL_R, 0, Math.PI * 2)
         ctx.fill()
         ctx.fillStyle = C.light
         ctx.beginPath()
-        ctx.arc(W / 2 - 3, 200 - BALL_R - 3, 3, 0, Math.PI * 2)
+        ctx.arc(safeX + PLAT_W / 2 - 3, 208 - BALL_R - 3, 3, 0, Math.PI * 2)
         ctx.fill()
-
-        // 荆棘平台预览（右侧）
-        const thornX = W / 2 + 52
         ctx.fillStyle = C.mid
-        ctx.fillRect(thornX, 200, PLAT_W, PLAT_H)
+        ctx.font = '9px "Courier New", monospace'
+        ctx.textAlign = 'center'
+        ctx.fillText('安全', safeX + PLAT_W / 2, 228)
+
+        // 荆棘平台（右侧）
+        const thornX = W - 18 - PLAT_W // 176，右端 256，离边缘 18px
+        ctx.fillStyle = C.mid
+        ctx.fillRect(thornX, 208, PLAT_W, PLAT_H)
         ctx.fillStyle = C.dark
-        ctx.fillRect(thornX, 200, PLAT_W, 2)
+        ctx.fillRect(thornX, 208, PLAT_W, 2)
+        const gap = PLAT_W / 5
         for (let i = 0; i < 5; i++) {
-          const gap = PLAT_W / 5
           ctx.beginPath()
-          ctx.moveTo(thornX + i * gap + 1, 200)
-          ctx.lineTo(thornX + i * gap + gap / 2, 192)
-          ctx.lineTo(thornX + i * gap + gap - 1, 200)
+          ctx.moveTo(thornX + i * gap + 1, 208)
+          ctx.lineTo(thornX + i * gap + gap / 2, 200)
+          ctx.lineTo(thornX + i * gap + gap - 1, 208)
           ctx.closePath()
           ctx.fill()
         }
-        // 标注
         ctx.fillStyle = C.mid
         ctx.font = '9px "Courier New", monospace'
-        ctx.textAlign = 'left'
-        ctx.fillText('× 危险', thornX + 2, 218)
+        ctx.textAlign = 'center'
+        ctx.fillText('× 危险', thornX + PLAT_W / 2, 228)
 
         // Instructions
         ctx.fillStyle = C.dark
-        ctx.font      = '11px "Courier New", monospace'
+        ctx.font = '11px "Courier New", monospace'
         ctx.textAlign = 'center'
-        ctx.fillText('← →  控制小球左右', W / 2, 250)
-        ctx.fillText('带刺平台碰不得！', W / 2, 266)
+        ctx.fillText('← →  控制小球左右移动', W / 2, 254)
+        ctx.fillText('带刺平台踩上即死！', W / 2, 270)
 
         // Blink start prompt
         if (Math.floor(blinkTick / 28) % 2 === 0) {
           ctx.fillStyle = C.dark
-          ctx.font      = 'bold 12px "Courier New", monospace'
+          ctx.font = 'bold 12px "Courier New", monospace'
           ctx.fillText('[ 按 OK 或 Enter 开始 ]', W / 2, 306)
         }
 
         if (best > 0) {
           ctx.fillStyle = C.mid
-          ctx.font      = '11px "Courier New", monospace'
+          ctx.font = '11px "Courier New", monospace'
           ctx.fillText(`最高分  ${Math.floor(best / 30)}`, W / 2, 334)
         }
 
@@ -804,38 +830,38 @@
 
         // Thick border
         ctx.strokeStyle = C.dark
-        ctx.lineWidth   = 5
+        ctx.lineWidth = 5
         ctx.strokeRect(5, 5, W - 10, H - 10)
         ctx.strokeStyle = C.mid
-        ctx.lineWidth   = 2
+        ctx.lineWidth = 2
         ctx.strokeRect(10, 10, W - 20, H - 20)
 
         ctx.textAlign = 'center'
 
         ctx.fillStyle = C.dark
-        ctx.font      = 'bold 24px "Courier New", monospace'
+        ctx.font = 'bold 24px "Courier New", monospace'
         ctx.fillText('GAME OVER', W / 2, 128)
 
         ctx.fillStyle = C.mid
-        ctx.font      = '11px "Courier New", monospace'
+        ctx.font = '11px "Courier New", monospace'
         ctx.fillText('得分', W / 2, 168)
         ctx.fillStyle = C.dark
-        ctx.font      = 'bold 36px "Courier New", monospace'
+        ctx.font = 'bold 36px "Courier New", monospace'
         ctx.fillText(Math.floor(score / 30), W / 2, 212)
 
         if (score >= best && best > 0) {
           ctx.fillStyle = C.dark
-          ctx.font      = 'bold 13px "Courier New", monospace'
+          ctx.font = 'bold 13px "Courier New", monospace'
           ctx.fillText('★ 新纪录！★', W / 2, 244)
         } else if (best > 0) {
           ctx.fillStyle = C.mid
-          ctx.font      = '11px "Courier New", monospace'
+          ctx.font = '11px "Courier New", monospace'
           ctx.fillText(`最高分  ${Math.floor(best / 30)}`, W / 2, 244)
         }
 
         if (deadTicks < 155 && Math.floor(blinkTick / 26) % 2 === 0) {
           ctx.fillStyle = C.dark
-          ctx.font      = '12px "Courier New", monospace'
+          ctx.font = '12px "Courier New", monospace'
           ctx.fillText('[ 再来一局 ]', W / 2, 302)
         }
 
@@ -848,8 +874,8 @@
       // ── Main loop: fixed-timestep + requestAnimationFrame ────────────────
       // Physics runs at exactly 60 ticks/sec regardless of display refresh rate.
       // Rendering runs as fast as rAF (60/120/144 Hz) without accumulating extra ticks.
-      let lastTimestamp  = null
-      let accumulator    = 0
+      let lastTimestamp = null
+      let accumulator = 0
 
       function loop(timestamp) {
         if (lastTimestamp === null) lastTimestamp = timestamp
