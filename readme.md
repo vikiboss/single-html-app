@@ -20,6 +20,8 @@
 | [俄罗斯方块](https://html.viki.moe/tetris.html)       | 经典俄罗斯方块游戏 |
 | [推箱子](https://html.viki.moe/sokoban.html)          | 经典推箱子游戏 |
 | [随机生成器](https://html.viki.moe/random.html)       | 多场景随机生成器 |
+| [量子厨房](https://html.viki.moe/quantum-kitchen.html) | 2099 年的量子烹饪游戏 |
+| [通感棱镜](https://html.viki.moe/synesthesia-prism.html) | 基于通感直觉的随机真相游戏 |
 
 ## 添加新应用
 

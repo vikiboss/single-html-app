@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <link rel="preconnect" href="https://esm.sh" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>通感棱镜</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #09090b;
+        --bg-raised: #151517;
+        --bg-overlay: #242429;
+        --fg: #f4f4f5;
+        --fg-muted: #a1a1aa;
+        --border: #3f3f46;
+        --accent: #22d3ee;
+        --warm-1: #f59e0b;
+        --warm-2: #ef4444;
+        --cool-1: #38bdf8;
+        --cool-2: #6366f1;
+        --glow: rgba(34, 211, 238, 0.18);
+        --glow-a: rgba(34, 211, 238, 0.18);
+        --glow-b: rgba(99, 102, 241, 0.2);
+        --glow-c: rgba(239, 68, 68, 0.16);
+        --card-ink-strong: rgba(255, 255, 255, 0.85);
+        --card-ink-soft: rgba(255, 255, 255, 0.65);
+        --card-shine: rgba(255, 255, 255, 0.35);
+      }
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          color-scheme: light;
+          --bg: #fafafa;
+          --bg-raised: #ffffff;
+          --bg-overlay: #f1f5f9;
+          --fg: #0f172a;
+          --fg-muted: #64748b;
+          --border: #e2e8f0;
+          --accent: #0891b2;
+          --warm-1: #f59e0b;
+          --warm-2: #f97316;
+          --cool-1: #0ea5e9;
+          --cool-2: #6366f1;
+          --glow: rgba(8, 145, 178, 0.16);
+          --glow-a: rgba(8, 145, 178, 0.18);
+          --glow-b: rgba(99, 102, 241, 0.18);
+          --glow-c: rgba(249, 115, 22, 0.18);
+          --card-ink-strong: rgba(15, 23, 42, 0.85);
+          --card-ink-soft: rgba(15, 23, 42, 0.6);
+          --card-shine: rgba(255, 255, 255, 0.6);
+        }
+      }
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #fafafa;
+        --bg-raised: #ffffff;
+        --bg-overlay: #f1f5f9;
+        --fg: #0f172a;
+        --fg-muted: #64748b;
+        --border: #e2e8f0;
+        --accent: #0891b2;
+        --warm-1: #f59e0b;
+        --warm-2: #f97316;
+        --cool-1: #0ea5e9;
+        --cool-2: #6366f1;
+        --glow: rgba(8, 145, 178, 0.16);
+        --glow-a: rgba(8, 145, 178, 0.18);
+        --glow-b: rgba(99, 102, 241, 0.18);
+        --glow-c: rgba(249, 115, 22, 0.18);
+        --card-ink-strong: rgba(15, 23, 42, 0.85);
+        --card-ink-soft: rgba(15, 23, 42, 0.6);
+        --card-shine: rgba(255, 255, 255, 0.6);
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: -20%;
+        background:
+          radial-gradient(circle at 20% 20%, var(--glow-a), transparent 50%),
+          radial-gradient(circle at 80% 10%, var(--glow-b), transparent 55%),
+          radial-gradient(circle at 50% 80%, var(--glow-c), transparent 55%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E");
+        opacity: 0.04;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes pulseGlow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 var(--glow);
+        }
+        50% {
+          box-shadow: 0 0 20px 2px var(--glow);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[var(--bg)] text-[var(--fg)] flex items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-5xl relative z-10">
+      <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-2 text-xs text-[var(--fg-muted)]">
+            <span class="inline-flex items-center gap-2 rounded-md border border-[var(--border)] px-2 py-1 bg-[var(--bg-overlay)]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></span>
+              通感实验场
+            </span>
+            <span>纯直觉 + 随机真相</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight mt-2">通感棱镜</h1>
+          <p class="text-sm text-[var(--fg-muted)] mt-1">把词语「看」成颜色与形状，选你最有感觉的棱镜卡。</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="theme-toggle"
+            class="w-9 h-9 rounded-md border border-[var(--border)] bg-[var(--bg-raised)] flex items-center justify-center text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+            title="切换明暗主题"
+          ></button>
+          <button
+            id="restart-btn"
+            class="px-3 py-2 rounded-md border border-[var(--border)] bg-[var(--bg-raised)] text-xs tracking-wide uppercase text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+          >
+            重新开始
+          </button>
+        </div>
+      </header>
+
+      <div class="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+        <section class="rounded-md border border-[var(--border)] bg-[var(--bg-raised)]/90 backdrop-blur p-4 sm:p-5">
+          <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--fg-muted)]">
+            <div class="flex items-center gap-2">
+              <span class="text-[var(--fg)] font-medium" id="round-text">回合 1 / 12</span>
+              <span class="w-1 h-1 rounded-full bg-[var(--border)]"></span>
+              <span id="score-text">分数 0</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="streak-text">连胜 0</span>
+              <span class="w-1 h-1 rounded-full bg-[var(--border)]"></span>
+              <span id="multi-text">倍率 × 1</span>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-md border border-[var(--border)] bg-[var(--bg-overlay)] p-4">
+            <div class="text-xs uppercase tracking-[0.2em] text-[var(--fg-muted)]">灵感词</div>
+            <div id="prompt-word" class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight"></div>
+            <p class="mt-2 text-sm text-[var(--fg-muted)]">按你的感觉选择一张棱镜卡，命运会随机揭示一条真相维度。</p>
+          </div>
+
+          <div id="game-area" class="mt-4 grid gap-3 sm:grid-cols-2 touch-none overscroll-contain"></div>
+
+          <div class="mt-4 flex items-center gap-2">
+            <button
+              id="next-btn"
+              class="hidden px-4 py-2 rounded-md bg-[var(--accent)] text-[var(--bg)] text-sm font-medium hover:opacity-90 transition"
+            >
+              下一回合
+            </button>
+            <div id="result-text" class="text-sm text-[var(--fg-muted)]"></div>
+          </div>
+        </section>
+
+        <section class="rounded-md border border-[var(--border)] bg-[var(--bg-raised)]/90 backdrop-blur p-4 sm:p-5 flex flex-col gap-4">
+          <div>
+            <div class="text-xs uppercase tracking-[0.2em] text-[var(--fg-muted)]">真相灯轨</div>
+            <div id="truth-track" class="mt-3 grid grid-cols-3 gap-2"></div>
+          </div>
+
+          <div class="rounded-md border border-[var(--border)] bg-[var(--bg-overlay)] p-4">
+            <div class="text-xs uppercase tracking-[0.2em] text-[var(--fg-muted)]">本轮真相</div>
+            <div id="truth-text" class="mt-2 text-lg font-semibold text-[var(--fg)]">等待选择</div>
+            <p id="truth-sub" class="mt-1 text-xs text-[var(--fg-muted)]">选择棱镜卡后开始随机揭示。</p>
+          </div>
+
+          <div>
+            <div class="text-xs uppercase tracking-[0.2em] text-[var(--fg-muted)]">回合记录</div>
+            <div id="history" class="mt-3 flex items-center gap-2 flex-wrap"></div>
+          </div>
+
+          <details class="rounded-md border border-[var(--border)] bg-[var(--bg-overlay)] p-4">
+            <summary class="cursor-pointer text-sm text-[var(--fg)]">游戏规则（点击展开）</summary>
+            <div class="mt-3 text-xs text-[var(--fg-muted)] leading-relaxed">
+              <p>每回合出现 1 个灵感词，你需要凭直觉选 1 张棱镜卡。</p>
+              <p>系统会随机揭示 1 条真相维度：温度、形状或节奏。</p>
+              <p>若你选择的棱镜卡在该维度匹配，即可获得本轮倍率分数。</p>
+              <p>完成 12 回合后结算，看看你的通感等级。</p>
+            </div>
+          </details>
+        </section>
+      </div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "canvas-confetti": "https://esm.sh/canvas-confetti@1.9.3"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import confetti from 'canvas-confetti'
+
+      const html = document.documentElement
+      const systemDark = () => matchMedia('(prefers-color-scheme: dark)').matches
+      const getTheme = () => html.dataset.theme ?? (systemDark() ? 'dark' : 'light')
+      const setTheme = t => {
+        html.dataset.theme = t
+      }
+      const toggleTheme = () => setTheme(getTheme() === 'dark' ? 'light' : 'dark')
+      setTheme(getTheme())
+
+      const WORDS = [
+        '薄荷',
+        '篝火',
+        '玻璃雨',
+        '绒毯',
+        '电风',
+        '雾灯',
+        '砂糖',
+        '石墨',
+        '海盐',
+        '纸风车',
+        '夜雪',
+        '竹影',
+        '钟摆',
+        '风铃',
+        '星屑',
+        '陶土',
+        '泡影',
+        '秋叶',
+        '云鲸',
+        '盐湖',
+        '冰川',
+        '糖霜',
+        '煤灰',
+        '花火',
+        '露珠',
+        '流萤',
+        '月牙',
+        '雷声',
+        '白纸',
+        '树脂',
+        '清泉',
+        '迷雾',
+        '红茶',
+        '玻璃海',
+        '潮汐',
+        '落羽',
+        '蓝莓',
+        '纸伞',
+        '琥珀',
+        '尘埃',
+      ]
+
+      const TRAITS = {
+        temp: {
+          warm: { label: '温暖', short: '温', axis: '温度' },
+          cool: { label: '清冷', short: '冷', axis: '温度' },
+        },
+        shape: {
+          round: { label: '圆润', short: '圆', axis: '形状' },
+          sharp: { label: '尖锐', short: '尖', axis: '形状' },
+        },
+        motion: {
+          flow: { label: '流动', short: '流', axis: '节奏' },
+          still: { label: '静止', short: '静', axis: '节奏' },
+        },
+      }
+
+      const TRUTH_LIST = [
+        { axis: 'temp', side: 'warm', index: 0 },
+        { axis: 'temp', side: 'cool', index: 1 },
+        { axis: 'shape', side: 'round', index: 2 },
+        { axis: 'shape', side: 'sharp', index: 3 },
+        { axis: 'motion', side: 'flow', index: 4 },
+        { axis: 'motion', side: 'still', index: 5 },
+      ]
+
+      const ALL_CARDS = ['warm', 'cool'].flatMap(temp =>
+        ['round', 'sharp'].flatMap(shape =>
+          ['flow', 'still'].map(motion => ({
+            id: `${temp}-${shape}-${motion}`,
+            temp,
+            shape,
+            motion,
+          }))
+        )
+      )
+
+      const state = {
+        round: 1,
+        totalRounds: 12,
+        score: 0,
+        streak: 0,
+        multiplier: 1,
+        prompt: '',
+        cards: [],
+        selectedId: null,
+        truth: null,
+        phase: 'pick',
+        history: [],
+        wordPool: [],
+      }
+
+      const roundText = document.getElementById('round-text')
+      const scoreText = document.getElementById('score-text')
+      const streakText = document.getElementById('streak-text')
+      const multiText = document.getElementById('multi-text')
+      const promptWord = document.getElementById('prompt-word')
+      const gameArea = document.getElementById('game-area')
+      const nextBtn = document.getElementById('next-btn')
+      const resultText = document.getElementById('result-text')
+      const truthTrack = document.getElementById('truth-track')
+      const truthText = document.getElementById('truth-text')
+      const truthSub = document.getElementById('truth-sub')
+      const historyEl = document.getElementById('history')
+
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme)
+      document.getElementById('restart-btn').addEventListener('click', () => startGame())
+
+      if (gameArea) {
+        gameArea.addEventListener(
+          'touchmove',
+          event => {
+            event.preventDefault()
+          },
+          { passive: false }
+        )
+      }
+
+      function shuffle(list) {
+        const arr = [...list]
+        for (let i = arr.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[arr[i], arr[j]] = [arr[j], arr[i]]
+        }
+        return arr
+      }
+
+      function refillWords() {
+        state.wordPool = shuffle(WORDS)
+      }
+
+      function pickWord() {
+        if (state.wordPool.length === 0) refillWords()
+        return state.wordPool.pop()
+      }
+
+      function pickCards() {
+        return shuffle(ALL_CARDS).slice(0, 4)
+      }
+
+      function updateStats() {
+        roundText.textContent = `回合 ${state.round} / ${state.totalRounds}`
+        scoreText.textContent = `分数 ${state.score}`
+        streakText.textContent = `连胜 ${state.streak}`
+        multiText.textContent = `倍率 × ${state.multiplier}`
+      }
+
+      function traitLabel(axis, side) {
+        return TRAITS[axis][side].label
+      }
+
+      function renderTruthTrack(activeIndex = null) {
+        const labels = TRUTH_LIST.map(item => {
+          const info = TRAITS[item.axis][item.side]
+          const isActive = activeIndex === item.index
+          const base = 'rounded-md border border-[var(--border)] px-2 py-2 text-center text-xs transition-colors'
+          const cls = isActive
+            ? `${base} bg-[var(--accent)] text-[var(--bg)] shadow-[0_0_18px_var(--glow)]`
+            : `${base} bg-[var(--bg-overlay)] text-[var(--fg-muted)]`
+          return `<div class="${cls}" data-truth-chip="${item.index}">
+              <div class="text-[10px] uppercase tracking-[0.18em] opacity-70">${info.axis}</div>
+              <div class="mt-1 text-sm font-semibold">${info.label}</div>
+            </div>`
+        })
+        truthTrack.innerHTML = labels.join('')
+      }
+
+      function cardVisual(card) {
+        const tempClass =
+          card.temp === 'warm'
+            ? 'from-[var(--warm-1)] to-[var(--warm-2)]'
+            : 'from-[var(--cool-1)] to-[var(--cool-2)]'
+
+        const shapeSvg =
+          card.shape === 'round'
+            ? '<circle cx="42" cy="42" r="18" fill="none" stroke="currentColor" stroke-width="3" />'
+            : '<rect x="26" y="26" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(45 42 42)" />'
+
+        const motionSvg =
+          card.motion === 'flow'
+            ? '<path d="M10 62c10-8 20-8 30 0s20 8 30 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />'
+            : '<path d="M12 58h60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />'
+
+        return `
+          <div class="relative h-24 rounded-md overflow-hidden border border-[var(--border)] bg-gradient-to-br ${tempClass}">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,var(--card-shine),transparent_55%)]"></div>
+            <svg viewBox="0 0 84 84" class="absolute inset-0 w-full h-full text-[var(--card-ink-soft)]">
+              ${shapeSvg}
+            </svg>
+            <svg viewBox="0 0 84 84" class="absolute inset-0 w-full h-full text-[var(--card-ink-strong)]">
+              ${motionSvg}
+            </svg>
+          </div>
+        `
+      }
+
+      function renderCards() {
+        const html = state.cards
+          .map(card => {
+            const traits = [
+              TRAITS.temp[card.temp],
+              TRAITS.shape[card.shape],
+              TRAITS.motion[card.motion],
+            ]
+            return `
+              <button
+                data-card-id="${card.id}"
+                class="group text-left rounded-md border border-[var(--border)] bg-[var(--bg-raised)] p-3 transition hover:border-[var(--accent)] hover:shadow-[0_0_18px_var(--glow)]"
+              >
+                ${cardVisual(card)}
+                <div class="mt-2 flex flex-wrap gap-1">
+                  ${traits
+                    .map(
+                      trait => `
+                    <span class="px-2 py-0.5 rounded bg-[var(--bg-overlay)] text-[11px] text-[var(--fg-muted)]">
+                      ${trait.short} · ${trait.label}
+                    </span>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </button>
+            `
+          })
+          .join('')
+        gameArea.innerHTML = html
+      }
+
+      function renderHistory() {
+        historyEl.innerHTML = Array.from({ length: state.totalRounds }).map((_, idx) => {
+          const item = state.history[idx]
+          if (!item) {
+            return '<span class="w-2.5 h-2.5 rounded-full border border-[var(--border)]"></span>'
+          }
+          const cls = item.win
+            ? 'bg-[var(--accent)] shadow-[0_0_10px_var(--glow)]'
+            : 'bg-[var(--bg-overlay)]'
+          return `<span class="w-2.5 h-2.5 rounded-full ${cls}"></span>`
+        }).join('')
+      }
+
+      function resetTruth() {
+        renderTruthTrack(null)
+        truthText.textContent = '等待选择'
+        truthSub.textContent = '选择棱镜卡后开始随机揭示。'
+      }
+
+      function setCardsInteractive(enabled) {
+        const buttons = gameArea.querySelectorAll('button[data-card-id]')
+        buttons.forEach(btn => {
+          if (enabled) {
+            btn.classList.remove('opacity-50', 'pointer-events-none')
+          } else {
+            btn.classList.add('pointer-events-none')
+          }
+        })
+      }
+
+      function highlightSelection() {
+        const buttons = gameArea.querySelectorAll('button[data-card-id]')
+        buttons.forEach(btn => {
+          const isSelected = btn.dataset.cardId === state.selectedId
+          btn.classList.toggle('ring-2', isSelected)
+          btn.classList.toggle('ring-[var(--accent)]', isSelected)
+          btn.classList.toggle('ring-offset-2', isSelected)
+          btn.classList.toggle('ring-offset-[var(--bg)]', isSelected)
+          if (!isSelected && state.phase !== 'pick') {
+            btn.classList.add('opacity-60')
+          }
+        })
+      }
+
+      function spinReveal(index) {
+        return new Promise(resolve => {
+          const chips = [...truthTrack.querySelectorAll('[data-truth-chip]')]
+          let current = 0
+          let steps = 0
+          const totalSteps = 12 + index
+          const timer = setInterval(() => {
+            chips.forEach(chip => chip.classList.remove('bg-[var(--accent)]'))
+            renderTruthTrack(current)
+            current = (current + 1) % chips.length
+            steps += 1
+            if (steps > totalSteps) {
+              clearInterval(timer)
+              renderTruthTrack(index)
+              resolve()
+            }
+          }, 70)
+        })
+      }
+
+      function selectCard(cardId) {
+        if (state.phase !== 'pick') return
+        state.selectedId = cardId
+        state.phase = 'spin'
+        setCardsInteractive(false)
+        highlightSelection()
+
+        state.truth = TRUTH_LIST[Math.floor(Math.random() * TRUTH_LIST.length)]
+        truthText.textContent = '命运校准中…'
+        truthSub.textContent = '真相灯轨正在随机跳转。'
+
+        spinReveal(state.truth.index).then(() => {
+          resolveRound()
+        })
+      }
+
+      function resolveRound() {
+        const selected = state.cards.find(card => card.id === state.selectedId)
+        const win = selected[state.truth.axis] === state.truth.side
+        const points = win ? state.multiplier : 0
+        state.score += points
+        state.streak = win ? state.streak + 1 : 0
+        state.history.push({ win, trait: state.truth })
+
+        const label = traitLabel(state.truth.axis, state.truth.side)
+        truthText.textContent = `真相：${label}`
+        truthSub.textContent = `维度：${TRAITS[state.truth.axis][state.truth.side].axis}`
+
+        if (win) {
+          resultText.textContent = `共鸣成功，获得 ${points} 分。`
+          if (state.multiplier === 2 || state.streak >= 3) {
+            confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 } })
+          }
+        } else {
+          resultText.textContent = '未共鸣，本轮 0 分。'
+        }
+
+        updateStats()
+        renderHistory()
+        highlightSelection()
+
+        state.phase = 'reveal'
+        nextBtn.classList.remove('hidden')
+        nextBtn.textContent = state.round >= state.totalRounds ? '查看结算' : '下一回合'
+      }
+
+      function startRound() {
+        if (state.round > state.totalRounds) {
+          endGame()
+          return
+        }
+        state.phase = 'pick'
+        state.prompt = pickWord()
+        state.cards = pickCards()
+        state.selectedId = null
+        state.truth = null
+        state.multiplier = Math.random() < 0.25 ? 2 : 1
+        resultText.textContent = '选择一张棱镜卡开始。'
+        promptWord.textContent = state.prompt
+        updateStats()
+        renderCards()
+        resetTruth()
+        renderHistory()
+        setCardsInteractive(true)
+        nextBtn.classList.add('hidden')
+      }
+
+      function endGame() {
+        state.phase = 'end'
+        const maxScore = state.totalRounds * 2
+        const ratio = state.score / maxScore
+        const rank =
+          ratio >= 0.75
+            ? '通感大师'
+            : ratio >= 0.5
+              ? '灵感守望'
+              : ratio >= 0.3
+                ? '感知学徒'
+                : '迷雾旅人'
+        truthText.textContent = `结算完成：${rank}`
+        truthSub.textContent = `最终分数 ${state.score} / ${maxScore}`
+        resultText.textContent = '点击「重新开始」再玩一局。'
+        nextBtn.classList.add('hidden')
+        if (ratio >= 0.5) {
+          confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 } })
+        }
+      }
+
+      function startGame() {
+        state.round = 1
+        state.score = 0
+        state.streak = 0
+        state.history = []
+        refillWords()
+        startRound()
+      }
+
+      gameArea.addEventListener('click', event => {
+        const button = event.target.closest('button[data-card-id]')
+        if (!button) return
+        selectCard(button.dataset.cardId)
+      })
+
+      nextBtn.addEventListener('click', () => {
+        if (state.phase !== 'reveal') return
+        state.round += 1
+        startRound()
+      })
+
+      startGame()
+    </script>
+  </body>
+</html>
